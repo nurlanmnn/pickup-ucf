@@ -87,6 +87,25 @@ export default function Create() {
       return;
     }
 
+    // Check if profile is complete
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!profile?.name) {
+      Alert.alert(
+        'Complete Your Profile',
+        'You need to complete your profile before creating sessions. Please add your name.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Go to Profile', onPress: () => router.push('/profile-setup') }
+        ]
+      );
+      return;
+    }
+
     // Validation
     if (!sport) {
       Alert.alert('Error', 'Please select a sport');
@@ -172,7 +191,7 @@ export default function Create() {
           notes: notes.trim() || null,
           address: finalAddress || null,
           capacity: capacity,
-          skill_target: skillTarget || 'Any',
+          skill_target: skillTarget ? getSkillCode(skillTarget) : 'Any',
           positions: selectedPositions.length > 0 && !selectedPositions.includes('Any') ? selectedPositions.filter(p => p !== 'Other') : null,
           equipment_needed: equipmentNeeded,
           is_indoor: false,

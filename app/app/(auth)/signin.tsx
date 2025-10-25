@@ -19,8 +19,7 @@ export default function SignIn() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { 
-        shouldCreateUser: true,
-        emailRedirectTo: undefined
+        shouldCreateUser: true
       }
     });
     setLoading(false);
@@ -40,7 +39,7 @@ export default function SignIn() {
     const { error } = await supabase.auth.verifyOtp({
       email,
       token: code,
-      type: 'magiclink'
+      type: 'email'
     });
     setLoading(false);
     if (error) {

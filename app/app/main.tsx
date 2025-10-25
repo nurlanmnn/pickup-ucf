@@ -1,15 +1,30 @@
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useFeed } from '../hooks/useFeed';
 import { useSession } from '../hooks/useSession';
 import { makeTitle } from '../lib/title';
+import { supabase } from '../lib/supabase';
 
 export default function Main() {
   const { session } = useSession();
   const { sessions, loading, error, refetch } = useFeed();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    if (session?.user) {
+      supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', session.user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.name) setUserName(data.name);
+        });
+    }
+  }, [session]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -39,6 +54,13 @@ export default function Main() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Pressable onPress={() => router.push('/profile')} style={styles.profileButton}>
+          <View style={styles.profileAvatar}>
+            <Text style={styles.profileInitial}>
+              {userName?.charAt(0).toUpperCase() || '?'}
+            </Text>
+          </View>
+        </Pressable>
         <Text style={styles.headerTitle}>PickUp UCF</Text>
         <Pressable onPress={() => router.push('/create')}>
           <Text style={styles.createButton}>+ Create</Text>
@@ -117,7 +139,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#007AFF' },
+  profileButton: { marginRight: 8 },
+  profileAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInitial: { fontSize: 16, fontWeight: '700', color: 'white' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#007AFF', flex: 1, textAlign: 'center' },
   createButton: { fontSize: 16, fontWeight: '600', color: '#007AFF' },
   scroll: { flex: 1 },
   list: { padding: 16, gap: 12 },

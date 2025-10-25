@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../hooks/useSession';
 import { makeTitle } from '../../lib/title';
@@ -11,13 +11,29 @@ export default function SessionDetail() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
   const [isJoined, setIsJoined] = useState(false);
   const [membersCount, setMembersCount] = useState(0);
+  const [members, setMembers] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    if (id) fetchSession();
+    if (id) {
+      fetchSession();
+      fetchUserProfile();
+    }
   }, [id]);
+
+  const fetchUserProfile = async () => {
+    if (!authSession?.user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', authSession.user.id)
+      .single();
+    setUserProfile(data);
+  };
 
   const fetchSession = async () => {
     try {
@@ -25,8 +41,7 @@ export default function SessionDetail() {
         .from('sessions')
         .select(`
           *,
-          profiles(id, email, name),
-          session_members(count, user_id)
+          host:profiles!sessions_host_id_fkey(id, email, name)
         `)
         .eq('id', id)
         .single();
@@ -45,14 +60,21 @@ export default function SessionDetail() {
 
       setIsJoined(memberData?.status === 'joined');
       
-      // Count joined members
-      const { count } = await supabase
+      // Fetch all members with their profiles
+      const { data: membersData } = await supabase
         .from('session_members')
-        .select('*', { count: 'exact', head: true })
+        .select(`
+          user_id,
+          status,
+          joined_at,
+          profiles(id, name, email)
+        `)
         .eq('session_id', id)
-        .eq('status', 'joined');
-      
-      setMembersCount(count || 0);
+        .eq('status', 'joined')
+        .order('joined_at', { ascending: true });
+
+      setMembers(membersData || []);
+      setMembersCount(membersData?.length || 0);
     } catch (err: any) {
       Alert.alert('Error', err.message);
     } finally {
@@ -60,9 +82,29 @@ export default function SessionDetail() {
     }
   };
 
+  // Refresh when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (id) fetchSession();
+    }, [id])
+  );
+
   const handleJoin = async () => {
     if (!authSession?.user) {
       Alert.alert('Error', 'You must be logged in to join a session');
+      return;
+    }
+
+    // Check if profile is complete
+    if (!userProfile?.name) {
+      Alert.alert(
+        'Complete Your Profile',
+        'You need to complete your profile before joining sessions. Please add your name.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Go to Profile', onPress: () => router.push('/profile-setup') }
+        ]
+      );
       return;
     }
 
@@ -79,14 +121,71 @@ export default function SessionDetail() {
 
       if (error) throw error;
 
-      setIsJoined(true);
-      setMembersCount(m => m + 1);
+      // Refresh to get updated member list
+      await fetchSession();
       Alert.alert('Success', 'You joined this session!');
     } catch (err: any) {
       Alert.alert('Error', err.message);
     } finally {
       setJoining(false);
     }
+  };
+
+  const handleLeave = async () => {
+    if (!authSession?.user) {
+      Alert.alert('Error', 'You must be logged in');
+      return;
+    }
+
+    setLeaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('session_members')
+        .delete()
+        .eq('session_id', id)
+        .eq('user_id', authSession.user.id);
+
+      if (error) throw error;
+
+      // Refresh to get updated member list
+      await fetchSession();
+      Alert.alert('Success', 'You left this session');
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setLeaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      'Delete Session',
+      'Are you sure you want to delete this session?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('sessions')
+                .delete()
+                .eq('id', id)
+                .eq('host_id', authSession?.user?.id);
+
+              if (error) throw error;
+
+              Alert.alert('Success', 'Session deleted');
+              router.back();
+            } catch (err: any) {
+              Alert.alert('Error', err.message);
+            }
+          }
+        }
+      ]
+    );
   };
 
   if (loading) {
@@ -106,14 +205,18 @@ export default function SessionDetail() {
   }
 
   const spotsLeft = sessionData.capacity - membersCount;
+  const isHost = sessionData.host_id === authSession?.user?.id;
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
+        <Text style={styles.headerTitle}>Session Details</Text>
+        <View style={{ width: 60 }} />
       </View>
+      <ScrollView style={styles.scroll}>
 
       <View style={styles.content}>
         <Text style={styles.title}>
@@ -201,20 +304,61 @@ export default function SessionDetail() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Host</Text>
           <Text style={styles.sectionText}>
-            {sessionData.profiles?.name || sessionData.profiles?.email || 'Unknown'}
+            {sessionData.host?.name || sessionData.host?.email || 'Unknown'}
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Members ({membersCount}/{sessionData.capacity})
+          </Text>
+          {members.length === 0 ? (
+            <Text style={styles.emptyText}>No one has joined yet</Text>
+          ) : (
+            members.map((member) => (
+              <View key={member.user_id} style={styles.memberRow}>
+                <View style={styles.memberAvatar}>
+                  <Text style={styles.memberInitial}>
+                    {member.profiles?.name?.charAt(0).toUpperCase() || '?'}
+                  </Text>
+                </View>
+                <View style={styles.memberInfo}>
+                  <Text style={styles.memberName}>
+                    {member.profiles?.name || 'Unknown'}
+                    {member.user_id === sessionData.host_id && ' 👑'}
+                  </Text>
+                  <Text style={styles.memberEmail}>{member.profiles?.email}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+
         <View style={styles.buttonContainer}>
-          {isJoined ? (
-            <Pressable style={[styles.joinButton, styles.joinedButton]} disabled>
-              <Text style={styles.joinText}>✓ Joined</Text>
+          {isHost ? (
+            <Pressable
+              style={[styles.joinButton, styles.deleteButton]}
+              onPress={handleDelete}
+            >
+              <Text style={styles.joinText}>Delete Session</Text>
+            </Pressable>
+          ) : isJoined ? (
+            <Pressable
+              style={[styles.joinButton, styles.leaveButton, (leaving || joining) && styles.buttonDisabled]}
+              onPress={handleLeave}
+              disabled={leaving || joining}
+            >
+              {leaving ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.joinText}>Leave Session</Text>
+              )}
             </Pressable>
           ) : (
             <Pressable
-              style={[styles.joinButton, joining && styles.buttonDisabled]}
+              style={[styles.joinButton, (joining || leaving) && styles.buttonDisabled]}
               onPress={handleJoin}
-              disabled={joining || spotsLeft <= 0}
+              disabled={joining || leaving || spotsLeft <= 0}
             >
               {joining ? (
                 <ActivityIndicator color="white" />
@@ -227,16 +371,29 @@ export default function SessionDetail() {
           )}
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#E0E0E0' },
-  backButton: { paddingVertical: 8 },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    paddingTop: 60,
+    backgroundColor: 'white', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E0E0E0' 
+  },
+  backButton: { paddingVertical: 8, paddingRight: 16 },
   backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#333', flex: 1 },
+  scroll: { flex: 1 },
   content: { padding: 16 },
   title: { fontSize: 20, fontWeight: '700', marginBottom: 24, color: '#333' },
   section: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 12 },
@@ -247,8 +404,16 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 12, fontWeight: '600', color: '#007AFF' },
   buttonContainer: { padding: 16 },
   joinButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 12, alignItems: 'center' },
-  joinedButton: { backgroundColor: '#34C759' },
+  leaveButton: { backgroundColor: '#FF3B30' },
+  deleteButton: { backgroundColor: '#FF3B30' },
   buttonDisabled: { opacity: 0.5 },
   joinText: { color: 'white', fontSize: 16, fontWeight: '600' },
   errorText: { color: '#FF3B30', fontSize: 16 },
+  emptyText: { fontSize: 14, color: '#999', fontStyle: 'italic' },
+  memberRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
+  memberAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#007AFF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  memberInitial: { color: 'white', fontSize: 16, fontWeight: '700' },
+  memberInfo: { flex: 1 },
+  memberName: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 2 },
+  memberEmail: { fontSize: 12, color: '#999' },
 });
