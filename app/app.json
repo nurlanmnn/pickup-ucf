@@ -1,0 +1,8 @@
+{
+  "name": "app",
+  "slug": "app",
+  "scheme": "pickupucf",
+  "ios": {
+    "bundleIdentifier": "com.anonymous.app"
+  }
+}

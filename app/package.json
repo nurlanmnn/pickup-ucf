@@ -1,0 +1,163 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "author": "650 Industries, Inc.",
+  "license": "MIT",
+  "main": "./entry.js",
+  "types": "build/index.d.ts",
+  "sideEffects": [
+    "rsc/entry.js",
+    "entry-classic.js",
+    "entry.js"
+  ],
+  "files": [
+    "link",
+    "assets",
+    "build",
+    "vendor",
+    "!src",
+    "_ctx-html.js",
+    "_ctx-shared.js",
+    "_ctx.*",
+    "_error.js",
+    "app.plugin.js",
+    "babel.js",
+    "doctor.js",
+    "drawer.d.ts",
+    "drawer.js",
+    "entry-classic.js",
+    "entry.js",
+    "expo-module.config.json",
+    "head.d.ts",
+    "head.js",
+    "html.d.ts",
+    "html.js",
+    "index.d.ts",
+    "ios",
+    "unstable-native-tabs.js",
+    "unstable-native-tabs.d.ts",
+    "node",
+    "plugin",
+    "rsc",
+    "server.d.ts",
+    "server.js",
+    "stack.d.ts",
+    "stack.js",
+    "tabs.js",
+    "types",
+    "tabs.d.ts",
+    "ui.js",
+    "ui.d.ts",
+    "testing-library.js",
+    "testing-library.d.ts",
+    "_async-server-import.js"
+  ],
+  "bugs": {
+    "url": "https://github.com/expo/expo/issues"
+  },
+  "homepage": "https://docs.expo.dev/routing/introduction/",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "keywords": [
+    "react-native",
+    "expo"
+  ],
+  "peerDependencies": {
+    "@expo/metro-runtime": "^6.1.2",
+    "@react-navigation/drawer": "^7.5.0",
+    "@testing-library/react-native": ">= 12.0.0",
+    "expo": "*",
+    "expo-constants": "^18.0.9",
+    "expo-linking": "^8.0.8",
+    "react-dom": "*",
+    "react-native": "*",
+    "react-native-gesture-handler": "^2.29.0",
+    "react-native-reanimated": "^4.1.3",
+    "react-native-safe-area-context": ">= 5.4.0",
+    "react-native-screens": "*",
+    "react-server-dom-webpack": ">= 19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@testing-library/react-native": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "react-native-gesture-handler": {
+      "optional": true
+    },
+    "react-native-reanimated": {
+      "optional": true
+    },
+    "react-native-web": {
+      "optional": true
+    },
+    "react-server-dom-webpack": {
+      "optional": true
+    },
+    "@react-navigation/drawer": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@react-navigation/drawer": "^7.5.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/react-native": "^13.2.0",
+    "@types/react-dom": "^19.1.7",
+    "@types/semver": "^7.7.0",
+    "immer": "^10.1.1",
+    "react-server-dom-webpack": "~19.0.0",
+    "tsd": "^0.28.1",
+    "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "^6.1.2",
+    "@expo/ngrok": "^4.1.3",
+    "@expo/schema-utils": "^0.1.7",
+    "@radix-ui/react-slot": "1.2.0",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "@react-native-community/datetimepicker": "8.4.4",
+    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/native": "^7.1.18",
+    "@react-navigation/native-stack": "^7.3.16",
+    "@supabase/supabase-js": "^2.76.1",
+    "client-only": "^0.0.1",
+    "date-fns": "^4.1.0",
+    "debug": "^4.3.4",
+    "escape-string-regexp": "^4.0.0",
+    "expo": "*",
+    "expo-auth-session": "^7.0.8",
+    "expo-clipboard": "^8.0.7",
+    "expo-linear-gradient": "^15.0.7",
+    "expo-location": "^19.0.7",
+    "expo-notifications": "^0.32.12",
+    "expo-router": "^6.0.13",
+    "expo-secure-store": "^15.0.7",
+    "expo-server": "^1.0.2",
+    "fast-deep-equal": "^3.1.3",
+    "geofire-common": "^6.0.0",
+    "invariant": "^2.2.4",
+    "nanoid": "^3.3.8",
+    "query-string": "^7.1.3",
+    "react": "19.2.0",
+    "react-fast-compare": "^3.2.2",
+    "react-native": "*",
+    "react-native-is-edge-to-edge": "^1.1.6",
+    "react-native-web": "^0.21.0",
+    "semver": "~7.6.3",
+    "server-only": "^0.0.1",
+    "sf-symbols-typescript": "^2.1.0",
+    "shallowequal": "^1.1.0",
+    "use-latest-callback": "^0.2.1",
+    "vaul": "^1.1.2",
+    "zod": "^3.25.76"
+  },
+  "gitHead": "ea56136a4420322f46d00e4b1549595d8f85150e",
+  "private": true
+}
