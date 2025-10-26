@@ -6,6 +6,16 @@ import { useSession } from '../hooks/useSession';
 import { makeTitle } from '../lib/title';
 import { supabase } from '../lib/supabase';
 
+const getSkillName = (code: string): string => {
+  switch (code) {
+    case 'B': return 'Beginner';
+    case 'I': return 'Intermediate';
+    case 'A': return 'Advanced';
+    case 'Any': return 'Any';
+    default: return code;
+  }
+};
+
 export default function Main() {
   const { session } = useSession();
   const { sessions, loading, error, refetch } = useFeed();
@@ -94,9 +104,9 @@ export default function Main() {
                     address: session.address,
                     starts_at: session.starts_at,
                     ends_at: session.ends_at,
-                    capacity: session.capacity,
-                    equipment_needed: session.equipment_needed,
-                    positions: session.positions,
+                    // capacity: session.capacity,
+                    // equipment_needed: session.equipment_needed,
+                    // positions: session.positions,
                   })}
                 </Text>
                 {session.notes && <Text style={styles.cardNotes}>{session.notes}</Text>}
@@ -107,7 +117,7 @@ export default function Main() {
                   <View style={styles.badgeRow}>
                     {session.skill_target !== 'Any' && (
                       <View style={[styles.badge, styles.skillBadge]}>
-                        <Text style={styles.badgeText}>{session.skill_target}</Text>
+                        <Text style={styles.badgeText}>{getSkillName(session.skill_target)}</Text>
                       </View>
                     )}
                     {session.is_indoor && (

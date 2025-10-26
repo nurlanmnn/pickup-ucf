@@ -166,8 +166,11 @@ export default function Create() {
       return;
     }
 
-    // Check if date is before today
-    if (selectedDate.toDateString() < today.toDateString()) {
+    // Check if date is before today (compare only date part, ignore time)
+    const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    if (selectedDateOnly < todayOnly) {
       Alert.alert('Invalid Date', 'Sessions cannot be scheduled in the past.');
       return;
     }

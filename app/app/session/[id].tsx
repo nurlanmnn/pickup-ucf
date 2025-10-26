@@ -5,9 +5,19 @@ import { supabase } from '../../lib/supabase';
 import { useSession } from '../../hooks/useSession';
 import { makeTitle } from '../../lib/title';
 
+const getSkillName = (code: string): string => {
+  switch (code) {
+    case 'B': return 'Beginner';
+    case 'I': return 'Intermediate';
+    case 'A': return 'Advanced';
+    case 'Any': return 'Any';
+    default: return code;
+  }
+};
+
 export default function SessionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { session: authSession } = useSession();
+  const { session: authSession, loading: authLoading } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -19,11 +29,11 @@ export default function SessionDetail() {
   const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    if (id) {
+    if (id && !authLoading) {
       fetchSession();
       fetchUserProfile();
     }
-  }, [id]);
+  }, [id, authSession]);
 
   const fetchUserProfile = async () => {
     if (!authSession?.user) return;
@@ -51,14 +61,18 @@ export default function SessionDetail() {
       setSessionData(data);
       
       // Check if current user is already a member
-      const { data: memberData } = await supabase
-        .from('session_members')
-        .select('status')
-        .eq('session_id', id)
-        .eq('user_id', authSession?.user?.id)
-        .single();
+      if (authSession?.user) {
+        const { data: memberData, error: memberError } = await supabase
+          .from('session_members')
+          .select('status')
+          .eq('session_id', id)
+          .eq('user_id', authSession.user.id)
+          .maybeSingle();
 
-      setIsJoined(memberData?.status === 'joined');
+        // User is joined if the record exists and has status 'joined'
+        const joined = !!memberData && memberData.status === 'joined';
+        setIsJoined(joined);
+      }
       
       // Fetch all members with their profiles
       const { data: membersData } = await supabase
@@ -85,8 +99,11 @@ export default function SessionDetail() {
   // Refresh when screen is focused
   useFocusEffect(
     useCallback(() => {
-      if (id) fetchSession();
-    }, [id])
+      if (id && !authLoading) {
+        fetchSession();
+        fetchUserProfile();
+      }
+    }, [id, authSession])
   );
 
   const handleJoin = async () => {
@@ -95,8 +112,14 @@ export default function SessionDetail() {
       return;
     }
 
-    // Check if profile is complete
-    if (!userProfile?.name) {
+    // Check if profile is complete by fetching fresh data
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', authSession.user.id)
+      .single();
+
+    if (!profileData?.name) {
       Alert.alert(
         'Complete Your Profile',
         'You need to complete your profile before joining sessions. Please add your name.',
@@ -111,21 +134,57 @@ export default function SessionDetail() {
     setJoining(true);
 
     try {
-      const { error } = await supabase
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
         .from('session_members')
-        .insert({
-          session_id: id,
-          user_id: authSession.user.id,
-          status: 'joined',
-        });
+        .select('status')
+        .eq('session_id', id)
+        .eq('user_id', authSession.user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existingMember && existingMember.status === 'joined') {
+        Alert.alert('Already Joined', 'You are already a member of this session.');
+        setJoining(false);
+        return;
+      }
+
+      // If member exists with different status, update it
+      if (existingMember) {
+        const { error } = await supabase
+          .from('session_members')
+          .update({ status: 'joined' })
+          .eq('session_id', id)
+          .eq('user_id', authSession.user.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new member
+        const { error } = await supabase
+          .from('session_members')
+          .insert({
+            session_id: id,
+            user_id: authSession.user.id,
+            status: 'joined',
+          });
+        
+        if (error) throw error;
+      }
 
       // Refresh to get updated member list
       await fetchSession();
+      
+      // Force set isJoined to true
+      setIsJoined(true);
+      
       Alert.alert('Success', 'You joined this session!');
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      // Handle duplicate key error gracefully
+      if (err.message?.includes('duplicate key')) {
+        Alert.alert('Already Joined', 'You are already a member of this session.');
+        await fetchSession();
+      } else {
+        Alert.alert('Error', err.message);
+      }
     } finally {
       setJoining(false);
     }
@@ -150,6 +209,10 @@ export default function SessionDetail() {
 
       // Refresh to get updated member list
       await fetchSession();
+      
+      // Force set isJoined to false
+      setIsJoined(false);
+      
       Alert.alert('Success', 'You left this session');
     } catch (err: any) {
       Alert.alert('Error', err.message);
@@ -210,7 +273,7 @@ export default function SessionDetail() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
         <Text style={styles.headerTitle}>Session Details</Text>
@@ -277,7 +340,7 @@ export default function SessionDetail() {
           </Text>
           {sessionData.skill_target !== 'Any' && (
             <Text style={styles.sectionText}>
-              Skill level: {sessionData.skill_target}
+              Skill level: {getSkillName(sessionData.skill_target)}
             </Text>
           )}
           {sessionData.is_indoor && (
@@ -336,12 +399,25 @@ export default function SessionDetail() {
 
         <View style={styles.buttonContainer}>
           {isHost ? (
-            <Pressable
-              style={[styles.joinButton, styles.deleteButton]}
-              onPress={handleDelete}
-            >
-              <Text style={styles.joinText}>Delete Session</Text>
-            </Pressable>
+            <>
+              <Pressable
+                style={[styles.joinButton, styles.editButton]}
+                onPress={() => Alert.alert(
+                  'Edit Session', 
+                  'To edit your session, you can:\n\n1. Delete this session\n2. Create a new one with updated details\n\nFull edit feature coming soon!', 
+                  [{ text: 'OK' }]
+                )}
+              >
+                <Text style={styles.joinText}>Edit Session</Text>
+              </Pressable>
+              <View style={{ height: 12 }} />
+              <Pressable
+                style={[styles.joinButton, styles.deleteButton]}
+                onPress={handleDelete}
+              >
+                <Text style={styles.joinText}>Delete Session</Text>
+              </Pressable>
+            </>
           ) : isJoined ? (
             <Pressable
               style={[styles.joinButton, styles.leaveButton, (leaving || joining) && styles.buttonDisabled]}
@@ -404,6 +480,7 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 12, fontWeight: '600', color: '#007AFF' },
   buttonContainer: { padding: 16 },
   joinButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 12, alignItems: 'center' },
+  editButton: { backgroundColor: '#34C759' },
   leaveButton: { backgroundColor: '#FF3B30' },
   deleteButton: { backgroundColor: '#FF3B30' },
   buttonDisabled: { opacity: 0.5 },
