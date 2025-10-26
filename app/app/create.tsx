@@ -54,7 +54,8 @@ export default function Create() {
   const [customSport, setCustomSport] = useState('');
   const [notes, setNotes] = useState('');
   const [address, setAddress] = useState('');
-  const [capacity, setCapacity] = useState(10);
+  const minCapacity = 2; // Minimum capacity (host + at least 1 other)
+  const [capacity, setCapacity] = useState(minCapacity);
   const [skillTarget, setSkillTarget] = useState('');
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [equipmentNeeded, setEquipmentNeeded] = useState(false);
@@ -84,7 +85,7 @@ export default function Create() {
   
   // Capacity editing
   const [editingCapacity, setEditingCapacity] = useState(false);
-  const [capacityInput, setCapacityInput] = useState('10');
+  const [capacityInput, setCapacityInput] = useState(minCapacity.toString());
 
   const handleSubmit = async () => {
     if (!session?.user) {
@@ -215,6 +216,8 @@ export default function Create() {
 
       if (error) throw error;
 
+      // Note: Host is automatically added as a member by the database trigger
+
       Alert.alert('Success', 'Session created!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
@@ -254,7 +257,7 @@ export default function Create() {
   const handleCapacityChange = (value: string) => {
     setCapacityInput(value);
     const num = parseInt(value, 10);
-    if (!isNaN(num) && num >= 1 && num <= 50) {
+    if (!isNaN(num) && num >= minCapacity && num <= 50) {
       setCapacity(num);
     }
   };
@@ -297,6 +300,7 @@ export default function Create() {
           <TextInput
             style={[styles.input, styles.mt12]}
             placeholder="Enter sport name"
+            placeholderTextColor="#999"
             value={customSport}
             onChangeText={setCustomSport}
           />
@@ -306,11 +310,13 @@ export default function Create() {
       {/* Date & Time Selection */}
       <View style={styles.section}>
         <Text style={styles.label}>Date *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => {
+        <Pressable style={[styles.dateTimeButton, !selectedDate && styles.dateTimeButtonPlaceholder]} onPress={() => {
           setTempDate(selectedDate || today);
           setShowDatePicker(!showDatePicker);
         }}>
-          <Text style={styles.dateTimeText}>{formatDate(selectedDate)}</Text>
+          <Text style={[styles.dateTimeText, !selectedDate && styles.dateTimePlaceholder]}>
+            {formatDate(selectedDate)}
+          </Text>
         </Pressable>
         {showDatePicker && (
           <View style={styles.pickerContainer}>
@@ -320,6 +326,7 @@ export default function Create() {
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={today}
               maximumDate={new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000)}
+              textColor="#000000"
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
@@ -353,11 +360,13 @@ export default function Create() {
         )}
 
         <Text style={[styles.label, styles.mt16]}>Start Time *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => {
+        <Pressable style={[styles.dateTimeButton, !startTime && styles.dateTimeButtonPlaceholder]} onPress={() => {
           setTempStartTime(startTime || today);
           setShowStartPicker(!showStartPicker);
         }}>
-          <Text style={styles.dateTimeText}>{formatTime(startTime)}</Text>
+          <Text style={[styles.dateTimeText, !startTime && styles.dateTimePlaceholder]}>
+            {formatTime(startTime)}
+          </Text>
         </Pressable>
         {showStartPicker && (
           <View style={styles.pickerContainer}>
@@ -367,6 +376,7 @@ export default function Create() {
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               is24Hour={false}
               minimumDate={getMinimumTime()}
+              textColor="#000000"
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
@@ -398,11 +408,13 @@ export default function Create() {
         )}
 
         <Text style={[styles.label, styles.mt16]}>End Time *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => {
+        <Pressable style={[styles.dateTimeButton, !endTime && styles.dateTimeButtonPlaceholder]} onPress={() => {
           setTempEndTime(endTime || today);
           setShowEndPicker(!showEndPicker);
         }}>
-          <Text style={styles.dateTimeText}>{formatTime(endTime)}</Text>
+          <Text style={[styles.dateTimeText, !endTime && styles.dateTimePlaceholder]}>
+            {formatTime(endTime)}
+          </Text>
         </Pressable>
         {showEndPicker && (
           <View style={styles.pickerContainer}>
@@ -412,6 +424,7 @@ export default function Create() {
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               is24Hour={false}
               minimumDate={startTime || today}
+              textColor="#000000"
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
@@ -461,6 +474,7 @@ export default function Create() {
           <TextInput
             style={[styles.input, styles.mt12]}
             placeholder="Enter custom location"
+            placeholderTextColor="#999"
             value={customLocation}
             onChangeText={setCustomLocation}
           />
@@ -499,11 +513,11 @@ export default function Create() {
         ) : (
           <View style={styles.counterContainer}>
             <Pressable 
-              style={[styles.counterButton, capacity <= 1 && styles.counterButtonDisabled]} 
-              onPress={() => setCapacity(Math.max(1, capacity - 1))}
-              disabled={capacity <= 1}
+              style={[styles.counterButton, capacity <= minCapacity && styles.counterButtonDisabled]} 
+              onPress={() => setCapacity(Math.max(minCapacity, capacity - 1))}
+              disabled={capacity <= minCapacity}
             >
-              <Text style={[styles.counterText, capacity <= 1 && styles.counterTextDisabled]}>−</Text>
+              <Text style={[styles.counterText, capacity <= minCapacity && styles.counterTextDisabled]}>−</Text>
             </Pressable>
             <Pressable onPress={() => setEditingCapacity(true)} style={styles.capacityDisplay}>
               <Text style={styles.counterValue}>{capacity}</Text>
@@ -551,6 +565,7 @@ export default function Create() {
           <TextInput
             style={[styles.input, styles.mt12]}
             placeholder="Specify position"
+            placeholderTextColor="#999"
             value={otherPosition}
             onChangeText={setOtherPosition}
           />
@@ -572,6 +587,7 @@ export default function Create() {
           <TextInput
             style={[styles.input, styles.mt12]}
             placeholder="Describe equipment needed..."
+            placeholderTextColor="#999"
             value={equipmentDescription}
             onChangeText={setEquipmentDescription}
           />
@@ -584,6 +600,7 @@ export default function Create() {
         <TextInput
           style={[styles.input, styles.textArea, styles.mt12]}
           placeholder="Any additional info..."
+          placeholderTextColor="#999"
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -674,7 +691,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FAFAFA',
   },
-  dateTimeText: { fontSize: 16, color: '#333', fontWeight: '500' },
+  dateTimeButtonPlaceholder: {
+    backgroundColor: '#F0F0F0',
+    borderColor: '#D0D0D0',
+  },
+  dateTimeText: { 
+    fontSize: 16, 
+    color: '#333', 
+    fontWeight: '500',
+  },
+  dateTimePlaceholder: {
+    color: '#555',
+  },
   pickerContainer: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   pickerActions: { flexDirection: 'row', justifyContent: 'space-between', padding: 12, backgroundColor: '#F9F9F9' },
   pickerAction: { paddingHorizontal: 16, paddingVertical: 8 },

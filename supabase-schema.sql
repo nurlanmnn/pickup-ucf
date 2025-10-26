@@ -183,3 +183,21 @@ BEGIN
   RETURN GREATEST(0, v_capacity - v_joined_count);
 END;
 $$ LANGUAGE plpgsql;
+
+-- Function to automatically add host as a member when session is created
+CREATE OR REPLACE FUNCTION public.handle_new_session()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Add the host as a member so they can chat
+  INSERT INTO public.session_members (session_id, user_id, status)
+  VALUES (NEW.id, NEW.host_id, 'joined')
+  ON CONFLICT (session_id, user_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to add host as member when session is created
+DROP TRIGGER IF EXISTS on_session_created ON sessions;
+CREATE TRIGGER on_session_created
+  AFTER INSERT ON sessions
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_session();

@@ -65,6 +65,7 @@ export default function ProfileSetup() {
         <TextInput
           style={styles.input}
           placeholder="Enter your name"
+          placeholderTextColor="#999"
           value={name}
           onChangeText={setName}
           autoCapitalize="words"

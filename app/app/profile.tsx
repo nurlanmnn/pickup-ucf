@@ -147,6 +147,7 @@ export default function Profile() {
               value={name}
               onChangeText={setName}
               placeholder="Enter your name"
+              placeholderTextColor="#999"
               autoCapitalize="words"
               autoFocus
             />

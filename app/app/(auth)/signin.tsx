@@ -75,6 +75,7 @@ export default function SignIn() {
             <Text style={styles.inputLabel}>Verification Code</Text>
             <TextInput
               placeholder="Enter 6-digit code"
+              placeholderTextColor="#999"
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="number-pad"
@@ -132,6 +133,7 @@ export default function SignIn() {
           <Text style={styles.inputLabel}>UCF Email</Text>
           <TextInput
             placeholder="you@ucf.edu"
+            placeholderTextColor="#999"
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
@@ -151,7 +153,7 @@ export default function SignIn() {
           {loading ? (
             <ActivityIndicator color="#000000" />
           ) : (
-            <Text style={styles.buttonText}>Send Verification Code</Text>
+            <Text style={styles.buttonText}>Sign In</Text>
           )}
         </Pressable>
         

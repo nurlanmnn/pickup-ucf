@@ -100,8 +100,27 @@ export default function SessionDetail() {
         .eq('status', 'joined')
         .order('joined_at', { ascending: true });
 
-      setMembers(membersData || []);
-      setMembersCount(membersData?.length || 0);
+      // Always include the host in the members list
+      const hostId = data?.host_id;
+      const hostProfile = data?.host;
+      const allMembers = [...(membersData || [])];
+      
+      // Check if host is already in members list
+      const hostInMembers = hostId && allMembers.some(m => m.user_id === hostId);
+      
+      // If host is not in members list, add them
+      if (hostId && hostProfile && !hostInMembers) {
+        const hostMember: any = {
+          user_id: hostId,
+          status: 'joined',
+          joined_at: data.created_at,
+          profiles: hostProfile
+        };
+        allMembers.unshift(hostMember);
+      }
+
+      setMembers(allMembers);
+      setMembersCount(allMembers.length);
     } catch (err: any) {
       Alert.alert('Error', err.message);
     } finally {

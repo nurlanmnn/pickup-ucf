@@ -88,6 +88,55 @@ export default function SessionChat() {
     setSending(true);
 
     try {
+      // Check if user is a member of the session
+      const { data: memberCheck } = await supabase
+        .from('session_members')
+        .select('status')
+        .eq('session_id', id)
+        .eq('user_id', session.user.id)
+        .eq('status', 'joined')
+        .maybeSingle();
+
+      console.log('Member check result:', memberCheck);
+
+      // Check if user is the host of this session
+      const { data: sessionData } = await supabase
+        .from('sessions')
+        .select('host_id')
+        .eq('id', id)
+        .single();
+
+      const isHost = sessionData?.host_id === session.user.id;
+      console.log('Is host:', isHost);
+
+      if (!memberCheck && !isHost) {
+        Alert.alert('Error', 'You must join the session before sending messages.');
+        setSending(false);
+        return;
+      }
+
+      // If host is not a member yet, add them (for older sessions)
+      if (isHost && !memberCheck) {
+        console.log('Adding host as member...');
+        const { error: insertError } = await supabase
+          .from('session_members')
+          .insert({
+            session_id: id,
+            user_id: session.user.id,
+            status: 'joined',
+          });
+        
+        if (insertError) {
+          console.error('Error adding host as member:', insertError);
+        }
+      }
+
+      console.log('Sending message with data:', {
+        session_id: id,
+        user_id: session.user.id,
+        body: newMessage.trim(),
+      });
+
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -96,11 +145,16 @@ export default function SessionChat() {
           body: newMessage.trim(),
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
 
+      console.log('Message sent successfully');
       setNewMessage('');
     } catch (err: any) {
-      Alert.alert('Error', 'Failed to send message');
+      console.error('Failed to send message:', err);
+      Alert.alert('Error', `Failed to send message: ${err.message || 'Unknown error'}`);
     } finally {
       setSending(false);
     }
