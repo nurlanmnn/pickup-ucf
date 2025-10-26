@@ -67,6 +67,11 @@ export default function Create() {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [endTime, setEndTime] = useState<Date | null>(null);
   
+  // Temporary picker values
+  const [tempDate, setTempDate] = useState<Date>(today);
+  const [tempStartTime, setTempStartTime] = useState<Date>(today);
+  const [tempEndTime, setTempEndTime] = useState<Date>(today);
+  
   // Picker visibility
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -84,25 +89,6 @@ export default function Create() {
   const handleSubmit = async () => {
     if (!session?.user) {
       Alert.alert('Error', 'You must be logged in to create a session');
-      return;
-    }
-
-    // Check if profile is complete
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name')
-      .eq('id', session.user.id)
-      .single();
-
-    if (!profile?.name) {
-      Alert.alert(
-        'Complete Your Profile',
-        'You need to complete your profile before creating sessions. Please add your name.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Go to Profile', onPress: () => router.push('/profile-setup') }
-        ]
-      );
       return;
     }
 
@@ -178,6 +164,27 @@ export default function Create() {
     setLoading(true);
 
     try {
+      // Ensure profile exists before creating session
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      
+      if (!profile) {
+        // Profile doesn't exist, create it
+        const autoName = session.user.email?.split('@')[0] || 'User';
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            email: session.user.email,
+            name: autoName,
+          });
+        
+        if (profileError) throw profileError;
+      }
+
       // Determine final address
       let finalAddress = '';
       if (useCustomLocation) {
@@ -299,13 +306,16 @@ export default function Create() {
       {/* Date & Time Selection */}
       <View style={styles.section}>
         <Text style={styles.label}>Date *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => setShowDatePicker(!showDatePicker)}>
+        <Pressable style={styles.dateTimeButton} onPress={() => {
+          setTempDate(selectedDate || today);
+          setShowDatePicker(!showDatePicker);
+        }}>
           <Text style={styles.dateTimeText}>{formatDate(selectedDate)}</Text>
         </Pressable>
         {showDatePicker && (
           <View style={styles.pickerContainer}>
             <DateTimePicker
-              value={selectedDate || today}
+              value={tempDate}
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={today}
@@ -313,7 +323,7 @@ export default function Create() {
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
-                    setSelectedDate(date);
+                    setTempDate(date);
                   }
                   if (event.type === 'dismissed') {
                     setShowDatePicker(false);
@@ -331,7 +341,10 @@ export default function Create() {
                 <Pressable onPress={() => setShowDatePicker(false)} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={() => setShowDatePicker(false)} style={styles.pickerAction}>
+                <Pressable onPress={() => {
+                  setSelectedDate(tempDate);
+                  setShowDatePicker(false);
+                }} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Done</Text>
                 </Pressable>
               </View>
@@ -340,13 +353,16 @@ export default function Create() {
         )}
 
         <Text style={[styles.label, styles.mt16]}>Start Time *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => setShowStartPicker(!showStartPicker)}>
+        <Pressable style={styles.dateTimeButton} onPress={() => {
+          setTempStartTime(startTime || today);
+          setShowStartPicker(!showStartPicker);
+        }}>
           <Text style={styles.dateTimeText}>{formatTime(startTime)}</Text>
         </Pressable>
         {showStartPicker && (
           <View style={styles.pickerContainer}>
             <DateTimePicker
-              value={startTime || today}
+              value={tempStartTime}
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               is24Hour={false}
@@ -354,7 +370,7 @@ export default function Create() {
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
-                    setStartTime(date);
+                    setTempStartTime(date);
                   }
                   if (event.type === 'dismissed') {
                     setShowStartPicker(false);
@@ -370,7 +386,10 @@ export default function Create() {
                 <Pressable onPress={() => setShowStartPicker(false)} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={() => setShowStartPicker(false)} style={styles.pickerAction}>
+                <Pressable onPress={() => {
+                  setStartTime(tempStartTime);
+                  setShowStartPicker(false);
+                }} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Done</Text>
                 </Pressable>
               </View>
@@ -379,13 +398,16 @@ export default function Create() {
         )}
 
         <Text style={[styles.label, styles.mt16]}>End Time *</Text>
-        <Pressable style={styles.dateTimeButton} onPress={() => setShowEndPicker(!showEndPicker)}>
+        <Pressable style={styles.dateTimeButton} onPress={() => {
+          setTempEndTime(endTime || today);
+          setShowEndPicker(!showEndPicker);
+        }}>
           <Text style={styles.dateTimeText}>{formatTime(endTime)}</Text>
         </Pressable>
         {showEndPicker && (
           <View style={styles.pickerContainer}>
             <DateTimePicker
-              value={endTime || today}
+              value={tempEndTime}
               mode="time"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               is24Hour={false}
@@ -393,7 +415,7 @@ export default function Create() {
               onChange={(event, date) => {
                 if (Platform.OS === 'ios') {
                   if (event.type === 'set' && date) {
-                    setEndTime(date);
+                    setTempEndTime(date);
                   }
                   if (event.type === 'dismissed') {
                     setShowEndPicker(false);
@@ -409,7 +431,10 @@ export default function Create() {
                 <Pressable onPress={() => setShowEndPicker(false)} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Cancel</Text>
                 </Pressable>
-                <Pressable onPress={() => setShowEndPicker(false)} style={styles.pickerAction}>
+                <Pressable onPress={() => {
+                  setEndTime(tempEndTime);
+                  setShowEndPicker(false);
+                }} style={styles.pickerAction}>
                   <Text style={styles.pickerActionText}>Done</Text>
                 </Pressable>
               </View>
@@ -590,34 +615,66 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     paddingTop: 60,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  backButton: { paddingVertical: 8 },
+  backButton: { paddingVertical: 8, paddingRight: 8 },
   backText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
-  title: { fontSize: 20, fontWeight: '800', color: '#333' },
-  section: { padding: 16, backgroundColor: 'white', marginTop: 8 },
-  label: { fontSize: 14, fontWeight: '600', color: '#333' },
+  title: { fontSize: 20, fontWeight: '800', color: '#333', flex: 1, textAlign: 'center' },
+  section: { 
+    padding: 20, 
+    backgroundColor: 'white', 
+    marginTop: 12, 
+    borderRadius: 12,
+    marginHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  label: { fontSize: 15, fontWeight: '700', color: '#333', marginBottom: 12 },
   mt12: { marginTop: 12 },
   mt16: { marginTop: 16 },
-  input: { borderWidth: 1, borderColor: '#E0E0E0', padding: 12, borderRadius: 8, fontSize: 16 },
-  textArea: { minHeight: 80, textAlignVertical: 'top' },
-  chipContainer: { flexDirection: 'row', gap: 8 },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F0F0F0', borderWidth: 1, borderColor: '#E0E0E0' },
-  chipSelected: { backgroundColor: '#FFC904', borderColor: '#FFC904' },
-  chipText: { fontSize: 14, color: '#666' },
-  chipTextSelected: { color: '#000000', fontWeight: '600' },
+  input: { 
+    borderWidth: 1.5, 
+    borderColor: '#E0E0E0', 
+    padding: 14, 
+    borderRadius: 12, 
+    fontSize: 16,
+    backgroundColor: '#FAFAFA',
+    color: '#333',
+  },
+  textArea: { minHeight: 100, textAlignVertical: 'top', paddingTop: 14 },
+  chipContainer: { flexDirection: 'row', gap: 10, marginBottom: 8 },
+  chip: { 
+    paddingHorizontal: 20, 
+    paddingVertical: 10, 
+    borderRadius: 24, 
+    backgroundColor: '#F5F5F5', 
+    borderWidth: 1.5, 
+    borderColor: '#E0E0E0',
+  },
+  chipSelected: { backgroundColor: '#FFC904', borderColor: '#FFC904', borderWidth: 2 },
+  chipText: { fontSize: 15, color: '#666', fontWeight: '500' },
+  chipTextSelected: { color: '#000000', fontWeight: '700' },
   dateTimeButton: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E0E0E0',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: '#FAFAFA',
   },
-  dateTimeText: { fontSize: 16, color: '#333' },
+  dateTimeText: { fontSize: 16, color: '#333', fontWeight: '500' },
   pickerContainer: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   pickerActions: { flexDirection: 'row', justifyContent: 'space-between', padding: 12, backgroundColor: '#F9F9F9' },
   pickerAction: { paddingHorizontal: 16, paddingVertical: 8 },
@@ -626,16 +683,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 12,
+    gap: 20,
+    marginTop: 16,
+    paddingVertical: 8,
   },
   counterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FFC904',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#FFC904',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   counterButtonDisabled: {
     backgroundColor: '#E0E0E0',
@@ -686,8 +749,18 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   toggleLabel: { fontSize: 16, color: '#333' },
-  buttonContainer: { padding: 16, paddingBottom: 32 },
-  submitButton: { backgroundColor: '#FFC904', padding: 16, borderRadius: 12, alignItems: 'center' },
+  buttonContainer: { padding: 16, paddingBottom: 40, marginTop: 8 },
+  submitButton: { 
+    backgroundColor: '#FFC904', 
+    padding: 18, 
+    borderRadius: 12, 
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   buttonDisabled: { opacity: 0.5 },
-  submitText: { color: '#000000', fontSize: 16, fontWeight: '600' },
+  submitText: { color: '#000000', fontSize: 17, fontWeight: '700' },
 });

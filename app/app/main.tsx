@@ -45,11 +45,23 @@ export default function Main() {
     if (session?.user) {
       supabase
         .from('profiles')
-        .select('name')
+        .select('name, email')
         .eq('id', session.user.id)
         .single()
         .then(({ data }) => {
-          if (data?.name) setUserName(data.name);
+          if (data) {
+            // If name is missing or empty but email exists, auto-generate from email
+            if ((!data.name || data.name.trim() === '') && data.email) {
+              const autoName = data.email.split('@')[0];
+              supabase
+                .from('profiles')
+                .update({ name: autoName })
+                .eq('id', session.user.id)
+                .then(() => setUserName(autoName));
+            } else if (data.name) {
+              setUserName(data.name);
+            }
+          }
         });
     }
   }, [session]);
@@ -134,36 +146,45 @@ export default function Main() {
           </View>
         ) : (
           <View style={styles.list}>
-            {filteredSessions.map((session) => (
+            {filteredSessions.map((sessionItem) => {
+              const isHost = sessionItem.host_id === session?.user?.id;
+              return (
               <Pressable
-                key={session.id}
+                key={sessionItem.id}
                 style={styles.card}
-                onPress={() => router.push(`/session/${session.id}`)}
+                onPress={() => router.push(`/session/${sessionItem.id}`)}
               >
-                <Text style={styles.cardTitle}>
-                  {makeTitle({
-                    sport: session.sport,
-                    custom_sport: session.custom_sport,
-                    address: session.address,
-                    starts_at: session.starts_at,
-                    ends_at: session.ends_at,
-                    // capacity: session.capacity,
-                    // equipment_needed: session.equipment_needed,
-                    // positions: session.positions,
-                  })}
-                </Text>
-                {session.notes && <Text style={styles.cardNotes}>{session.notes}</Text>}
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardTitle}>
+                    {makeTitle({
+                      sport: sessionItem.sport,
+                      custom_sport: sessionItem.custom_sport,
+                      address: sessionItem.address,
+                      starts_at: sessionItem.starts_at,
+                      ends_at: sessionItem.ends_at,
+                      // capacity: sessionItem.capacity,
+                      // equipment_needed: sessionItem.equipment_needed,
+                      // positions: sessionItem.positions,
+                    })}
+                  </Text>
+                  {isHost && (
+                    <View style={styles.hostBadge}>
+                      <Text style={styles.hostBadgeText}>👑 Your Session</Text>
+                    </View>
+                  )}
+                </View>
+                {sessionItem.notes && <Text style={styles.cardNotes}>{sessionItem.notes}</Text>}
                 <View style={styles.cardFooter}>
                   <Text style={styles.cardSpots}>
-                    {session.spots_left ?? 0} spots left
+                    {sessionItem.spots_left ?? 0} spots left
                   </Text>
                   <View style={styles.badgeRow}>
-                    {session.skill_target !== 'Any' && (
+                    {sessionItem.skill_target !== 'Any' && (
                       <View style={[styles.badge, styles.skillBadge]}>
-                        <Text style={styles.badgeText}>{getSkillName(session.skill_target)}</Text>
+                        <Text style={styles.badgeText}>{getSkillName(sessionItem.skill_target)}</Text>
                       </View>
                     )}
-                    {session.is_indoor && (
+                    {sessionItem.is_indoor && (
                       <View style={[styles.badge, styles.typeBadge]}>
                         <Text style={styles.badgeText}>Indoor</Text>
                       </View>
@@ -171,7 +192,8 @@ export default function Main() {
                   </View>
                 </View>
               </Pressable>
-            ))}
+            );
+            })}
           </View>
         )}
       </ScrollView>
@@ -247,7 +269,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  cardTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#333' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
+  cardTitle: { fontSize: 16, fontWeight: '600', flex: 1, marginBottom: 8, color: '#333' },
+  hostBadge: { 
+    backgroundColor: '#FFC904', 
+    paddingHorizontal: 10, 
+    paddingVertical: 4, 
+    borderRadius: 12, 
+    marginLeft: 8,
+    marginTop: -2,
+  },
+  hostBadgeText: { fontSize: 11, fontWeight: '700', color: '#000000' },
   cardNotes: { fontSize: 14, color: '#666', marginBottom: 12 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardSpots: { fontSize: 14, fontWeight: '600', color: '#FFC904' },

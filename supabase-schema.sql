@@ -91,6 +91,8 @@ ALTER TABLE saved_sessions ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist, then recreate them
 DROP POLICY IF EXISTS "Profiles are viewable by everyone" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Allow automatic profile creation" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 
 DROP POLICY IF EXISTS "Sessions are viewable by everyone" ON sessions;
 DROP POLICY IF EXISTS "Users can create sessions" ON sessions;
@@ -113,6 +115,8 @@ DROP POLICY IF EXISTS "Users can unsave sessions" ON saved_sessions;
 -- Profiles: Read all, update own
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Allow automatic profile creation" ON profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Sessions: Read all open, hosts can manage
 CREATE POLICY "Sessions are viewable by everyone" ON sessions FOR SELECT USING (true);
@@ -153,7 +157,8 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, name)
-  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)));
+  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)))
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

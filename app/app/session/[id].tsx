@@ -39,10 +39,23 @@ export default function SessionDetail() {
     if (!authSession?.user) return;
     const { data } = await supabase
       .from('profiles')
-      .select('name')
+      .select('name, email')
       .eq('id', authSession.user.id)
       .single();
-    setUserProfile(data);
+    
+    // If name is missing or empty but email exists, auto-generate from email
+    if ((!data?.name || data.name.trim() === '') && data?.email) {
+      const autoName = data.email.split('@')[0];
+      const { data: updatedData } = await supabase
+        .from('profiles')
+        .update({ name: autoName })
+        .eq('id', authSession.user.id)
+        .select('name, email')
+        .single();
+      setUserProfile(updatedData);
+    } else {
+      setUserProfile(data);
+    }
   };
 
   const fetchSession = async () => {
@@ -112,37 +125,40 @@ export default function SessionDetail() {
       return;
     }
 
-    // Check if profile is complete by fetching fresh data
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('name')
-      .eq('id', authSession.user.id)
-      .single();
-
-    if (!profileData?.name) {
-      Alert.alert(
-        'Complete Your Profile',
-        'You need to complete your profile before joining sessions. Please add your name.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Go to Profile', onPress: () => router.push('/profile-setup') }
-        ]
-      );
-      return;
-    }
-
     setJoining(true);
 
     try {
+      // Ensure profile exists before joining
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('id', authSession.user.id)
+        .maybeSingle();
+      
+      if (!profile) {
+        // Profile doesn't exist, create it
+        const autoName = authSession.user.email?.split('@')[0] || 'User';
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authSession.user.id,
+            email: authSession.user.email,
+            name: autoName,
+          });
+        
+        if (profileError) throw profileError;
+      }
+
       // Check if user is already a member
       const { data: existingMember } = await supabase
         .from('session_members')
-        .select('status')
+        .select('status, joined_at')
         .eq('session_id', id)
         .eq('user_id', authSession.user.id)
         .maybeSingle();
 
-      if (existingMember && existingMember.status === 'joined') {
+      // Only show error if truly joined, otherwise let them rejoin
+      if (existingMember?.status === 'joined') {
         Alert.alert('Already Joined', 'You are already a member of this session.');
         setJoining(false);
         return;
@@ -277,7 +293,7 @@ export default function SessionDetail() {
           <Text style={styles.backText}>← Back</Text>
         </Pressable>
         <Text style={styles.headerTitle}>Session Details</Text>
-        <View style={{ width: 60 }} />
+        <View style={{ width: 70 }} />
       </View>
       <ScrollView style={styles.scroll}>
 
@@ -397,6 +413,18 @@ export default function SessionDetail() {
           )}
         </View>
 
+        {/* Chat Button - Only for members */}
+        {(isJoined || isHost) && (
+          <View style={styles.buttonContainer}>
+            <Pressable
+              style={[styles.joinButton, styles.chatButton]}
+              onPress={() => router.push(`/session/${id}/chat`)}
+            >
+              <Text style={styles.chatText}>💬 View Chat</Text>
+            </Pressable>
+          </View>
+        )}
+
         <View style={styles.buttonContainer}>
           {isHost ? (
             <>
@@ -466,9 +494,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, 
     borderBottomColor: '#E0E0E0' 
   },
-  backButton: { paddingVertical: 8, paddingRight: 16 },
+  backButton: { paddingVertical: 12, paddingHorizontal: 8, zIndex: 1 },
   backText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: '#333', flex: 1 },
+  headerTitle: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    color: '#333',
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: -70, // Negative margin to center between buttons
+  },
   scroll: { flex: 1 },
   content: { padding: 16 },
   title: { fontSize: 20, fontWeight: '700', marginBottom: 24, color: '#333' },
@@ -480,11 +515,13 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 12, fontWeight: '600', color: '#000000' },
   buttonContainer: { padding: 16 },
   joinButton: { backgroundColor: '#FFC904', padding: 16, borderRadius: 12, alignItems: 'center' },
+  chatButton: { backgroundColor: '#4A5568' },
   editButton: { backgroundColor: '#FFC904' },
   leaveButton: { backgroundColor: '#FF3B30' },
   deleteButton: { backgroundColor: '#FF3B30' },
   buttonDisabled: { opacity: 0.5 },
   joinText: { color: '#000000', fontSize: 16, fontWeight: '600' },
+  chatText: { color: 'white', fontSize: 16, fontWeight: '600' },
   destructiveText: { color: 'white', fontSize: 16, fontWeight: '600' },
   errorText: { color: '#FF3B30', fontSize: 16 },
   emptyText: { fontSize: 14, color: '#999', fontStyle: 'italic' },

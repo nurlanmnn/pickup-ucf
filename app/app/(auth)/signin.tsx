@@ -16,15 +16,18 @@ export default function SignIn() {
       return;
     }
     setLoading(true);
+    
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { 
         shouldCreateUser: true
       }
     });
+    
     setLoading(false);
-    if (error) Alert.alert('Error', error.message);
-    else {
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
       Alert.alert('Check Email', 'OTP code sent to your @ucf.edu inbox.');
       setStep('code');
     }
@@ -36,15 +39,17 @@ export default function SignIn() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
+    const { error, data } = await supabase.auth.verifyOtp({
       email,
       token: code,
       type: 'email'
     });
+    
     setLoading(false);
+    
     if (error) {
       Alert.alert('Error', error.message);
-    } else {
+    } else if (data?.user) {
       // Successfully authenticated, redirect to feed
       router.replace('/main');
     }

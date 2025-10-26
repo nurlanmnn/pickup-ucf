@@ -17,7 +17,7 @@ export default function ProfileSetup() {
         .from('profiles')
         .select('name')
         .eq('id', session.user.id)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           if (data?.name) setName(data.name);
           setFetching(false);
