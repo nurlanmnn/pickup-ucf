@@ -53,7 +53,7 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#FFC904" />
       </View>
     );
   }
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
   },
   backButton: { paddingVertical: 8, paddingRight: 16 },
-  backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+  backText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: '#333', flex: 1 },
   content: { padding: 16 },
   profileSection: {
@@ -133,23 +133,23 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFC904',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
-  avatarText: { fontSize: 32, fontWeight: '700', color: 'white' },
+  avatarText: { fontSize: 32, fontWeight: '700', color: '#000000' },
   name: { fontSize: 24, fontWeight: '700', color: '#333', marginBottom: 4 },
   email: { fontSize: 14, color: '#666' },
   section: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12, color: '#007AFF' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12, color: '#FFC904' },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFC904',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: '#000000', fontSize: 16, fontWeight: '600' },
   logoutButton: { backgroundColor: '#FF3B30' },
   logoutText: { color: 'white', fontSize: 16, fontWeight: '600' },
 });

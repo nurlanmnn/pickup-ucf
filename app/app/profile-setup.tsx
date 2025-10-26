@@ -85,7 +85,7 @@ export default function ProfileSetup() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color="#000000" />
             ) : (
               <Text style={styles.buttonText}>Save</Text>
             )}
@@ -98,7 +98,7 @@ export default function ProfileSetup() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'white' },
-  title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8, color: '#007AFF' },
+  title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8, color: '#FFC904' },
   subtitle: { fontSize: 16, textAlign: 'center', marginBottom: 48, color: '#666' },
   form: { gap: 24 },
   label: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 8 },
@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
   buttonRow: { flexDirection: 'row', gap: 12 },
   button: { flex: 1, padding: 16, borderRadius: 12, alignItems: 'center' },
   cancelButton: { backgroundColor: '#F5F5F5', borderWidth: 1, borderColor: '#E0E0E0' },
-  continueButton: { backgroundColor: '#007AFF' },
+  continueButton: { backgroundColor: '#FFC904' },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: '#000000', fontSize: 16, fontWeight: '600' },
   cancelText: { color: '#333', fontSize: 16, fontWeight: '600' },
 });

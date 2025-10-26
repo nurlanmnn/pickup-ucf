@@ -254,7 +254,7 @@ export default function SessionDetail() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#FFC904" />
       </View>
     );
   }
@@ -415,7 +415,7 @@ export default function SessionDetail() {
                 style={[styles.joinButton, styles.deleteButton]}
                 onPress={handleDelete}
               >
-                <Text style={styles.joinText}>Delete Session</Text>
+                <Text style={styles.destructiveText}>Delete Session</Text>
               </Pressable>
             </>
           ) : isJoined ? (
@@ -427,7 +427,7 @@ export default function SessionDetail() {
               {leaving ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text style={styles.joinText}>Leave Session</Text>
+                <Text style={styles.destructiveText}>Leave Session</Text>
               )}
             </Pressable>
           ) : (
@@ -437,7 +437,7 @@ export default function SessionDetail() {
               disabled={joining || leaving || spotsLeft <= 0}
             >
               {joining ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="#000000" />
               ) : (
                 <Text style={styles.joinText}>
                   {spotsLeft > 0 ? 'Join Session' : 'Full'}
@@ -467,29 +467,30 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0' 
   },
   backButton: { paddingVertical: 8, paddingRight: 16 },
-  backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+  backText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: '#333', flex: 1 },
   scroll: { flex: 1 },
   content: { padding: 16 },
   title: { fontSize: 20, fontWeight: '700', marginBottom: 24, color: '#333' },
   section: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8, color: '#007AFF' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8, color: '#FFC904' },
   sectionText: { fontSize: 14, color: '#666', lineHeight: 20 },
   chipContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { backgroundColor: '#E3F2FD', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
-  chipText: { fontSize: 12, fontWeight: '600', color: '#007AFF' },
+  chip: { backgroundColor: '#FFFCE8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
+  chipText: { fontSize: 12, fontWeight: '600', color: '#000000' },
   buttonContainer: { padding: 16 },
-  joinButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 12, alignItems: 'center' },
-  editButton: { backgroundColor: '#34C759' },
+  joinButton: { backgroundColor: '#FFC904', padding: 16, borderRadius: 12, alignItems: 'center' },
+  editButton: { backgroundColor: '#FFC904' },
   leaveButton: { backgroundColor: '#FF3B30' },
   deleteButton: { backgroundColor: '#FF3B30' },
   buttonDisabled: { opacity: 0.5 },
-  joinText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  joinText: { color: '#000000', fontSize: 16, fontWeight: '600' },
+  destructiveText: { color: 'white', fontSize: 16, fontWeight: '600' },
   errorText: { color: '#FF3B30', fontSize: 16 },
   emptyText: { fontSize: 14, color: '#999', fontStyle: 'italic' },
   memberRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
-  memberAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#007AFF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  memberInitial: { color: 'white', fontSize: 16, fontWeight: '700' },
+  memberAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFC904', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  memberInitial: { color: '#000000', fontSize: 16, fontWeight: '700' },
   memberInfo: { flex: 1 },
   memberName: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 2 },
   memberEmail: { fontSize: 12, color: '#999' },

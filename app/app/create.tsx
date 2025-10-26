@@ -427,7 +427,7 @@ export default function Create() {
           <Switch
             value={useCustomLocation}
             onValueChange={setUseCustomLocation}
-            trackColor={{ false: '#E0E0E0', true: '#007AFF' }}
+            trackColor={{ false: '#E0E0E0', true: '#FFC904' }}
             thumbColor={useCustomLocation ? 'white' : '#f4f3f4'}
           />
         </View>
@@ -539,7 +539,7 @@ export default function Create() {
           <Switch
             value={equipmentNeeded}
             onValueChange={setEquipmentNeeded}
-            trackColor={{ false: '#E0E0E0', true: '#007AFF' }}
+            trackColor={{ false: '#E0E0E0', true: '#FFC904' }}
             thumbColor={equipmentNeeded ? 'white' : '#f4f3f4'}
           />
         </View>
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
   },
   backButton: { paddingVertical: 8 },
-  backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+  backText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
   title: { fontSize: 20, fontWeight: '800', color: '#333' },
   section: { padding: 16, backgroundColor: 'white', marginTop: 8 },
   label: { fontSize: 14, fontWeight: '600', color: '#333' },
@@ -607,9 +607,9 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 80, textAlignVertical: 'top' },
   chipContainer: { flexDirection: 'row', gap: 8 },
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F0F0F0', borderWidth: 1, borderColor: '#E0E0E0' },
-  chipSelected: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  chipSelected: { backgroundColor: '#FFC904', borderColor: '#FFC904' },
   chipText: { fontSize: 14, color: '#666' },
-  chipTextSelected: { color: 'white', fontWeight: '600' },
+  chipTextSelected: { color: '#000000', fontWeight: '600' },
   dateTimeButton: {
     borderWidth: 1,
     borderColor: '#E0E0E0',
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   pickerContainer: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   pickerActions: { flexDirection: 'row', justifyContent: 'space-between', padding: 12, backgroundColor: '#F9F9F9' },
   pickerAction: { paddingHorizontal: 16, paddingVertical: 8 },
-  pickerActionText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+  pickerActionText: { fontSize: 16, color: '#FFC904', fontWeight: '600' },
   counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFC904',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   counterText: {
     fontSize: 24,
     fontWeight: '600',
-    color: 'white',
+    color: '#000000',
   },
   counterTextDisabled: {
     color: '#999',
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     minWidth: 60,
     borderWidth: 1,
-    borderColor: '#007AFF',
+    borderColor: '#FFC904',
     borderRadius: 8,
     padding: 8,
   },
@@ -672,11 +672,11 @@ const styles = StyleSheet.create({
   doneButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFC904',
     borderRadius: 8,
   },
   doneButtonText: {
-    color: 'white',
+    color: '#000000',
     fontWeight: '600',
   },
   toggleRow: {
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
   },
   toggleLabel: { fontSize: 16, color: '#333' },
   buttonContainer: { padding: 16, paddingBottom: 32 },
-  submitButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 12, alignItems: 'center' },
+  submitButton: { backgroundColor: '#FFC904', padding: 16, borderRadius: 12, alignItems: 'center' },
   buttonDisabled: { opacity: 0.5 },
-  submitText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  submitText: { color: '#000000', fontSize: 16, fontWeight: '600' },
 });
