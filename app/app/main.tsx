@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, ActivityIndicator, TextInput } from 'react-native';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { useFeed } from '../hooks/useFeed';
 import { useSession } from '../hooks/useSession';
@@ -22,6 +22,24 @@ export default function Main() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [userName, setUserName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter sessions based on search query
+  const filteredSessions = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return sessions;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return sessions.filter((sessionItem) => {
+      // Get sport name for matching
+      const sportName = (sessionItem.sport || '').toLowerCase();
+      const customSportName = (sessionItem.custom_sport || '').toLowerCase();
+      
+      // Check if sport name contains the search query
+      return sportName.includes(query) || customSportName.includes(query);
+    });
+  }, [sessions, searchQuery]);
 
   useEffect(() => {
     if (session?.user) {
@@ -77,21 +95,46 @@ export default function Main() {
         </Pressable>
       </View>
 
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search sports (e.g., football, tennis)"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#999"
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </Pressable>
+        )}
+      </View>
+
       <ScrollView
         style={styles.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {sessions.length === 0 ? (
+        {filteredSessions.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No sessions yet</Text>
-            <Text style={styles.emptySubtitle}>Create the first one!</Text>
-            <Pressable onPress={() => router.push('/create')} style={styles.createFirstButton}>
-              <Text style={styles.createFirstText}>+ Create Session</Text>
-            </Pressable>
+            {searchQuery ? (
+              <>
+                <Text style={styles.emptyTitle}>No matching sessions</Text>
+                <Text style={styles.emptySubtitle}>Try a different search term</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.emptyTitle}>No sessions yet</Text>
+                <Text style={styles.emptySubtitle}>Create the first one!</Text>
+                <Pressable onPress={() => router.push('/create')} style={styles.createFirstButton}>
+                  <Text style={styles.createFirstText}>+ Create Session</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         ) : (
           <View style={styles.list}>
-            {sessions.map((session) => (
+            {filteredSessions.map((session) => (
               <Pressable
                 key={session.id}
                 style={styles.card}
@@ -148,6 +191,36 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+  },
+  searchContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  clearButton: {
+    marginLeft: 8,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#666',
+    fontWeight: '600',
   },
   profileButton: { marginRight: 8 },
   profileAvatar: {
