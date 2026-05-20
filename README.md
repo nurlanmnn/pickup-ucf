@@ -22,7 +22,10 @@ supabase db push
 supabase db seed   # if using seed.sql via config
 ```
 
-Optional: migration `20260519200000_sessions_custom_sport_name.sql` adds a dedicated `custom_sport_name` column on `sessions`. The app works with or without it; if you apply it, reload the PostgREST schema (**Database → API → Reload schema**) so the API cache matches Postgres.
+Optional migrations (run `supabase db push`, then reload PostgREST schema under **Database → API**):
+
+- `20260519200000_sessions_custom_sport_name.sql` — dedicated `custom_sport_name` on `sessions`
+- `20260520120000_sessions_custom_coordinates.sql` — `custom_lat` / `custom_lng` for map-picked custom locations
 
 3. Enable **Email + Password** and **Confirm email** in Authentication.
 4. Deploy the email hook:

@@ -38,6 +38,13 @@ struct DiscoverView: View {
             .navigationDestination(for: UUID.self) { sessionId in
                 SessionDetailView(sessionId: sessionId)
             }
+            .task(id: appState.sessionDetailDeepLink) {
+                guard appState.sessionDetailDeepLinkTarget == .discover,
+                      let id = appState.sessionDetailDeepLink else { return }
+                navigationPath = NavigationPath()
+                navigationPath.append(id)
+                appState.clearSessionDetailDeepLink()
+            }
         }
     }
 

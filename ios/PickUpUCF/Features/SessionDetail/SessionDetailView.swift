@@ -36,6 +36,22 @@ struct SessionDetailView: View {
         .background(AppColor.background(colorScheme))
         .navigationTitle("Session")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if case .loaded(let session) = viewModel.session {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(
+                        item: SessionShareLink.message(for: session),
+                        preview: SharePreview(
+                            "\(session.sportDisplayName) at \(session.locationName)",
+                            image: Image(systemName: session.sport.systemImage)
+                        )
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .accessibilityLabel("Share session")
+                }
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             if case .loaded = viewModel.session {
                 bottomBar
@@ -93,7 +109,8 @@ struct SessionDetailView: View {
     private func sessionContent(_ session: PickupSession) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.l) {
-                mapPlaceholder(session)
+                SessionLocationMap(session: session)
+                    .padding(.horizontal, Spacing.m)
 
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
@@ -122,6 +139,8 @@ struct SessionDetailView: View {
                             .font(AppFont.body())
                             .foregroundStyle(AppColor.textSecondary(colorScheme))
                     }
+
+                    chatEntry(session)
                 }
                 .foregroundStyle(AppColor.textPrimary(colorScheme))
                 .padding(.horizontal, Spacing.m)
@@ -135,21 +154,21 @@ struct SessionDetailView: View {
         }
     }
 
-    private func mapPlaceholder(_ session: PickupSession) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(AppColor.surface(colorScheme))
-                .frame(height: 160)
-            VStack(spacing: Spacing.s) {
-                Image(systemName: "map")
-                    .font(.largeTitle)
+    @ViewBuilder
+    private func chatEntry(_ session: PickupSession) -> some View {
+        if viewModel.canAccessChat, let userId = appState.session?.userId {
+            NavigationLink {
+                ChatView(sessionId: session.id, currentUserId: userId)
+            } label: {
+                Label("Session chat", systemImage: "bubble.left.and.bubble.right")
+                    .font(AppFont.headline(.semibold))
                     .foregroundStyle(AppColor.gold)
-                Text(session.locationName)
-                    .font(AppFont.caption())
-                    .foregroundStyle(AppColor.textSecondary(colorScheme))
             }
+            .padding(.top, Spacing.s)
+        } else if appState.isAuthenticated {
+            FormFieldHint(text: "Join this session to chat with other players.")
+                .padding(.top, Spacing.s)
         }
-        .padding(.horizontal, Spacing.m)
     }
 
     @ViewBuilder

@@ -33,6 +33,15 @@ struct MainTabView: View {
                 .tag(3)
         }
         .tint(AppColor.gold)
+        .onChange(of: appState.sessionDetailDeepLink) { _, id in
+            guard id != nil else { return }
+            switch appState.sessionDetailDeepLinkTarget {
+            case .discover:
+                selectedTab = 0
+            case .myGames:
+                selectedTab = 1
+            }
+        }
         .onChange(of: selectedTab) { _, newValue in
             if newValue == 2 {
                 showCreate = true
@@ -43,9 +52,12 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showCreate) {
             NavigationStack {
-                CreateSessionView { _ in
+                CreateSessionView { session in
                     showCreate = false
+                    appState.presentSessionDetail(id: session.id, on: .myGames)
                     appState.touchSessionFeedRefresh()
+                    previousNonCreateTab = 1
+                    selectedTab = 1
                 }
             }
             .presentationDetents([.large])

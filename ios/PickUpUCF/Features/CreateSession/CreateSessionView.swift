@@ -65,7 +65,7 @@ struct CreateSessionView: View {
                 Text("When")
             }
 
-            Section("Where") {
+            Section {
                 Picker("Venue", selection: $vm.venuePickerOptionId) {
                     Text("Custom location").tag(CreateSessionViewModel.customVenuePickerTag)
                     ForEach(vm.venues) { venue in
@@ -73,9 +73,20 @@ struct CreateSessionView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .onChange(of: vm.venuePickerOptionId) { _, newValue in
+                    if newValue != CreateSessionViewModel.customVenuePickerTag {
+                        vm.customLocationSelection = nil
+                    }
+                }
 
                 if vm.showsCustomLocationField {
-                    TextField("Describe where you’re playing", text: $vm.customLocation)
+                    CustomLocationPickerRow(selection: $vm.customLocationSelection)
+                }
+            } header: {
+                Text("Where")
+            } footer: {
+                if vm.showsCustomLocationField {
+                    FormFieldHint(text: "Search near campus or tap the map to drop a pin.")
                 }
             }
 
@@ -110,7 +121,7 @@ struct CreateSessionView: View {
                 PrimaryButton(
                     title: "Create session",
                     isLoading: vm.isLoading,
-                    isEnabled: vm.canSubmit && !vm.isLoading
+                    isEnabled: !vm.isLoading
                 ) {
                     Task { await submit() }
                 }

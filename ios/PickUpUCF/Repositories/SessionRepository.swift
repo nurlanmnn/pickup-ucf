@@ -6,7 +6,7 @@ struct CreateSessionInput {
     /// When `sport` is `.other`, the user-visible sport name (trimmed, max 40 chars in repository).
     let customSportName: String?
     let venueId: UUID?
-    let customLocation: String?
+    let customLocation: CustomLocationSelection?
     let startsAt: Date
     let durationMinutes: Int
     let capacity: Int
@@ -18,7 +18,7 @@ struct UpdateSessionInput {
     let sport: SportType
     let customSportName: String?
     let venueId: UUID?
-    let customLocation: String?
+    let customLocation: CustomLocationSelection?
     let startsAt: Date
     let durationMinutes: Int
     let capacity: Int
@@ -171,13 +171,7 @@ final class SessionRepository: SessionRepositoryProtocol {
             to: input.startsAt
         ) ?? input.startsAt
 
-        let trimmedCustom = input.customLocation?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let customLocation = (trimmedCustom?.isEmpty == false) ? trimmedCustom : nil
-
-        guard input.venueId != nil || customLocation != nil else {
-            throw SessionRepositoryError.locationRequired
-        }
+        let resolved = try Self.resolveLocation(venueId: input.venueId, custom: input.customLocation)
 
         let normalizedOther = Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
         if input.sport == .other, normalizedOther == nil {
@@ -193,8 +187,10 @@ final class SessionRepository: SessionRepositoryProtocol {
         let payload = SessionInsert(
             hostId: userId,
             sport: input.sport,
-            venueId: input.venueId,
-            customLocation: customLocation,
+            venueId: resolved.venueId,
+            customLocation: resolved.customLocation,
+            customLat: resolved.customLat,
+            customLng: resolved.customLng,
             startsAt: input.startsAt,
             endsAt: endsAt,
             capacity: input.capacity,
@@ -229,13 +225,7 @@ final class SessionRepository: SessionRepositoryProtocol {
             to: input.startsAt
         ) ?? input.startsAt
 
-        let trimmedCustom = input.customLocation?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let customLocation = (trimmedCustom?.isEmpty == false) ? trimmedCustom : nil
-
-        guard input.venueId != nil || customLocation != nil else {
-            throw SessionRepositoryError.locationRequired
-        }
+        let resolved = try Self.resolveLocation(venueId: input.venueId, custom: input.customLocation)
 
         let normalizedOther = Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
         if input.sport == .other, normalizedOther == nil {
@@ -250,8 +240,10 @@ final class SessionRepository: SessionRepositoryProtocol {
 
         let payload = SessionRowPatch(
             sport: input.sport,
-            venueId: input.venueId,
-            customLocation: customLocation,
+            venueId: resolved.venueId,
+            customLocation: resolved.customLocation,
+            customLat: resolved.customLat,
+            customLng: resolved.customLng,
             startsAt: input.startsAt,
             endsAt: endsAt,
             capacity: input.capacity,
@@ -301,6 +293,7 @@ final class SessionRepository: SessionRepositoryProtocol {
 
 enum SessionRepositoryError: LocalizedError {
     case locationRequired
+    case customLocationPinRequired
     case scheduleTooFarAhead
     case scheduleInPast
     case capacityBelowSignups
@@ -309,7 +302,9 @@ enum SessionRepositoryError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .locationRequired:
-            return "Choose a venue or enter a custom location."
+            return "Choose a venue or pick a custom location on the map."
+        case .customLocationPinRequired:
+            return "Search on the map and choose where you're playing."
         case .scheduleTooFarAhead:
             return "Sessions can only be scheduled up to 48 hours ahead."
         case .scheduleInPast:
@@ -322,10 +317,51 @@ enum SessionRepositoryError: LocalizedError {
     }
 }
 
+private struct ResolvedSessionLocation {
+    let venueId: UUID?
+    let customLocation: String?
+    let customLat: Double?
+    let customLng: Double?
+}
+
+private extension SessionRepository {
+    static func resolveLocation(
+        venueId: UUID?,
+        custom: CustomLocationSelection?
+    ) throws -> ResolvedSessionLocation {
+        if let venueId {
+            return ResolvedSessionLocation(
+                venueId: venueId,
+                customLocation: nil,
+                customLat: nil,
+                customLng: nil
+            )
+        }
+
+        guard let custom else {
+            throw SessionRepositoryError.locationRequired
+        }
+
+        let label = custom.label.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !label.isEmpty else {
+            throw SessionRepositoryError.customLocationPinRequired
+        }
+
+        return ResolvedSessionLocation(
+            venueId: nil,
+            customLocation: label,
+            customLat: custom.latitude,
+            customLng: custom.longitude
+        )
+    }
+}
+
 private struct SessionRowPatch: Encodable {
     let sport: SportType
     let venueId: UUID?
     let customLocation: String?
+    let customLat: Double?
+    let customLng: Double?
     let startsAt: Date
     let endsAt: Date
     let capacity: Int
@@ -336,6 +372,8 @@ private struct SessionRowPatch: Encodable {
         case sport
         case venueId = "venue_id"
         case customLocation = "custom_location"
+        case customLat = "custom_lat"
+        case customLng = "custom_lng"
         case startsAt = "starts_at"
         case endsAt = "ends_at"
         case capacity

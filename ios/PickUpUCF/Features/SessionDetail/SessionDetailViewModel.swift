@@ -179,4 +179,14 @@ final class SessionDetailViewModel {
     var isLeaveAction: Bool {
         participantStatus == .joined || participantStatus == .waitlist
     }
+
+    var canAccessChat: Bool {
+        if isHost { return true }
+        switch participantStatus {
+        case .joined, .waitlist:
+            return true
+        case .left, .none:
+            return false
+        }
+    }
 }

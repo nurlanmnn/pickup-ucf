@@ -39,10 +39,15 @@ struct PickUpUCFApp: App {
                     appState.showError(error)
                 }
             }
-        case .session:
-            break
+        case .session(let id):
+            appState.queueSessionDeepLink(id: id)
         }
     }
+}
+
+enum SessionDetailDeepLinkTarget {
+    case discover
+    case myGames
 }
 
 @Observable
@@ -55,6 +60,11 @@ final class AppState {
     private(set) var profileRefreshNonce = 0
     /// Increment so Discover / My Games reload after creating or editing sessions.
     private(set) var sessionFeedRefreshNonce = 0
+    /// Pushes `SessionDetailView` on Discover or My Games (see `sessionDetailDeepLinkTarget`).
+    var sessionDetailDeepLink: UUID?
+    var sessionDetailDeepLinkTarget: SessionDetailDeepLinkTarget = .discover
+    /// Opened via `pickupucf://session/…` before the user signed in.
+    var pendingSessionDeepLink: UUID?
 
     var isAuthenticated: Bool {
         session?.isEmailConfirmed == true
@@ -66,6 +76,29 @@ final class AppState {
 
     func touchSessionFeedRefresh() {
         sessionFeedRefreshNonce += 1
+    }
+
+    func presentSessionDetail(id: UUID, on target: SessionDetailDeepLinkTarget) {
+        sessionDetailDeepLink = id
+        sessionDetailDeepLinkTarget = target
+    }
+
+    func clearSessionDetailDeepLink() {
+        sessionDetailDeepLink = nil
+    }
+
+    func queueSessionDeepLink(id: UUID) {
+        if isAuthenticated {
+            presentSessionDetail(id: id, on: .discover)
+        } else {
+            pendingSessionDeepLink = id
+        }
+    }
+
+    func consumePendingSessionDeepLinkIfNeeded() {
+        guard let id = pendingSessionDeepLink, isAuthenticated else { return }
+        pendingSessionDeepLink = nil
+        presentSessionDetail(id: id, on: .discover)
     }
 
     func showError(_ error: Error) {

@@ -43,6 +43,8 @@ struct PickupSession: Codable, Identifiable, Equatable {
     var customSportName: String?
     var venueId: UUID?
     var customLocation: String?
+    var customLat: Double?
+    var customLng: Double?
     let startsAt: Date
     let endsAt: Date
     let capacity: Int
@@ -60,6 +62,8 @@ struct PickupSession: Codable, Identifiable, Equatable {
         case customSportName = "custom_sport_name"
         case venueId = "venue_id"
         case customLocation = "custom_location"
+        case customLat = "custom_lat"
+        case customLng = "custom_lng"
         case startsAt = "starts_at"
         case endsAt = "ends_at"
         case capacity
@@ -112,6 +116,8 @@ struct SessionInsert: Encodable {
     let sport: SportType
     let venueId: UUID?
     let customLocation: String?
+    let customLat: Double?
+    let customLng: Double?
     let startsAt: Date
     let endsAt: Date
     let capacity: Int
@@ -124,6 +130,8 @@ struct SessionInsert: Encodable {
         case sport
         case venueId = "venue_id"
         case customLocation = "custom_location"
+        case customLat = "custom_lat"
+        case customLng = "custom_lng"
         case startsAt = "starts_at"
         case endsAt = "ends_at"
         case capacity

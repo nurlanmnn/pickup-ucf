@@ -10,5 +10,6 @@ enum AuthenticatedSessionCoordinator {
         } catch {
             appState.showError(error)
         }
+        appState.consumePendingSessionDeepLinkIfNeeded()
     }
 }

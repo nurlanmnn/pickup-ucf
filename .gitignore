@@ -1,4 +1,5 @@
 # Xcode
+ios/build/
 ios/DerivedData/
 ios/*.xcodeproj/xcuserdata/
 ios/*.xcworkspace/xcuserdata/

@@ -72,7 +72,7 @@ struct EditSessionView: View {
                 FormFieldHint(text: "15–300 minutes. Type a number or use the stepper.")
             }
 
-            Section("Where") {
+            Section {
                 Picker("Venue", selection: $vm.venuePickerOptionId) {
                     Text("Custom location").tag(EditSessionViewModel.customVenuePickerTag)
                     ForEach(vm.venues) { venue in
@@ -80,9 +80,20 @@ struct EditSessionView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .onChange(of: vm.venuePickerOptionId) { _, newValue in
+                    if newValue != EditSessionViewModel.customVenuePickerTag {
+                        vm.customLocationSelection = nil
+                    }
+                }
 
                 if vm.showsCustomLocationField {
-                    TextField("Describe where you’re playing", text: $vm.customLocation)
+                    CustomLocationPickerRow(selection: $vm.customLocationSelection)
+                }
+            } header: {
+                Text("Where")
+            } footer: {
+                if vm.showsCustomLocationField {
+                    FormFieldHint(text: "Search near campus or tap the map to drop a pin.")
                 }
             }
 
@@ -144,6 +155,7 @@ struct EditSessionView: View {
         }
         .task {
             await viewModel.loadVenues()
+            await viewModel.hydrateCustomLocationIfNeeded()
         }
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: focusedNumeric) { _, newValue in

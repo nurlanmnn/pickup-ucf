@@ -11,7 +11,7 @@ final class EditSessionViewModel {
     var sport: SportType = .basketball
     var customSportName = ""
     var venuePickerOptionId: String = EditSessionViewModel.customVenuePickerTag
-    var customLocation = ""
+    var customLocationSelection: CustomLocationSelection?
     var startsAt = Date()
 
     var durationMinutes = 90
@@ -24,6 +24,8 @@ final class EditSessionViewModel {
     var venues: [Venue] = []
     var errorMessage: String?
     var isLoading = false
+
+    private var pendingCustomLocationLabel: String?
 
     private let repository: SessionRepositoryProtocol
 
@@ -49,8 +51,7 @@ final class EditSessionViewModel {
         if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return false
         }
-        let hasLocation = selectedVenueId != nil
-            || !customLocation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasLocation = selectedVenueId != nil || customLocationSelection != nil
         guard hasLocation else { return false }
         return validateSchedule() == nil
     }
@@ -67,6 +68,20 @@ final class EditSessionViewModel {
             capacity = min(50, max(minimumCapacity, raw))
         }
         capacityText = "\(capacity)"
+    }
+
+    @MainActor
+    func hydrateCustomLocationIfNeeded() async {
+        guard customLocationSelection == nil,
+              let label = pendingCustomLocationLabel else { return }
+        if let hydrated = await LocationGeocoding.selectionForExistingSession(
+            label: label,
+            latitude: nil,
+            longitude: nil
+        ) {
+            customLocationSelection = hydrated
+            pendingCustomLocationLabel = nil
+        }
     }
 
     @MainActor
@@ -98,8 +113,8 @@ final class EditSessionViewModel {
             errorMessage = scheduleError
             return nil
         }
-        if selectedVenueId == nil && customLocation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errorMessage = SessionRepositoryError.locationRequired.localizedDescription
+        if selectedVenueId == nil && customLocationSelection == nil {
+            errorMessage = SessionRepositoryError.customLocationPinRequired.localizedDescription
             return nil
         }
         if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -114,7 +129,7 @@ final class EditSessionViewModel {
             sport: sport,
             customSportName: sport == .other ? customSportName : nil,
             venueId: selectedVenueId,
-            customLocation: customLocation,
+            customLocation: customLocationSelection,
             startsAt: startsAt,
             durationMinutes: durationMinutes,
             capacity: capacity,
@@ -143,7 +158,26 @@ final class EditSessionViewModel {
         } else {
             venuePickerOptionId = Self.customVenuePickerTag
         }
-        customLocation = session.customLocation ?? ""
+        if session.venueId == nil {
+            let label = session.customLocation ?? ""
+            if let lat = session.customLat, let lng = session.customLng {
+                customLocationSelection = CustomLocationSelection(
+                    label: label.isEmpty ? "Selected location" : label,
+                    latitude: lat,
+                    longitude: lng
+                )
+                pendingCustomLocationLabel = nil
+            } else if !label.isEmpty {
+                customLocationSelection = nil
+                pendingCustomLocationLabel = label
+            } else {
+                customLocationSelection = nil
+                pendingCustomLocationLabel = nil
+            }
+        } else {
+            customLocationSelection = nil
+            pendingCustomLocationLabel = nil
+        }
         startsAt = session.startsAt
         let mins = Calendar.current.dateComponents([.minute], from: session.startsAt, to: session.endsAt).minute ?? 90
         durationMinutes = min(300, max(15, mins))
