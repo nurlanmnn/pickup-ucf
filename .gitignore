@@ -1,0 +1,21 @@
+# Xcode
+ios/DerivedData/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcworkspace/xcuserdata/
+*.xcuserstate
+ios/Config.xcconfig
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# Secrets
+.env
+.env.local
+*.pem
+
+# macOS
+.DS_Store
+
+# XcodeGen binary (optional local tool)
+ios/xcodegen

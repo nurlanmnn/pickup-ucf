@@ -1,0 +1,349 @@
+{
+  "" : {
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCF-primary.dia",
+    "emit-module-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCF-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCF-primary-emit-module.dia",
+    "pch" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCF-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCF-primary.swiftdeps"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/App/PickUpUCFApp.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PickUpUCFApp~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/App/RootView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/RootView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/AppConfig.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AppConfig~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/DeepLinkRouter.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeepLinkRouter~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/SupabaseManager.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SupabaseManager~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/Validators/EmailDomainValidator.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmailDomainValidator~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/Validators/PasswordValidator.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PasswordValidator~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Core/Validators/UsernameValidator.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/UsernameValidator~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Colors.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Colors~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Components/EmptyStateView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EmptyStateView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Components/ErrorBanner.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ErrorBanner~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Components/PrimaryButton.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/PrimaryButton~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Components/SecondaryButton.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SecondaryButton~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Keyboard/FormKeyboardToolbar.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/FormKeyboardToolbar~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Keyboard/KeyboardDismissModifier.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/KeyboardDismissModifier~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Loadable.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Loadable~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Spacing.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Spacing~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/DesignSystem/Typography.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/Typography~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/ForgotPasswordView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ForgotPasswordView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/SignInView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/SignInViewModel.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignInViewModel~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/SignUpView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/SignUpViewModel.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SignUpViewModel~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/VerifyEmailView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/VerifyEmailView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Auth/WelcomeView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/WelcomeView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Discover/DiscoverView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DiscoverView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Main/MainTabView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/MainTabView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Profile/ChangePasswordView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ChangePasswordView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Profile/DeleteAccountView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/DeleteAccountView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Profile/EditUsernameView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/EditUsernameView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Profile/ProfileSettingsView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileSettingsView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Features/Profile/ProfileView.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/ProfileView~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Models/SportType.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/SportType~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/pickup-ucf/ios/PickUpUCF/Repositories/AuthRepository.swift" : {
+    "const-values" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.d",
+    "diagnostics" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.dia",
+    "index-unit-output-path" : "/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.o",
+    "llvm-bc" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.bc",
+    "object" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/pickup-ucf/ios/build/PickUpUCF.build/Debug-iphonesimulator/PickUpUCF.build/Objects-normal/arm64/AuthRepository~partial.swiftmodule"
+  }
+}

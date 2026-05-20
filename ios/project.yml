@@ -1,0 +1,72 @@
+name: PickUpUCF
+options:
+  bundleIdPrefix: edu.ucf
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.21.0
+targets:
+  PickUpUCF:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCF
+      - path: Config.xcconfig
+        buildPhase: none
+      - path: Config.xcconfig.example
+        buildPhase: none
+    configFiles:
+      Debug: Config.xcconfig
+      Release: Config.xcconfig
+    info:
+      path: PickUpUCF/Info.plist
+      properties:
+        CFBundleDisplayName: PickUp UCF
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - pickupucf
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+    settings:
+      base:
+        PRODUCT_NAME: PickUpUCF
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup
+        GENERATE_INFOPLIST_FILE: false
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+    dependencies:
+      - package: Supabase
+        product: Supabase
+schemes:
+  PickUpUCF:
+    build:
+      targets:
+        PickUpUCF: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

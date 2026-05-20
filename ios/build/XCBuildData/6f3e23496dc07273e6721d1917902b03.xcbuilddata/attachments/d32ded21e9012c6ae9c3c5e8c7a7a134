@@ -1,0 +1,59 @@
+{
+  "" : {
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Supabase-primary.dia",
+    "emit-module-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Supabase-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Supabase-primary-emit-module.dia",
+    "pch" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Supabase-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Supabase-primary.swiftdeps"
+  },
+  "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/Sources/Supabase/Constants.swift" : {
+    "const-values" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.d",
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.dia",
+    "index-unit-output-path" : "/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.o",
+    "llvm-bc" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.bc",
+    "object" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Constants~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/Sources/Supabase/Deprecated.swift" : {
+    "const-values" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.d",
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.dia",
+    "index-unit-output-path" : "/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.o",
+    "llvm-bc" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.bc",
+    "object" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Deprecated~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/Sources/Supabase/Exports.swift" : {
+    "const-values" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.d",
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.dia",
+    "index-unit-output-path" : "/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.o",
+    "llvm-bc" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.bc",
+    "object" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Exports~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/Sources/Supabase/SupabaseClient.swift" : {
+    "const-values" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.d",
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.dia",
+    "index-unit-output-path" : "/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.o",
+    "llvm-bc" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.bc",
+    "object" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/SupabaseClient~partial.swiftmodule"
+  },
+  "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/Sources/Supabase/Types.swift" : {
+    "const-values" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.swiftconstvalues",
+    "dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.d",
+    "diagnostics" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.dia",
+    "index-unit-output-path" : "/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.o",
+    "llvm-bc" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.bc",
+    "object" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.o",
+    "swift-dependencies" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types.swiftdeps",
+    "swiftmodule" : "/Users/nurlanmammadli/Library/Developer/Xcode/DerivedData/PickUpUCF-deiajnelsfjunmeksnkqvrnyzrzp/SourcePackages/checkouts/supabase-swift/build/Supabase.build/Debug-iphonesimulator/Supabase.build/Objects-normal/arm64/Types~partial.swiftmodule"
+  }
+}
