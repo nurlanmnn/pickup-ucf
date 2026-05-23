@@ -24,16 +24,16 @@ struct DiscoverView: View {
             .navigationTitle("Discover")
             .searchable(text: $viewModel.searchText, prompt: "Search sessions")
             .refreshable {
-                await viewModel.fetchSessions()
+                await viewModel.fetchSessions(currentUserId: appState.session?.userId)
             }
-            .task {
-                viewModel.load()
+            .task(id: appState.session?.userId) {
+                viewModel.load(currentUserId: appState.session?.userId)
             }
             .onChange(of: viewModel.selectedSport) { _, _ in
-                viewModel.load()
+                viewModel.load(currentUserId: appState.session?.userId)
             }
             .onChange(of: appState.sessionFeedRefreshNonce) { _, _ in
-                viewModel.load()
+                viewModel.load(currentUserId: appState.session?.userId)
             }
             .navigationDestination(for: UUID.self) { sessionId in
                 SessionDetailView(sessionId: sessionId)
@@ -56,7 +56,7 @@ struct DiscoverView: View {
         case .failed(let message):
             ErrorBanner(message: message)
             PrimaryButton(title: "Try again") {
-                viewModel.load()
+                viewModel.load(currentUserId: appState.session?.userId)
             }
         case .loaded(let items):
             TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -82,11 +82,28 @@ struct DiscoverView: View {
                             NavigationLink(value: session.id) {
                                 SessionCard(
                                     session: session,
-                                    isJoining: viewModel.joiningSessionId == session.id,
+                                    isJoining: viewModel.joiningSessionId == session.id
+                                        || viewModel.leavingSessionId == session.id,
+                                    actionTitle: viewModel.cardActionTitle(for: session),
+                                    isDestructiveAction: viewModel.isDestructiveCardAction(for: session),
                                     onJoin: uid == session.hostId
                                         ? nil
                                         : {
-                                            Task { await viewModel.quickJoin(session: session) }
+                                            Task {
+                                                if viewModel.isParticipating(in: session.id) {
+                                                    await viewModel.quickLeave(
+                                                        session: session,
+                                                        currentUserId: uid
+                                                    )
+                                                    appState.touchSessionFeedRefresh()
+                                                } else {
+                                                    await viewModel.quickJoin(
+                                                        session: session,
+                                                        currentUserId: uid
+                                                    )
+                                                    appState.touchSessionFeedRefresh()
+                                                }
+                                            }
                                         }
                                 )
                             }

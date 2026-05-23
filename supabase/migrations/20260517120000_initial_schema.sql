@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Enums
 CREATE TYPE sport_type AS ENUM ('basketball', 'soccer', 'tennis', 'volleyball', 'football', 'other');
-CREATE TYPE skill_level AS ENUM ('beginner', 'intermediate', 'advanced');
+CREATE TYPE skill_level AS ENUM ('any', 'beginner', 'intermediate', 'advanced');
 CREATE TYPE session_status AS ENUM ('open', 'full', 'cancelled', 'completed');
 CREATE TYPE participant_status AS ENUM ('joined', 'waitlist', 'left');
 CREATE TYPE participant_role AS ENUM ('host', 'player');
@@ -176,17 +176,24 @@ AS $$
 DECLARE
   v_capacity int;
   v_count int;
-  v_status participant_status;
+  v_session_status session_status;
 BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'not_authenticated';
   END IF;
 
-  SELECT capacity, player_count, status INTO v_capacity, v_count, v_status
-  FROM public.sessions WHERE id = p_session_id FOR UPDATE;
+  SELECT capacity, player_count, status
+  INTO v_capacity, v_count, v_session_status
+  FROM public.sessions
+  WHERE id = p_session_id
+  FOR UPDATE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'session_not_found';
+  END IF;
+
+  IF v_session_status NOT IN ('open', 'full') THEN
+    RAISE EXCEPTION 'session_not_joinable';
   END IF;
 
   IF EXISTS (

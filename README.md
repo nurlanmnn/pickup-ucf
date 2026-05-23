@@ -26,6 +26,7 @@ Optional migrations (run `supabase db push`, then reload PostgREST schema under 
 
 - `20260519200000_sessions_custom_sport_name.sql` — dedicated `custom_sport_name` on `sessions`
 - `20260520120000_sessions_custom_coordinates.sql` — `custom_lat` / `custom_lng` for map-picked custom locations
+- `20260523140000_skill_level_any.sql` — adds `any` to `skill_level` enum
 
 3. Enable **Email + Password** and **Confirm email** in Authentication.
 4. Deploy the email hook:

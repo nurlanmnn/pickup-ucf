@@ -52,11 +52,6 @@ struct SessionDetailView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            if case .loaded = viewModel.session {
-                bottomBar
-            }
-        }
         .task(id: "\(sessionId.uuidString)-\(appState.session?.userId.uuidString ?? "anon")") {
             viewModel = SessionDetailViewModel(
                 sessionId: sessionId,
@@ -107,50 +102,53 @@ struct SessionDetailView: View {
 
     @ViewBuilder
     private func sessionContent(_ session: PickupSession) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.l) {
-                SessionLocationMap(session: session)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.l) {
+                    SessionLocationMap(session: session)
+                        .padding(.horizontal, Spacing.m)
+
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        HStack {
+                            Image(systemName: session.sport.systemImage)
+                                .foregroundStyle(AppColor.sportAccent(session.sport))
+                            Text(session.sportDisplayName)
+                                .font(AppFont.title())
+                        }
+
+                        Label(SessionDateFormatter.cardLabel(for: session.startsAt), systemImage: "clock")
+                        Label(session.locationName, systemImage: "mappin.and.ellipse")
+                        Label(session.host?.handle ?? "Host", systemImage: "person")
+                        SkillPill(skill: session.skillLevel)
+
+                        Text("\(session.playerCount) of \(session.capacity) players")
+                            .font(AppFont.headline(.semibold))
+                            .animation(nil, value: session.playerCount)
+
+                        if session.status == .cancelled {
+                            FormFieldHint(text: "This session was cancelled.")
+                        }
+
+                        if let notes = session.notesForDisplay, !notes.isEmpty {
+                            Text(notes)
+                                .font(AppFont.body())
+                                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        }
+
+                        chatEntry(session)
+                    }
+                    .foregroundStyle(AppColor.textPrimary(colorScheme))
                     .padding(.horizontal, Spacing.m)
 
-                VStack(alignment: .leading, spacing: Spacing.s) {
-                    HStack {
-                        Image(systemName: session.sport.systemImage)
-                            .foregroundStyle(AppColor.sportAccent(session.sport))
-                        Text(session.sportDisplayName)
-                            .font(AppFont.title())
+                    if let actionError = viewModel.actionError {
+                        ErrorBanner(message: actionError)
+                            .padding(.horizontal, Spacing.m)
                     }
-
-                    Label(SessionDateFormatter.cardLabel(for: session.startsAt), systemImage: "clock")
-                    Label(session.locationName, systemImage: "mappin.and.ellipse")
-                    Label(session.host?.handle ?? "Host", systemImage: "person")
-                    SkillPill(skill: session.skillLevel)
-
-                    Text("\(session.playerCount) of \(session.capacity) players")
-                        .font(AppFont.headline(.semibold))
-                        .contentTransition(.numericText())
-                        .animation(.spring(duration: 0.25), value: session.playerCount)
-
-                    if session.status == .cancelled {
-                        FormFieldHint(text: "This session was cancelled.")
-                    }
-
-                    if let notes = session.notesForDisplay, !notes.isEmpty {
-                        Text(notes)
-                            .font(AppFont.body())
-                            .foregroundStyle(AppColor.textSecondary(colorScheme))
-                    }
-
-                    chatEntry(session)
                 }
-                .foregroundStyle(AppColor.textPrimary(colorScheme))
-                .padding(.horizontal, Spacing.m)
-
-                if let actionError = viewModel.actionError {
-                    ErrorBanner(message: actionError)
-                        .padding(.horizontal, Spacing.m)
-                }
+                .padding(.bottom, Spacing.m)
             }
-            .padding(.bottom, 100)
+
+            sessionBottomBar(session)
         }
     }
 
@@ -172,8 +170,13 @@ struct SessionDetailView: View {
     }
 
     @ViewBuilder
-    private var bottomBar: some View {
-        if case .loaded(let session) = viewModel.session {
+    private func sessionBottomBar(_ session: PickupSession) -> some View {
+        let showsHostActions = viewModel.isHost
+            && (viewModel.canHostEditSession || viewModel.canHostCancelSession)
+        let showsJoinActions = !viewModel.isHost
+            && (session.status == .open || session.status == .full)
+
+        if showsHostActions || showsJoinActions {
             VStack(spacing: Spacing.s) {
                 if viewModel.isHost {
                     if viewModel.canHostEditSession {
@@ -193,29 +196,33 @@ struct SessionDetailView: View {
                         .buttonStyle(.bordered)
                         .disabled(viewModel.isSubmitting)
                     }
-                } else {
-                    if session.status == .open || session.status == .full {
-                        if viewModel.isLeaveAction {
-                            Button(role: .destructive) {
-                                Task { await viewModel.joinOrLeave() }
-                            } label: {
-                                bottomButtonLabel(viewModel.primaryActionTitle)
-                            }
-                            .disabled(viewModel.isSubmitting)
-                        } else {
-                            PrimaryButton(
-                                title: viewModel.primaryActionTitle,
-                                isLoading: viewModel.isSubmitting,
-                                isEnabled: !viewModel.isSubmitting
-                            ) {
-                                Task { await viewModel.joinOrLeave() }
-                            }
+                } else if showsJoinActions {
+                    if viewModel.isLeaveAction {
+                        Button(role: .destructive) {
+                            Task { await viewModel.joinOrLeave() }
+                        } label: {
+                            bottomButtonLabel(viewModel.primaryActionTitle)
+                        }
+                        .disabled(viewModel.isSubmitting)
+                    } else {
+                        PrimaryButton(
+                            title: viewModel.primaryActionTitle,
+                            isLoading: viewModel.isSubmitting,
+                            isEnabled: !viewModel.isSubmitting
+                        ) {
+                            Task { await viewModel.joinOrLeave() }
                         }
                     }
                 }
             }
             .padding(Spacing.m)
-            .background(.ultraThinMaterial)
+            .frame(maxWidth: .infinity)
+            .background(AppColor.background(colorScheme))
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(AppColor.textSecondary(colorScheme).opacity(0.2))
+                    .frame(height: 1)
+            }
         }
     }
 

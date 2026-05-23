@@ -14,6 +14,7 @@
 		08D5D65F6FAD9948C183FA7C /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDBA5BAF1831E0A1CE172F3A /* SignUpView.swift */; };
 		0906D54ED41D35C39CA2F775 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = CC9CA2B1661F3CD4616F69CE /* Supabase */; };
 		0B0E1966DFC6C0A1961BDB75 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9359C55D45A8EC91EF723C1B /* SignInView.swift */; };
+		0D732B02EED4B7C11D5CD88E /* AppPagination.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25C9DBC7CDA3338A67BA0C7 /* AppPagination.swift */; };
 		10E80F6B7F724F98164630C8 /* MyGamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166AA222FC219277946F518C /* MyGamesView.swift */; };
 		1128AC53CBBFB3A2F64C6B39 /* ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1361D112819B3647AC788DA8 /* ErrorBanner.swift */; };
 		199B28EC70FCB85F00D90137 /* LocationGeocoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814D5D13EC16A4C047B628EB /* LocationGeocoding.swift */; };
@@ -64,6 +65,7 @@
 		B7CFAAD39A6498863F1AD92D /* CustomLocationPickerRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CFD47CFBD59B406F70E5CB /* CustomLocationPickerRow.swift */; };
 		BA372EB765F8EB0AA842702E /* ProfileRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595F8B61002E69A476BF1CC1 /* ProfileRepository.swift */; };
 		BBE9368E8B98CACD5669E63C /* AppErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */; };
+		C0E7427F011927D9A24D79F8 /* CollapsibleSectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39E0BDA01A4374F3B41CF233 /* CollapsibleSectionHeader.swift */; };
 		C47920643339E341425EBE72 /* CreateSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11469B5CBFCFEE7B515C49F1 /* CreateSessionView.swift */; };
 		C605A1C44044FE69F42321CC /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C242C46DB84D5A8B1444BE46 /* Spacing.swift */; };
 		D13AA5379AD0E2799731D389 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FED4FBE447F638AA69D5AE /* AppConfig.swift */; };
@@ -96,6 +98,7 @@
 		2CA8AE43E1632088B2201AAC /* PickUpUCF.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PickUpUCF.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3509DA3160CF7BCDD9FD66F1 /* EditUsernameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditUsernameViewModel.swift; sourceTree = "<group>"; };
 		3523B06F8873C00F770B66FD /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
+		39E0BDA01A4374F3B41CF233 /* CollapsibleSectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsibleSectionHeader.swift; sourceTree = "<group>"; };
 		422468FE765F778FFA19D99B /* VerifyEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyEmailView.swift; sourceTree = "<group>"; };
 		46FED4FBE447F638AA69D5AE /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */ = {isa = PBXFileReference; path = Config.xcconfig.example; sourceTree = "<group>"; };
@@ -147,6 +150,7 @@
 		DAB46240077BFF47D91FFC1E /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareLink.swift; sourceTree = "<group>"; };
 		E04E5490F2ED62B2EBD79A24 /* DiscoverViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverViewModel.swift; sourceTree = "<group>"; };
+		E25C9DBC7CDA3338A67BA0C7 /* AppPagination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPagination.swift; sourceTree = "<group>"; };
 		E3B5A500427FA25E1995B7A4 /* CreateSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionViewModel.swift; sourceTree = "<group>"; };
 		E4025285B020BC00E058C008 /* EditSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSessionView.swift; sourceTree = "<group>"; };
 		E4347A1042FDCC9EFFD1D054 /* FormFieldHint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormFieldHint.swift; sourceTree = "<group>"; };
@@ -275,6 +279,7 @@
 		8368AD8E6DE34833E123594D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				39E0BDA01A4374F3B41CF233 /* CollapsibleSectionHeader.swift */,
 				80CFD47CFBD59B406F70E5CB /* CustomLocationPickerRow.swift */,
 				5FC885F5B31CF2D5018C6A23 /* EmptyStateView.swift */,
 				1361D112819B3647AC788DA8 /* ErrorBanner.swift */,
@@ -372,6 +377,7 @@
 			children = (
 				46FED4FBE447F638AA69D5AE /* AppConfig.swift */,
 				D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */,
+				E25C9DBC7CDA3338A67BA0C7 /* AppPagination.swift */,
 				8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */,
 				4F5FD253D340B1DE5C911072 /* CampusCoordinates.swift */,
 				8B72DA0E9AB058F0F8C9355F /* DeepLinkRouter.swift */,
@@ -437,7 +443,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_EBBE69B5-8F0F-4CF6-845A-99E26E5AA713" /* ios */ = {
+		"TEMP_ED8465F9-FAC5-4500-B5D9-6DAAF8C19972" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -511,6 +517,7 @@
 			files = (
 				D13AA5379AD0E2799731D389 /* AppConfig.swift in Sources */,
 				BBE9368E8B98CACD5669E63C /* AppErrorMapper.swift in Sources */,
+				0D732B02EED4B7C11D5CD88E /* AppPagination.swift in Sources */,
 				56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */,
 				E39DD70AE3DEC88A300D7DD6 /* AuthenticatedSessionCoordinator.swift in Sources */,
 				2B3A702BEA6B7678B67ECB7B /* CampusCoordinates.swift in Sources */,
@@ -519,6 +526,7 @@
 				6996F8C1F0E0B2E699960466 /* ChatRepository.swift in Sources */,
 				91F504675001440077D4B7C1 /* ChatView.swift in Sources */,
 				5687C604A6664DCFDD845365 /* ChatViewModel.swift in Sources */,
+				C0E7427F011927D9A24D79F8 /* CollapsibleSectionHeader.swift in Sources */,
 				EA561775D30DC16DE4F724A2 /* Colors.swift in Sources */,
 				C47920643339E341425EBE72 /* CreateSessionView.swift in Sources */,
 				22741610F4AAB4843456AFAF /* CreateSessionViewModel.swift in Sources */,

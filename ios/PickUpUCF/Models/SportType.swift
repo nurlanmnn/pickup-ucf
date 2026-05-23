@@ -27,6 +27,7 @@ enum SportType: String, CaseIterable, Codable, Identifiable {
 }
 
 enum SkillLevel: String, CaseIterable, Codable, Identifiable {
+    case any
     case beginner
     case intermediate
     case advanced
@@ -34,6 +35,11 @@ enum SkillLevel: String, CaseIterable, Codable, Identifiable {
     var id: String { rawValue }
 
     var displayName: String {
-        rawValue.capitalized
+        switch self {
+        case .any: return "Any"
+        case .beginner: return "Beginner"
+        case .intermediate: return "Intermediate"
+        case .advanced: return "Advanced"
+        }
     }
 }

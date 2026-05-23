@@ -26,7 +26,7 @@ struct StepperNumberFieldRow<Focus: Hashable>: View {
             HStack(spacing: Spacing.s) {
                 TextField(
                     "",
-                    text: $text,
+                    text: digitsOnlyBinding($text),
                     prompt: Text(prompt)
                         .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.75))
                 )
@@ -43,5 +43,17 @@ struct StepperNumberFieldRow<Focus: Hashable>: View {
         .onChange(of: value) { _, newValue in
             text = "\(newValue)"
         }
+    }
+
+    private func digitsOnlyBinding(_ source: Binding<String>) -> Binding<String> {
+        Binding(
+            get: { source.wrappedValue },
+            set: { newValue in
+                let digits = newValue.filter(\.isNumber)
+                if digits != source.wrappedValue {
+                    source.wrappedValue = digits
+                }
+            }
+        )
     }
 }

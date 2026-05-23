@@ -165,3 +165,13 @@ struct JoinSessionParams: Encodable {
 struct SessionParticipantRow: Codable {
     let status: ParticipantStatus
 }
+
+struct SessionParticipantStatusRow: Codable {
+    let sessionId: UUID
+    let status: ParticipantStatus
+
+    enum CodingKeys: String, CodingKey {
+        case sessionId = "session_id"
+        case status
+    }
+}

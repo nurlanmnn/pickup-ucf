@@ -30,9 +30,11 @@ protocol SessionRepositoryProtocol {
     func fetchUpcoming(sport: SportType?) async throws -> [PickupSession]
     /// Sessions the user has joined or is waitlisted for, starting from now (open or full only).
     func fetchMySessions(userId: UUID) async throws -> [PickupSession]
+    func fetchMyPastSessions(limit: Int, offset: Int) async throws -> [PickupSession]
     func fetchSession(id: UUID) async throws -> PickupSession
     func fetchVenues() async throws -> [Venue]
     func fetchParticipantStatus(sessionId: UUID, userId: UUID) async throws -> ParticipantStatus?
+    func fetchParticipantStatuses(userId: UUID, sessionIds: [UUID]) async throws -> [UUID: ParticipantStatus]
     func createSession(_ input: CreateSessionInput) async throws -> PickupSession
     func updateSession(id: UUID, input: UpdateSessionInput) async throws -> PickupSession
     func cancelSession(id: UUID) async throws
@@ -78,6 +80,7 @@ final class SessionRepository: SessionRepositoryProtocol {
                 .gte("starts_at", value: now.ISO8601Format())
                 .lte("starts_at", value: windowEnd.ISO8601Format())
                 .order("starts_at", ascending: true)
+                .limit(AppPagination.discoverSessions)
                 .execute()
                 .value
             return rows.filter { $0.startsAt > now }
@@ -90,6 +93,7 @@ final class SessionRepository: SessionRepositoryProtocol {
             .gte("starts_at", value: now.ISO8601Format())
             .lte("starts_at", value: windowEnd.ISO8601Format())
             .order("starts_at", ascending: true)
+            .limit(AppPagination.discoverSessions)
             .execute()
             .value
 
@@ -109,6 +113,7 @@ final class SessionRepository: SessionRepositoryProtocol {
             .select("session_id")
             .eq("user_id", value: userId.uuidString)
             .in("status", values: [ParticipantStatus.joined.rawValue, ParticipantStatus.waitlist.rawValue])
+            .limit(AppPagination.myGamesParticipantIdCap)
             .execute()
             .value
 
@@ -124,11 +129,29 @@ final class SessionRepository: SessionRepositoryProtocol {
             .select(sessionSelect)
             .in("id", values: idStrings)
             .in("status", values: statuses)
+            .gt("ends_at", value: now.ISO8601Format())
             .order("starts_at", ascending: true)
+            .limit(AppPagination.myGamesUpcoming)
             .execute()
             .value
 
         return sessions.filter { $0.endsAt > now }
+    }
+
+    /// Ended games you hosted or joined (RLS limits rows to your sessions).
+    func fetchMyPastSessions(limit: Int, offset: Int) async throws -> [PickupSession] {
+        let pageSize = min(max(limit, 1), AppPagination.myGamesPastPage)
+        let safeOffset = max(offset, 0)
+        let now = Date.now
+
+        return try await client
+            .from("sessions")
+            .select(sessionSelect)
+            .lte("ends_at", value: now.ISO8601Format())
+            .order("starts_at", ascending: false)
+            .range(from: safeOffset, to: safeOffset + pageSize - 1)
+            .execute()
+            .value
     }
 
     func fetchSession(id: UUID) async throws -> PickupSession {
@@ -161,6 +184,24 @@ final class SessionRepository: SessionRepositoryProtocol {
             .value
 
         return rows.first?.status
+    }
+
+    func fetchParticipantStatuses(userId: UUID, sessionIds: [UUID]) async throws -> [UUID: ParticipantStatus] {
+        guard !sessionIds.isEmpty else { return [:] }
+
+        let rows: [SessionParticipantStatusRow] = try await client
+            .from("session_participants")
+            .select("session_id, status")
+            .eq("user_id", value: userId.uuidString)
+            .in("session_id", values: sessionIds.map(\.uuidString))
+            .in("status", values: [
+                ParticipantStatus.joined.rawValue,
+                ParticipantStatus.waitlist.rawValue,
+            ])
+            .execute()
+            .value
+
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.sessionId, $0.status) })
     }
 
     func createSession(_ input: CreateSessionInput) async throws -> PickupSession {

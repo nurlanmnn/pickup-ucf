@@ -17,7 +17,7 @@ final class ChatRepository: ChatRepositoryProtocol {
         self.client = client
     }
 
-    func fetchMessages(sessionId: UUID, limit: Int = 50) async throws -> [SessionMessage] {
+    func fetchMessages(sessionId: UUID, limit: Int = AppPagination.chatMessageLimit) async throws -> [SessionMessage] {
         try await client
             .from("messages")
             .select(messageSelect)

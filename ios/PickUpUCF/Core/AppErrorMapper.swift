@@ -46,6 +46,12 @@ enum AppErrorMapper {
         if text.contains("session_not_found") {
             return "This session is no longer available."
         }
+        if text.contains("session_not_joinable") {
+            return "This session is no longer open for new players."
+        }
+        if text.contains("participant_status") && text.contains("invalid input value") {
+            return "Could not join this session. Apply the latest database migration (fix_join_session_status_type) in Supabase, then try again."
+        }
         if text.contains("username") && (text.contains("unique") || text.contains("duplicate")) {
             return "That username is already taken."
         }

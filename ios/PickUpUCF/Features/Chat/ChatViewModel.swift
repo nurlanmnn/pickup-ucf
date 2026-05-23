@@ -34,7 +34,7 @@ final class ChatViewModel {
     func load() async {
         messages = .loading
         do {
-            let items = try await repository.fetchMessages(sessionId: sessionId, limit: 50)
+            let items = try await repository.fetchMessages(sessionId: sessionId, limit: AppPagination.chatMessageLimit)
             messages = .loaded(items)
         } catch {
             messages = .failed(AppErrorMapper.message(for: error))
