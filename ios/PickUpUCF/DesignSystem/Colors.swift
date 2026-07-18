@@ -31,6 +31,9 @@ enum AppColor {
         case .volleyball: return Color.blue
         case .football: return Color.brown
         case .other: return Color.gray
+        case .pickleball, .spikeball, .softball, .floorHockey, .dodgeball, .racquetball, .badminton, .cornhole:
+            return Color.gray
+        case .flagFootball: return Color.brown
         }
     }
 }
