@@ -7,7 +7,6 @@ struct Profile: Codable, Identifiable, Equatable {
     var gamesPlayed: Int
     var showUpStreak: Int
     var preferredSports: [SportType]
-    var skillLevel: SkillLevel?
     var onboardingCompletedAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -17,7 +16,6 @@ struct Profile: Codable, Identifiable, Equatable {
         case gamesPlayed = "games_played"
         case showUpStreak = "show_up_streak"
         case preferredSports = "preferred_sports"
-        case skillLevel = "skill_level"
         case onboardingCompletedAt = "onboarding_completed_at"
     }
 
@@ -28,7 +26,6 @@ struct Profile: Codable, Identifiable, Equatable {
         gamesPlayed: Int = 0,
         showUpStreak: Int = 0,
         preferredSports: [SportType] = [],
-        skillLevel: SkillLevel? = nil,
         onboardingCompletedAt: Date? = nil
     ) {
         self.id = id
@@ -37,7 +34,6 @@ struct Profile: Codable, Identifiable, Equatable {
         self.gamesPlayed = gamesPlayed
         self.showUpStreak = showUpStreak
         self.preferredSports = preferredSports
-        self.skillLevel = skillLevel
         self.onboardingCompletedAt = onboardingCompletedAt
     }
 
@@ -49,7 +45,6 @@ struct Profile: Codable, Identifiable, Equatable {
         gamesPlayed = try container.decodeIfPresent(Int.self, forKey: .gamesPlayed) ?? 0
         showUpStreak = try container.decodeIfPresent(Int.self, forKey: .showUpStreak) ?? 0
         preferredSports = try container.decodeIfPresent([SportType].self, forKey: .preferredSports) ?? []
-        skillLevel = try container.decodeIfPresent(SkillLevel.self, forKey: .skillLevel)
         onboardingCompletedAt = try container.decodeIfPresent(Date.self, forKey: .onboardingCompletedAt)
     }
 }

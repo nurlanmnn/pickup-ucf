@@ -2,10 +2,7 @@ import Foundation
 
 @Observable
 final class OnboardingViewModel {
-    static let onboardingSkillLevels: [SkillLevel] = [.beginner, .intermediate, .advanced]
-
     var selectedSports: Set<SportType> = []
-    var skillLevel: SkillLevel = .beginner
     var errorMessage: String?
     var isLoading = false
 
@@ -45,8 +42,7 @@ final class OnboardingViewModel {
 
         do {
             try await repository.completeOnboarding(
-                sports: selectedSports.sorted { $0.displayName < $1.displayName },
-                skillLevel: skillLevel
+                sports: selectedSports.sorted { $0.displayName < $1.displayName }
             )
             appState.needsOnboarding = false
             appState.touchProfileRefresh()

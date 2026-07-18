@@ -4,7 +4,6 @@ DECLARE
   v_user_id uuid := gen_random_uuid();
   v_completed_at timestamptz;
   v_sports sport_type[];
-  v_skill skill_level;
 BEGIN
   IF NOT EXISTS (
     SELECT 1
@@ -41,10 +40,7 @@ BEGIN
   PERFORM set_config('request.jwt.claim.sub', '', true);
 
   BEGIN
-    PERFORM public.complete_onboarding(
-      ARRAY['basketball']::sport_type[],
-      'beginner'::skill_level
-    );
+    PERFORM public.complete_onboarding(ARRAY['basketball']::sport_type[]);
     RAISE EXCEPTION 'complete_onboarding failed: expected not_authenticated';
   EXCEPTION
     WHEN OTHERS THEN
@@ -56,7 +52,7 @@ BEGIN
   PERFORM set_config('request.jwt.claim.sub', v_user_id::text, true);
 
   BEGIN
-    PERFORM public.complete_onboarding(NULL, 'beginner'::skill_level);
+    PERFORM public.complete_onboarding(NULL);
     RAISE EXCEPTION 'complete_onboarding failed: expected preferred_sports_required for NULL';
   EXCEPTION
     WHEN OTHERS THEN
@@ -66,10 +62,7 @@ BEGIN
   END;
 
   BEGIN
-    PERFORM public.complete_onboarding(
-      ARRAY[]::sport_type[],
-      'beginner'::skill_level
-    );
+    PERFORM public.complete_onboarding(ARRAY[]::sport_type[]);
     RAISE EXCEPTION 'complete_onboarding failed: expected preferred_sports_required for empty array';
   EXCEPTION
     WHEN OTHERS THEN
@@ -79,12 +72,11 @@ BEGIN
   END;
 
   PERFORM public.complete_onboarding(
-    ARRAY['basketball', 'pickleball']::sport_type[],
-    'intermediate'::skill_level
+    ARRAY['basketball', 'pickleball']::sport_type[]
   );
 
-  SELECT onboarding_completed_at, preferred_sports, skill_level
-  INTO v_completed_at, v_sports, v_skill
+  SELECT onboarding_completed_at, preferred_sports
+  INTO v_completed_at, v_sports
   FROM public.profiles
   WHERE id = v_user_id;
 
@@ -94,10 +86,6 @@ BEGIN
 
   IF array_length(v_sports, 1) <> 2 THEN
     RAISE EXCEPTION 'complete_onboarding failed: preferred_sports not updated';
-  END IF;
-
-  IF v_skill <> 'intermediate' THEN
-    RAISE EXCEPTION 'complete_onboarding failed: skill_level not updated to intermediate';
   END IF;
 
   DELETE FROM public.profiles WHERE id = v_user_id;

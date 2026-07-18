@@ -36,7 +36,7 @@ private final class StubEditSportsRepository: ProfileRepositoryProtocol {
         Profile(id: UUID(), displayName: "Test", preferredSports: [.basketball])
     }
 
-    func completeOnboarding(sports: [SportType], skillLevel: SkillLevel) async throws {}
+    func completeOnboarding(sports: [SportType]) async throws {}
 
     func updatePreferredSports(_ sports: [SportType]) async throws {
         XCTFail("updatePreferredSports should not be called without selected sports")

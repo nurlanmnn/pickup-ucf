@@ -552,7 +552,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_D4B505B4-EC87-4657-9D55-73913DACCAB9" /* ios */ = {
+		"TEMP_C2F63963-9E0F-4177-828F-C1C8AE941D46" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,

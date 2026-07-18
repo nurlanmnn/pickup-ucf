@@ -5,7 +5,7 @@ protocol ProfileRepositoryProtocol {
     func ensureProfileForCurrentUser() async throws
     func ensureProfile(userId: UUID, displayName: String) async throws
     func fetchCurrentProfile() async throws -> Profile
-    func completeOnboarding(sports: [SportType], skillLevel: SkillLevel) async throws
+    func completeOnboarding(sports: [SportType]) async throws
     func updatePreferredSports(_ sports: [SportType]) async throws
     func updateUsername(_ username: String) async throws
     func deleteAccount() async throws
@@ -42,7 +42,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         return try await client
             .from("profiles")
             .select(
-                "id, display_name, username, games_played, show_up_streak, preferred_sports, skill_level, onboarding_completed_at"
+                "id, display_name, username, games_played, show_up_streak, preferred_sports, onboarding_completed_at"
             )
             .eq("id", value: userId.uuidString)
             .single()
@@ -50,14 +50,11 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             .value
     }
 
-    func completeOnboarding(sports: [SportType], skillLevel: SkillLevel) async throws {
+    func completeOnboarding(sports: [SportType]) async throws {
         try await client
             .rpc(
                 "complete_onboarding",
-                params: CompleteOnboardingParams(
-                    pPreferredSports: sports,
-                    pSkillLevel: skillLevel
-                )
+                params: CompleteOnboardingParams(pPreferredSports: sports)
             )
             .execute()
     }
@@ -114,11 +111,9 @@ struct ProfilePreferredSportsUpdate: Encodable {
 
 struct CompleteOnboardingParams: Encodable {
     let pPreferredSports: [SportType]
-    let pSkillLevel: SkillLevel
 
     enum CodingKeys: String, CodingKey {
         case pPreferredSports = "p_preferred_sports"
-        case pSkillLevel = "p_skill_level"
     }
 }
 

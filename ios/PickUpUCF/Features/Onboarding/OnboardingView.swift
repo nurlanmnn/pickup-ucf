@@ -17,7 +17,6 @@ struct OnboardingView: View {
                 }
 
                 sportsSection(vm: vm)
-                skillSection(skillLevel: $vm.skillLevel)
 
                 PrimaryButton(
                     title: "Get started",
@@ -58,22 +57,6 @@ struct OnboardingView: View {
                 selectedSports: vm.selectedSports,
                 onToggle: { vm.toggleSport($0) }
             )
-        }
-    }
-
-    private func skillSection(skillLevel: Binding<SkillLevel>) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.m) {
-            sectionTitle("Your skill level")
-            Text("We'll use this as your default when browsing games.")
-                .font(AppFont.caption())
-                .foregroundStyle(AppColor.textSecondary(colorScheme))
-
-            Picker("Skill level", selection: skillLevel) {
-                ForEach(OnboardingViewModel.onboardingSkillLevels) { level in
-                    Text(level.displayName).tag(level)
-                }
-            }
-            .pickerStyle(.segmented)
         }
     }
 
