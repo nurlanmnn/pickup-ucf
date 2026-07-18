@@ -64,3 +64,115 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.enqueue_notification(uuid, uuid, text, text, text, text) FROM PUBLIC;
+
+-- Auto-complete sessions past end time
+CREATE OR REPLACE FUNCTION public.complete_expired_sessions()
+RETURNS int
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_count int;
+BEGIN
+  UPDATE public.sessions
+  SET status = 'completed', updated_at = now()
+  WHERE status IN ('open', 'full')
+    AND ends_at < now();
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
+END;
+$$;
+
+-- Host marks attendance within 24h after session ends
+CREATE OR REPLACE FUNCTION public.submit_session_attendance(
+  p_session_id uuid,
+  p_attended_user_ids uuid[]
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_host_id uuid;
+  v_starts_at timestamptz;
+  v_ends_at timestamptz;
+  v_status session_status;
+  v_joined_user uuid;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'not_authenticated';
+  END IF;
+
+  SELECT host_id, starts_at, ends_at, status
+  INTO v_host_id, v_starts_at, v_ends_at, v_status
+  FROM public.sessions
+  WHERE id = p_session_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'session_not_found';
+  END IF;
+
+  IF v_host_id <> auth.uid() THEN
+    RAISE EXCEPTION 'not_host';
+  END IF;
+
+  IF v_status = 'cancelled' THEN
+    RAISE EXCEPTION 'session_cancelled';
+  END IF;
+
+  IF v_starts_at > now() THEN
+    RAISE EXCEPTION 'session_not_started';
+  END IF;
+
+  IF now() > v_ends_at + interval '24 hours' THEN
+    RAISE EXCEPTION 'attendance_window_closed';
+  END IF;
+
+  -- Replace attendance rows for this session
+  DELETE FROM public.attendance WHERE session_id = p_session_id;
+
+  INSERT INTO public.attendance (session_id, user_id)
+  SELECT p_session_id, uid
+  FROM unnest(p_attended_user_ids) AS uid
+  WHERE EXISTS (
+    SELECT 1 FROM public.session_participants sp
+    WHERE sp.session_id = p_session_id
+      AND sp.user_id = uid
+      AND sp.status = 'joined'
+  );
+
+  -- Attended: increment games_played + streak
+  UPDATE public.profiles p
+  SET
+    games_played = games_played + 1,
+    show_up_streak = show_up_streak + 1,
+    updated_at = now()
+  WHERE p.id = ANY(p_attended_user_ids)
+    AND EXISTS (
+      SELECT 1 FROM public.session_participants sp
+      WHERE sp.session_id = p_session_id
+        AND sp.user_id = p.id
+        AND sp.status = 'joined'
+    );
+
+  -- No-shows among joined players: reset streak
+  UPDATE public.profiles p
+  SET show_up_streak = 0, updated_at = now()
+  WHERE EXISTS (
+    SELECT 1 FROM public.session_participants sp
+    WHERE sp.session_id = p_session_id
+      AND sp.user_id = p.id
+      AND sp.status = 'joined'
+  )
+  AND p.id <> ALL(COALESCE(p_attended_user_ids, ARRAY[]::uuid[]));
+
+  UPDATE public.sessions
+  SET status = 'completed', updated_at = now()
+  WHERE id = p_session_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.submit_session_attendance(uuid, uuid[]) TO authenticated;
