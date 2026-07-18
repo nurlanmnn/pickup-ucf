@@ -38,6 +38,30 @@ supabase functions deploy send-auth-email
 
 Register the function URL under **Authentication → Hooks → Send Email**.
 
+5. Deploy push delivery (after APNs credentials are ready):
+
+```bash
+supabase secrets set \
+  APNS_KEY_ID=YOUR_KEY_ID \
+  APNS_TEAM_ID=YOUR_TEAM_ID \
+  APNS_BUNDLE_ID=edu.ucf.pickup \
+  APNS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----" \
+  APNS_ENV=sandbox \
+  CRON_SECRET=$(openssl rand -hex 32)
+
+supabase functions deploy send-push
+```
+
+Schedule **Edge Functions → send-push → Cron** every 1 minute with header `Authorization: Bearer <CRON_SECRET>` (or invoke via pg_cron webhook). Do not commit real APNs keys.
+
+**Edge Function tests:**
+
+```bash
+cd supabase/functions/send-push && deno test --allow-env --allow-net
+```
+
 ### 2. iOS
 
 ```bash
