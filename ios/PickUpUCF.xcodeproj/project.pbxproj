@@ -30,6 +30,7 @@
 		30C8D2DA99F1818A525BBE3D /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B9EBDCDFA2CA4B0ADFB17 /* ProfileView.swift */; };
 		30EAEE75972A6B5B177D5441 /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F41934D424C3E536ADDF27C /* DeleteAccountView.swift */; };
 		355884855F8A822D36412239 /* Venue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595E5AA65818CEB63427D402 /* Venue.swift */; };
+		404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */; };
 		42483B034176FBAE1C750704 /* ChangePasswordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3BB5184646C277155E04F /* ChangePasswordViewModel.swift */; };
 		442DC61DC6A0B94B6F3556EB /* StepperNumberFieldRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EECC9097C151B4A1D73E9C16 /* StepperNumberFieldRow.swift */; };
 		5453F460CC7FD32763C050A7 /* MapLocationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E69BE465CC0884C21287F50E /* MapLocationPickerView.swift */; };
@@ -52,12 +53,14 @@
 		889B2A01D3E8976C3C54428C /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8A893C34284A16BDF463AC /* ForgotPasswordView.swift */; };
 		8D941DA20A0F09679DF73600 /* FormFieldHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4347A1042FDCC9EFFD1D054 /* FormFieldHint.swift */; };
 		91150E6516C989BC27BCA2C0 /* GlobalBannerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0716219CB340B39112A954 /* GlobalBannerOverlay.swift */; };
+		91CCEC67E890E9E7052FEC20 /* DeviceTokenRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */; };
 		91F504675001440077D4B7C1 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C46444DC8B9DB494A9E836E /* ChatView.swift */; };
 		91FFADBEEBC579B422F14139 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2BBDA79DCE13D7763F94E6 /* WelcomeView.swift */; };
 		93B3FC4BB76EC457A1C618A4 /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAC2C01F0B798CF2E11AA57 /* DiscoverView.swift */; };
 		95D8C2CB8AB788675CC22E9F /* EditUsernameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF445AF6D20EE3B6517C37A7 /* EditUsernameView.swift */; };
 		9B364341B2297A924B66E20A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6849B06D30B12DF30371DC /* RootView.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
+		ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */; };
 		AD2D11E213D7A2580CF4644E /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAFA31181F35F9C4D81D29A /* SignUpViewModel.swift */; };
 		ADC7102007A4BB723B0CB63C /* SessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DAD1CF5E58538DF42183E3 /* SessionRepository.swift */; };
 		B47AD5ED5E9D9F87B3AD70B3 /* EditSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4025285B020BC00E058C008 /* EditSessionView.swift */; };
@@ -84,6 +87,7 @@
 		EA561775D30DC16DE4F724A2 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15866006217050F82E09128A /* Colors.swift */; };
 		EAA822CF05AF2B43ED2BB315 /* Loadable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB3B21A7FC682C24BAB27D4 /* Loadable.swift */; };
 		ED3EE1D7E2165A81F4613D9A /* PickUpUCFApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */; };
+		F700B8A9852BCB68B01DF592 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */; };
 		FD1268433FF36385815B6E48 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FB4C920FF85773CF1C7EEF /* ChangePasswordView.swift */; };
 /* End PBXBuildFile section */
 
@@ -104,6 +108,7 @@
 		15866006217050F82E09128A /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		166AA222FC219277946F518C /* MyGamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyGamesView.swift; sourceTree = "<group>"; };
 		17DE4EF93FE96E1BB8896C27 /* SessionLocationMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLocationMap.swift; sourceTree = "<group>"; };
+		19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRepository.swift; sourceTree = "<group>"; };
 		1BAC2C01F0B798CF2E11AA57 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		2BFF6D330274A9993FEC935D /* UsernameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameValidator.swift; sourceTree = "<group>"; };
 		2CA8AE43E1632088B2201AAC /* PickUpUCF.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PickUpUCF.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +127,7 @@
 		699CE3048C4ED16348EC4831 /* PickupSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickupSession.swift; sourceTree = "<group>"; };
 		6C46444DC8B9DB494A9E836E /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		6EB3B21A7FC682C24BAB27D4 /* Loadable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loadable.swift; sourceTree = "<group>"; };
+		70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRepositoryTests.swift; sourceTree = "<group>"; };
 		7A6849B06D30B12DF30371DC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		7C91FF20CB1FB3BF80FECF4B /* MyGamesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyGamesViewModel.swift; sourceTree = "<group>"; };
 		80CFD47CFBD59B406F70E5CB /* CustomLocationPickerRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLocationPickerRow.swift; sourceTree = "<group>"; };
@@ -141,6 +147,7 @@
 		9F21B57FD815D6D1FBCB999F /* SignInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInViewModel.swift; sourceTree = "<group>"; };
 		A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PickUpUCFTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3AE8C9278DFC937D2147901 /* PasswordValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordValidator.swift; sourceTree = "<group>"; };
+		A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationService.swift; sourceTree = "<group>"; };
 		A58C2BA025730660536F29F7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickUpUCFApp.swift; sourceTree = "<group>"; };
 		AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRepository.swift; sourceTree = "<group>"; };
@@ -149,6 +156,7 @@
 		C308462F40BE323DAE136D94 /* VerifyEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyEmailViewModel.swift; sourceTree = "<group>"; };
 		C45AB7447F8A2EB3FAB2814C /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		C473979ACD862ECDE952298B /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C75CED8901BA2E4A48CEADEE /* KeyboardDismissModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDismissModifier.swift; sourceTree = "<group>"; };
 		CA5B9EBDCDFA2CA4B0ADFB17 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		CDC40C1DFA9F752787809BE4 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -277,6 +285,7 @@
 		6097B8A860D25B72684D298C /* PickUpUCFTests */ = {
 			isa = PBXGroup;
 			children = (
+				70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */,
 				DA6F174FDB0787634098299F /* SportTypeTests.swift */,
 			);
 			path = PickUpUCFTests;
@@ -399,12 +408,14 @@
 			isa = PBXGroup;
 			children = (
 				46FED4FBE447F638AA69D5AE /* AppConfig.swift */,
+				C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */,
 				D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */,
 				E25C9DBC7CDA3338A67BA0C7 /* AppPagination.swift */,
 				8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */,
 				4F5FD253D340B1DE5C911072 /* CampusCoordinates.swift */,
 				8B72DA0E9AB058F0F8C9355F /* DeepLinkRouter.swift */,
 				814D5D13EC16A4C047B628EB /* LocationGeocoding.swift */,
+				A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */,
 				86FC3258DCC109C54C88586E /* SessionDateFormatter.swift */,
 				E97A586CC650E5E91A8734BB /* SessionLocationResolver.swift */,
 				DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */,
@@ -419,6 +430,7 @@
 			children = (
 				8746DB50D2CFBB7020D10E61 /* AuthRepository.swift */,
 				AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */,
+				19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */,
 				595F8B61002E69A476BF1CC1 /* ProfileRepository.swift */,
 				61DAD1CF5E58538DF42183E3 /* SessionRepository.swift */,
 			);
@@ -466,7 +478,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_911BF92D-4AFF-451C-992B-8E28B31EA853" /* ios */ = {
+		"TEMP_07260A29-08DA-4916-9A22-CD9DF22EA2F8" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -562,6 +574,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D13AA5379AD0E2799731D389 /* AppConfig.swift in Sources */,
+				F700B8A9852BCB68B01DF592 /* AppDelegate.swift in Sources */,
 				BBE9368E8B98CACD5669E63C /* AppErrorMapper.swift in Sources */,
 				0D732B02EED4B7C11D5CD88E /* AppPagination.swift in Sources */,
 				56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */,
@@ -580,6 +593,7 @@
 				1BD4A8F827E57FC5526C2E2D /* CustomLocationSelection.swift in Sources */,
 				D982CD6650029B10BAB16429 /* DeepLinkRouter.swift in Sources */,
 				30EAEE75972A6B5B177D5441 /* DeleteAccountView.swift in Sources */,
+				91CCEC67E890E9E7052FEC20 /* DeviceTokenRepository.swift in Sources */,
 				93B3FC4BB76EC457A1C618A4 /* DiscoverView.swift in Sources */,
 				7C3A380853BF93690359C51F /* DiscoverViewModel.swift in Sources */,
 				B47AD5ED5E9D9F87B3AD70B3 /* EditSessionView.swift in Sources */,
@@ -610,6 +624,7 @@
 				BA372EB765F8EB0AA842702E /* ProfileRepository.swift in Sources */,
 				2678F0E5AB056C08AA5A4DCA /* ProfileSettingsView.swift in Sources */,
 				30C8D2DA99F1818A525BBE3D /* ProfileView.swift in Sources */,
+				ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */,
 				9B364341B2297A924B66E20A /* RootView.swift in Sources */,
 				D8B7A3E64B7FA2A652D89C58 /* SecondaryButton.swift in Sources */,
 				6F673F14965C2E8BFB64D8C4 /* SessionCard.swift in Sources */,
@@ -644,6 +659,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */,
 				1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

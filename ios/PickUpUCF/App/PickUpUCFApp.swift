@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct PickUpUCFApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var appState = AppState()
 
     var body: some Scene {
@@ -11,6 +12,11 @@ struct PickUpUCFApp: App {
                 .preferredColorScheme(appState.preferredColorScheme)
                 .onOpenURL { url in
                     handleDeepLink(url)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
+                    guard let url = note.object as? URL,
+                          case .session(let id) = DeepLinkRouter.destination(from: url) else { return }
+                    appState.queueSessionDeepLink(id: id)
                 }
                 .task {
                     if !AppConfig.isConfigured {

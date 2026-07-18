@@ -42,6 +42,10 @@ targets:
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
+        # Push Notifications capability must also be enabled in Xcode:
+        # PickUpUCF target → Signing & Capabilities → + Capability → Push Notifications
+        UIBackgroundModes:
+          - remote-notification
     settings:
       base:
         PRODUCT_NAME: PickUpUCF

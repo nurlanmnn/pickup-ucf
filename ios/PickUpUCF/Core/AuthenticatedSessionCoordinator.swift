@@ -11,5 +11,6 @@ enum AuthenticatedSessionCoordinator {
             appState.showError(error)
         }
         appState.consumePendingSessionDeepLinkIfNeeded()
+        await PushNotificationService.shared.requestAuthorizationAndRegister()
     }
 }
