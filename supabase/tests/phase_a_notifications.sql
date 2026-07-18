@@ -258,6 +258,91 @@ BEGIN
   RAISE NOTICE 'phase_a_notifications: submit_session_attendance OK';
 END $$;
 
+-- Phase A Task 2: submit_session_attendance idempotent double-submit
+DO $$
+DECLARE
+  v_host_id uuid := gen_random_uuid();
+  v_player_attended uuid := gen_random_uuid();
+  v_player_noshow uuid := gen_random_uuid();
+  v_session_id uuid := gen_random_uuid();
+  v_games_played int;
+  v_streak int;
+BEGIN
+  INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at
+  ) VALUES
+    (
+      '00000000-0000-0000-0000-000000000000',
+      v_host_id, 'authenticated', 'authenticated',
+      'test-idempotent-host@knights.ucf.edu', '', now(), now(), now()
+    ),
+    (
+      '00000000-0000-0000-0000-000000000000',
+      v_player_attended, 'authenticated', 'authenticated',
+      'test-idempotent-yes@knights.ucf.edu', '', now(), now(), now()
+    ),
+    (
+      '00000000-0000-0000-0000-000000000000',
+      v_player_noshow, 'authenticated', 'authenticated',
+      'test-idempotent-no@knights.ucf.edu', '', now(), now(), now()
+    );
+
+  INSERT INTO public.profiles (id, display_name, games_played, show_up_streak)
+  VALUES
+    (v_host_id, 'Idempotent Host', 0, 0),
+    (v_player_attended, 'Idempotent Attended', 5, 3),
+    (v_player_noshow, 'Idempotent No-show', 2, 2);
+
+  INSERT INTO public.sessions (
+    id, host_id, sport, starts_at, ends_at, capacity, skill_level, status
+  ) VALUES (
+    v_session_id, v_host_id, 'basketball',
+    now() - interval '2 hours', now() - interval '1 hour',
+    10, 'any', 'open'
+  );
+
+  INSERT INTO public.session_participants (session_id, user_id, role, status)
+  VALUES
+    (v_session_id, v_player_attended, 'player', 'joined'),
+    (v_session_id, v_player_noshow, 'player', 'joined');
+
+  PERFORM set_config('request.jwt.claim.sub', v_host_id::text, true);
+
+  PERFORM public.submit_session_attendance(
+    v_session_id,
+    ARRAY[v_player_attended]
+  );
+
+  PERFORM public.submit_session_attendance(
+    v_session_id,
+    ARRAY[v_player_attended]
+  );
+
+  SELECT games_played, show_up_streak
+  INTO v_games_played, v_streak
+  FROM public.profiles
+  WHERE id = v_player_attended;
+
+  IF v_games_played <> 6 OR v_streak <> 4 THEN
+    RAISE EXCEPTION
+      'submit_session_attendance idempotent failed: attended player stats games=% streak=% after double submit',
+      v_games_played, v_streak;
+  END IF;
+
+  DELETE FROM public.attendance WHERE session_id = v_session_id;
+  DELETE FROM public.session_participants WHERE session_id = v_session_id;
+  DELETE FROM public.sessions WHERE id = v_session_id;
+  DELETE FROM public.profiles
+  WHERE id IN (v_host_id, v_player_attended, v_player_noshow);
+  DELETE FROM auth.users
+  WHERE id IN (v_host_id, v_player_attended, v_player_noshow);
+
+  PERFORM set_config('request.jwt.claim.sub', '', true);
+
+  RAISE NOTICE 'phase_a_notifications: submit_session_attendance idempotent OK';
+END $$;
+
 -- Phase A Task 2: submit_session_attendance guard rails
 DO $$
 DECLARE

@@ -99,7 +99,8 @@ DECLARE
   v_starts_at timestamptz;
   v_ends_at timestamptz;
   v_status session_status;
-  v_joined_user uuid;
+  v_old_attended uuid[];
+  v_new_attended uuid[];
 BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'not_authenticated';
@@ -131,12 +132,16 @@ BEGIN
     RAISE EXCEPTION 'attendance_window_closed';
   END IF;
 
-  -- Replace attendance rows for this session
-  DELETE FROM public.attendance WHERE session_id = p_session_id;
+  -- Capture existing attendance before replace (for idempotent stat updates)
+  SELECT COALESCE(array_agg(user_id ORDER BY user_id), ARRAY[]::uuid[])
+  INTO v_old_attended
+  FROM public.attendance
+  WHERE session_id = p_session_id;
 
-  INSERT INTO public.attendance (session_id, user_id)
-  SELECT p_session_id, uid
-  FROM unnest(p_attended_user_ids) AS uid
+  -- Normalize new attended set to joined participants only
+  SELECT COALESCE(array_agg(uid ORDER BY uid), ARRAY[]::uuid[])
+  INTO v_new_attended
+  FROM unnest(COALESCE(p_attended_user_ids, ARRAY[]::uuid[])) AS uid
   WHERE EXISTS (
     SELECT 1 FROM public.session_participants sp
     WHERE sp.session_id = p_session_id
@@ -144,21 +149,28 @@ BEGIN
       AND sp.status = 'joined'
   );
 
-  -- Attended: increment games_played + streak
+  -- No-op when attendance unchanged on an already-completed session
+  IF v_status = 'completed' AND v_old_attended = v_new_attended THEN
+    RETURN;
+  END IF;
+
+  -- Replace attendance rows for this session
+  DELETE FROM public.attendance WHERE session_id = p_session_id;
+
+  INSERT INTO public.attendance (session_id, user_id)
+  SELECT p_session_id, uid
+  FROM unnest(v_new_attended) AS uid;
+
+  -- Newly attended: increment games_played + streak
   UPDATE public.profiles p
   SET
     games_played = games_played + 1,
     show_up_streak = show_up_streak + 1,
     updated_at = now()
-  WHERE p.id = ANY(p_attended_user_ids)
-    AND EXISTS (
-      SELECT 1 FROM public.session_participants sp
-      WHERE sp.session_id = p_session_id
-        AND sp.user_id = p.id
-        AND sp.status = 'joined'
-    );
+  WHERE p.id = ANY(v_new_attended)
+    AND NOT (p.id = ANY(v_old_attended));
 
-  -- No-shows among joined players: reset streak
+  -- Streak reset: attended→absent changes, or first submission no-shows
   UPDATE public.profiles p
   SET show_up_streak = 0, updated_at = now()
   WHERE EXISTS (
@@ -167,7 +179,11 @@ BEGIN
       AND sp.user_id = p.id
       AND sp.status = 'joined'
   )
-  AND p.id <> ALL(COALESCE(p_attended_user_ids, ARRAY[]::uuid[]));
+  AND NOT (p.id = ANY(v_new_attended))
+  AND (
+    p.id = ANY(v_old_attended)
+    OR cardinality(v_old_attended) = 0
+  );
 
   UPDATE public.sessions
   SET status = 'completed', updated_at = now()
