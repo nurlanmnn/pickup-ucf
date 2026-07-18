@@ -9,6 +9,7 @@ struct SessionDetailView: View {
     @State private var viewModel: SessionDetailViewModel
     @State private var showEditSheet = false
     @State private var showAttendanceSheet = false
+    @State private var showReportSheet = false
     @State private var showCancelConfirm = false
 
     init(sessionId: UUID) {
@@ -51,6 +52,21 @@ struct SessionDetailView: View {
                     }
                     .accessibilityLabel("Share session")
                 }
+
+                if !viewModel.isHost, appState.isAuthenticated {
+                    ToolbarItem(placement: .secondaryAction) {
+                        Menu {
+                            Button {
+                                showReportSheet = true
+                            } label: {
+                                Label("Report session", systemImage: "exclamationmark.bubble")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
+                        .accessibilityLabel("Session options")
+                    }
+                }
             }
         }
         .task(id: "\(sessionId.uuidString)-\(appState.session?.userId.uuidString ?? "anon")") {
@@ -87,6 +103,12 @@ struct SessionDetailView: View {
                 AttendanceSheet(viewModel: viewModel)
             }
             .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showReportSheet) {
+            NavigationStack {
+                ReportSheet(sessionId: sessionId)
+            }
+            .presentationDetents([.medium, .large])
         }
         .confirmationDialog(
             "Cancel this session for everyone?",
