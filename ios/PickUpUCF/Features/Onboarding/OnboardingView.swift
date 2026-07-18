@@ -5,10 +5,6 @@ struct OnboardingView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = OnboardingViewModel()
 
-    private let sportColumns = [
-        GridItem(.adaptive(minimum: 104), spacing: Spacing.s),
-    ]
-
     var body: some View {
         @Bindable var vm = viewModel
 
@@ -58,16 +54,10 @@ struct OnboardingView: View {
                 .font(AppFont.caption())
                 .foregroundStyle(AppColor.textSecondary(colorScheme))
 
-            LazyVGrid(columns: sportColumns, spacing: Spacing.s) {
-                ForEach(SportType.allCases) { sport in
-                    OnboardingSportChip(
-                        sport: sport,
-                        isSelected: vm.isSelected(sport)
-                    ) {
-                        vm.toggleSport(sport)
-                    }
-                }
-            }
+            SportPickerGrid(
+                selectedSports: vm.selectedSports,
+                onToggle: { vm.toggleSport($0) }
+            )
         }
     }
 
@@ -91,46 +81,6 @@ struct OnboardingView: View {
         Text(title)
             .font(AppFont.headline(.semibold))
             .foregroundStyle(AppColor.textPrimary(colorScheme))
-    }
-}
-
-private struct OnboardingSportChip: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    let sport: SportType
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: Spacing.s) {
-                Image(systemName: sport.systemImage)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.black : AppColor.sportAccent(sport))
-
-                Text(sport.displayName)
-                    .font(AppFont.caption(.semibold))
-                    .foregroundStyle(isSelected ? Color.black : AppColor.textPrimary(colorScheme))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.m)
-            .padding(.horizontal, Spacing.s)
-            .background(isSelected ? AppColor.gold : AppColor.surface(colorScheme))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(
-                        isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme).opacity(0.25),
-                        lineWidth: isSelected ? 0 : 1
-                    )
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityLabel(sport.displayName)
     }
 }
 

@@ -41,6 +41,8 @@ private final class StubProfileRepository: ProfileRepositoryProtocol {
         XCTFail("completeOnboarding should not be called without selected sports")
     }
 
+    func updatePreferredSports(_ sports: [SportType]) async throws {}
+
     func updateUsername(_ username: String) async throws {}
 
     func deleteAccount() async throws {}

@@ -6,6 +6,7 @@ protocol ProfileRepositoryProtocol {
     func ensureProfile(userId: UUID, displayName: String) async throws
     func fetchCurrentProfile() async throws -> Profile
     func completeOnboarding(sports: [SportType], skillLevel: SkillLevel) async throws
+    func updatePreferredSports(_ sports: [SportType]) async throws
     func updateUsername(_ username: String) async throws
     func deleteAccount() async throws
 }
@@ -61,6 +62,20 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             .execute()
     }
 
+    func updatePreferredSports(_ sports: [SportType]) async throws {
+        guard !sports.isEmpty else {
+            throw ProfileRepositoryError.preferredSportsRequired
+        }
+
+        let userId = try await client.auth.session.user.id
+        let update = ProfilePreferredSportsUpdate(preferredSports: sports)
+        try await client
+            .from("profiles")
+            .update(update)
+            .eq("id", value: userId.uuidString)
+            .execute()
+    }
+
     func updateUsername(_ username: String) async throws {
         let normalized = username.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         let userId = try await client.auth.session.user.id
@@ -89,6 +104,14 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     }
 }
 
+struct ProfilePreferredSportsUpdate: Encodable {
+    let preferredSports: [SportType]
+
+    enum CodingKeys: String, CodingKey {
+        case preferredSports = "preferred_sports"
+    }
+}
+
 struct CompleteOnboardingParams: Encodable {
     let pPreferredSports: [SportType]
     let pSkillLevel: SkillLevel
@@ -101,11 +124,14 @@ struct CompleteOnboardingParams: Encodable {
 
 enum ProfileRepositoryError: LocalizedError {
     case missingDisplayName
+    case preferredSportsRequired
 
     var errorDescription: String? {
         switch self {
         case .missingDisplayName:
             return "Display name is required for your profile."
+        case .preferredSportsRequired:
+            return "Select at least one sport."
         }
     }
 }

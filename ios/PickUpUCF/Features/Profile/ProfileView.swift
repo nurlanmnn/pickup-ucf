@@ -37,6 +37,13 @@ struct ProfileView: View {
                             Text("\(profile.showUpStreak) show-up streak")
                                 .font(AppFont.caption())
                                 .foregroundStyle(AppColor.textSecondary(colorScheme))
+
+                            if !profile.preferredSports.isEmpty {
+                                Text(profile.preferredSports.map(\.displayName).joined(separator: ", "))
+                                    .font(AppFont.caption())
+                                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+                                    .multilineTextAlignment(.center)
+                            }
                         }
 
                         if let profileLoadError {

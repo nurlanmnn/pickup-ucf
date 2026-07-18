@@ -18,6 +18,9 @@ struct ProfileSettingsView: View {
             }
 
             Section("Account") {
+                NavigationLink("Edit sports") {
+                    EditPreferredSportsView()
+                }
                 NavigationLink("Edit username") {
                     EditUsernameView()
                 }
