@@ -55,6 +55,22 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+  PickUpUCFTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCFTests
+    dependencies:
+      - target: PickUpUCF
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
 schemes:
   PickUpUCF:
     build:
@@ -64,6 +80,8 @@ schemes:
       config: Debug
     test:
       config: Debug
+      targets:
+        - PickUpUCFTests
     profile:
       config: Release
     analyze:

@@ -19,6 +19,7 @@
 		1128AC53CBBFB3A2F64C6B39 /* ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1361D112819B3647AC788DA8 /* ErrorBanner.swift */; };
 		199B28EC70FCB85F00D90137 /* LocationGeocoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814D5D13EC16A4C047B628EB /* LocationGeocoding.swift */; };
 		1BD4A8F827E57FC5526C2E2D /* CustomLocationSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B1B677E948D2B276B4A142 /* CustomLocationSelection.swift */; };
+		1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA6F174FDB0787634098299F /* SportTypeTests.swift */; };
 		1FCA653716B1F4393E14EEB0 /* SessionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */; };
 		22741610F4AAB4843456AFAF /* CreateSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B5A500427FA25E1995B7A4 /* CreateSessionViewModel.swift */; };
 		2678F0E5AB056C08AA5A4DCA /* ProfileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F003A978D9031E782EF6 /* ProfileSettingsView.swift */; };
@@ -86,6 +87,16 @@
 		FD1268433FF36385815B6E48 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FB4C920FF85773CF1C7EEF /* ChangePasswordView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		4B8EF1056D163E1BB488E4FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 12D276D6E5F3D157A24FE6F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A80EF440122C0DB25714CAA3;
+			remoteInfo = PickUpUCF;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		11469B5CBFCFEE7B515C49F1 /* CreateSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionView.swift; sourceTree = "<group>"; };
 		1361D112819B3647AC788DA8 /* ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorBanner.swift; sourceTree = "<group>"; };
@@ -128,6 +139,7 @@
 		9B2BBDA79DCE13D7763F94E6 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		9E0716219CB340B39112A954 /* GlobalBannerOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalBannerOverlay.swift; sourceTree = "<group>"; };
 		9F21B57FD815D6D1FBCB999F /* SignInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInViewModel.swift; sourceTree = "<group>"; };
+		A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PickUpUCFTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3AE8C9278DFC937D2147901 /* PasswordValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordValidator.swift; sourceTree = "<group>"; };
 		A58C2BA025730660536F29F7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickUpUCFApp.swift; sourceTree = "<group>"; };
@@ -146,6 +158,7 @@
 		D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppErrorMapper.swift; sourceTree = "<group>"; };
 		D55C0B3259971CA36E0A5FD0 /* SessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionCard.swift; sourceTree = "<group>"; };
 		D9E2811071ACC03F3C447E36 /* SessionDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailViewModel.swift; sourceTree = "<group>"; };
+		DA6F174FDB0787634098299F /* SportTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportTypeTests.swift; sourceTree = "<group>"; };
 		DAAFA31181F35F9C4D81D29A /* SignUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewModel.swift; sourceTree = "<group>"; };
 		DAB46240077BFF47D91FFC1E /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareLink.swift; sourceTree = "<group>"; };
@@ -261,6 +274,14 @@
 			path = CreateSession;
 			sourceTree = "<group>";
 		};
+		6097B8A860D25B72684D298C /* PickUpUCFTests */ = {
+			isa = PBXGroup;
+			children = (
+				DA6F174FDB0787634098299F /* SportTypeTests.swift */,
+			);
+			path = PickUpUCFTests;
+			sourceTree = "<group>";
+		};
 		7AB607EB8ADC82BDBB923D20 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
@@ -300,6 +321,7 @@
 			isa = PBXGroup;
 			children = (
 				2CA8AE43E1632088B2201AAC /* PickUpUCF.app */,
+				A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -368,6 +390,7 @@
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
 				48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */,
 				D0C313F876C35242852CB8DE /* PickUpUCF */,
+				6097B8A860D25B72684D298C /* PickUpUCFTests */,
 				83EF6F3D1A1631B4131B6BA7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -443,7 +466,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_ED8465F9-FAC5-4500-B5D9-6DAAF8C19972" /* ios */ = {
+		"TEMP_911BF92D-4AFF-451C-992B-8E28B31EA853" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -454,6 +477,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8538E3DE7279F378E6E8724C /* PickUpUCFTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8EE81C22DAA72443CE8D80BD /* Build configuration list for PBXNativeTarget "PickUpUCFTests" */;
+			buildPhases = (
+				77A9E68EB82A3B065F722284 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8061871CF18D21FA37B81F71 /* PBXTargetDependency */,
+			);
+			name = PickUpUCFTests;
+			packageProductDependencies = (
+			);
+			productName = PickUpUCFTests;
+			productReference = A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		A80EF440122C0DB25714CAA3 /* PickUpUCF */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C43D974FB6356FFE2D86D77E /* Build configuration list for PBXNativeTarget "PickUpUCF" */;
@@ -482,6 +523,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					8538E3DE7279F378E6E8724C = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
 					A80EF440122C0DB25714CAA3 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
@@ -506,6 +551,7 @@
 			projectRoot = "";
 			targets = (
 				A80EF440122C0DB25714CAA3 /* PickUpUCF */,
+				8538E3DE7279F378E6E8724C /* PickUpUCFTests */,
 			);
 		};
 /* End PBXProject section */
@@ -594,9 +640,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		77A9E68EB82A3B065F722284 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		8061871CF18D21FA37B81F71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A80EF440122C0DB25714CAA3 /* PickUpUCF */;
+			targetProxy = 4B8EF1056D163E1BB488E4FB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		6672BDAA9155EA586673DEC4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PickUpUCF.app/PickUpUCF";
+			};
+			name = Release;
+		};
 		67B942BF241D49ABD3FE2E1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DAB46240077BFF47D91FFC1E /* Config.xcconfig */;
@@ -636,6 +719,27 @@
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
+		};
+		7E116C5F1D11A50746E3A2DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PickUpUCF.app/PickUpUCF";
+			};
+			name = Debug;
 		};
 		BDAED959AEB80176E06ED979 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -761,6 +865,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8EE81C22DAA72443CE8D80BD /* Build configuration list for PBXNativeTarget "PickUpUCFTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E116C5F1D11A50746E3A2DB /* Debug */,
+				6672BDAA9155EA586673DEC4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		B5CEE9315B631D2F2C7C80DC /* Build configuration list for PBXProject "PickUpUCF" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

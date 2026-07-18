@@ -51,6 +51,26 @@ open PickUpUCF.xcodeproj
 
 Build and run in Xcode. Use a `@knights.ucf.edu` or `@ucf.edu` account.
 
+### Running tests
+
+**SQL (local Supabase):**
+
+```bash
+cd supabase
+supabase db reset && supabase db push
+psql "$(supabase status -o env | grep DATABASE_URL | cut -d= -f2-)" -f tests/run_all.sql
+```
+
+**iOS unit tests:**
+
+```bash
+cd ios
+xcodegen generate
+xcodebuild test -scheme PickUpUCF -destination 'platform=iOS Simulator,name=iPhone 16'
+```
+
+If the iPhone 16 simulator is unavailable, try `name=iPhone 15` or `-destination 'generic/platform=iOS Simulator'`.
+
 ## Project structure
 
 ```
