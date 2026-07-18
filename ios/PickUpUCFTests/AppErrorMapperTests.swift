@@ -9,6 +9,7 @@ final class AppErrorMapperTests: XCTestCase {
             ("attendance_window_closed", "The attendance window has closed."),
             ("session_cancelled", "This session was cancelled."),
             ("session_not_found", "This session is no longer available."),
+            ("user_blocked", "You can't join this host's sessions."),
             ("not_authenticated", "Your session expired. Please sign in again."),
         ]
 

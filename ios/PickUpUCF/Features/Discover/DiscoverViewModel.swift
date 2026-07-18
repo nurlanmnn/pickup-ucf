@@ -15,10 +15,15 @@ final class DiscoverViewModel {
     private(set) var participantStatusBySessionId: [UUID: ParticipantStatus] = [:]
 
     private let repository: SessionRepositoryProtocol
+    private let blockRepository: BlockRepositoryProtocol
     private var loadTask: Task<Void, Never>?
 
-    init(repository: SessionRepositoryProtocol = SessionRepository()) {
+    init(
+        repository: SessionRepositoryProtocol = SessionRepository(),
+        blockRepository: BlockRepositoryProtocol = BlockRepository()
+    ) {
         self.repository = repository
+        self.blockRepository = blockRepository
     }
 
     var filteredSessions: [PickupSession] {
@@ -78,11 +83,15 @@ final class DiscoverViewModel {
         sessions = .loading
         do {
             let skillFilter = selectedSkillLevel == .any ? nil : selectedSkillLevel
-            let items = try await repository.fetchUpcoming(
+            var items = try await repository.fetchUpcoming(
                 sport: selectedSport,
                 timeWindow: selectedTimeWindow,
                 skillLevel: skillFilter
             )
+            if currentUserId != nil {
+                let blockedHostIds = try await blockRepository.fetchBlockedUserIds()
+                items = SessionRepository.filterBlockedHosts(items, blockedHostIds: blockedHostIds)
+            }
             if Task.isCancelled {
                 sessions = previous
                 participantStatusBySessionId = previousStatuses

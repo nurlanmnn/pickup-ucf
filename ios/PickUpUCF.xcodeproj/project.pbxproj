@@ -25,6 +25,7 @@
 		1FCA653716B1F4393E14EEB0 /* SessionMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */; };
 		22741610F4AAB4843456AFAF /* CreateSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3B5A500427FA25E1995B7A4 /* CreateSessionViewModel.swift */; };
 		2678F0E5AB056C08AA5A4DCA /* ProfileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F003A978D9031E782EF6 /* ProfileSettingsView.swift */; };
+		2AEF95D24EBD2445FAF4FC3E /* BlockRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642BF3B3DAD6908789F71A3F /* BlockRepository.swift */; };
 		2B3A702BEA6B7678B67ECB7B /* CampusCoordinates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5FD253D340B1DE5C911072 /* CampusCoordinates.swift */; };
 		2BF01DEDE298341D3CBAD216 /* OtherSportNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6DB7D6E3579CB040FB9225 /* OtherSportNotes.swift */; };
 		2D7DF7567ADA1EE211F1C693 /* SessionDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E2811071ACC03F3C447E36 /* SessionDetailViewModel.swift */; };
@@ -79,6 +80,7 @@
 		AD2D11E213D7A2580CF4644E /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAFA31181F35F9C4D81D29A /* SignUpViewModel.swift */; };
 		ADC7102007A4BB723B0CB63C /* SessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DAD1CF5E58538DF42183E3 /* SessionRepository.swift */; };
 		B0C9930503BC7431D551C099 /* AppErrorMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B62E8779F4471C7B04CC3240 /* AppErrorMapperTests.swift */; };
+		B0D62361AB27049E946F64D6 /* BlockedSessionFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1904C68A81C62E8B0EB286B7 /* BlockedSessionFilterTests.swift */; };
 		B47AD5ED5E9D9F87B3AD70B3 /* EditSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4025285B020BC00E058C008 /* EditSessionView.swift */; };
 		B63C8ACDEE168DBD73AE31A9 /* SportType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F6DA7D0CEC225CAE8B3D8B /* SportType.swift */; };
 		B74B95ED3973EA0DF29AA54F /* EditPreferredSportsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F84BF7F1BE1E58C173F59FD8 /* EditPreferredSportsViewModel.swift */; };
@@ -129,6 +131,7 @@
 		15866006217050F82E09128A /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		166AA222FC219277946F518C /* MyGamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyGamesView.swift; sourceTree = "<group>"; };
 		17DE4EF93FE96E1BB8896C27 /* SessionLocationMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLocationMap.swift; sourceTree = "<group>"; };
+		1904C68A81C62E8B0EB286B7 /* BlockedSessionFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedSessionFilterTests.swift; sourceTree = "<group>"; };
 		19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRepository.swift; sourceTree = "<group>"; };
 		1BAC2C01F0B798CF2E11AA57 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverFilterTests.swift; sourceTree = "<group>"; };
@@ -150,6 +153,7 @@
 		5FC885F5B31CF2D5018C6A23 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		61DAD1CF5E58538DF42183E3 /* SessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRepository.swift; sourceTree = "<group>"; };
 		627FE057B8DFDE13BE62D66B /* SportPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportPickerGrid.swift; sourceTree = "<group>"; };
+		642BF3B3DAD6908789F71A3F /* BlockRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockRepository.swift; sourceTree = "<group>"; };
 		65D1542CBCAF53BDCA3610DC /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		699CE3048C4ED16348EC4831 /* PickupSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickupSession.swift; sourceTree = "<group>"; };
 		6C46444DC8B9DB494A9E836E /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -332,6 +336,7 @@
 			isa = PBXGroup;
 			children = (
 				B62E8779F4471C7B04CC3240 /* AppErrorMapperTests.swift */,
+				1904C68A81C62E8B0EB286B7 /* BlockedSessionFilterTests.swift */,
 				70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */,
 				21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */,
 				0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */,
@@ -496,6 +501,7 @@
 			children = (
 				EAB4D6B17AB8CECC942AEC2C /* AttendanceRepository.swift */,
 				8746DB50D2CFBB7020D10E61 /* AuthRepository.swift */,
+				642BF3B3DAD6908789F71A3F /* BlockRepository.swift */,
 				AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */,
 				19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */,
 				595F8B61002E69A476BF1CC1 /* ProfileRepository.swift */,
@@ -546,7 +552,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_5ECD7E6A-6241-4AFD-BE9E-08B504EDE9E1" /* ios */ = {
+		"TEMP_D4B505B4-EC87-4657-9D55-73913DACCAB9" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -649,6 +655,7 @@
 				EDF2ED66A840CFB60818DEF9 /* AttendanceSheet.swift in Sources */,
 				56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */,
 				E39DD70AE3DEC88A300D7DD6 /* AuthenticatedSessionCoordinator.swift in Sources */,
+				2AEF95D24EBD2445FAF4FC3E /* BlockRepository.swift in Sources */,
 				2B3A702BEA6B7678B67ECB7B /* CampusCoordinates.swift in Sources */,
 				FD1268433FF36385815B6E48 /* ChangePasswordView.swift in Sources */,
 				42483B034176FBAE1C750704 /* ChangePasswordViewModel.swift in Sources */,
@@ -741,6 +748,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B0C9930503BC7431D551C099 /* AppErrorMapperTests.swift in Sources */,
+				B0D62361AB27049E946F64D6 /* BlockedSessionFilterTests.swift in Sources */,
 				404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */,
 				34BC530435959DBD8F476DDA /* DiscoverFilterTests.swift in Sources */,
 				A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */,

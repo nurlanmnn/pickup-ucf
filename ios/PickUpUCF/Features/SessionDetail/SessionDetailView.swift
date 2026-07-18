@@ -11,6 +11,7 @@ struct SessionDetailView: View {
     @State private var showAttendanceSheet = false
     @State private var showReportSheet = false
     @State private var showCancelConfirm = false
+    @State private var showBlockConfirm = false
 
     init(sessionId: UUID) {
         self.sessionId = sessionId
@@ -60,6 +61,11 @@ struct SessionDetailView: View {
                                 showReportSheet = true
                             } label: {
                                 Label("Report session", systemImage: "exclamationmark.bubble")
+                            }
+                            Button(role: .destructive) {
+                                showBlockConfirm = true
+                            } label: {
+                                Label("Block host", systemImage: "hand.raised")
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
@@ -126,6 +132,23 @@ struct SessionDetailView: View {
             Button("Keep session", role: .cancel) {}
         } message: {
             Text("Players will no longer see this game.")
+        }
+        .confirmationDialog(
+            "Block this host?",
+            isPresented: $showBlockConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Block host", role: .destructive) {
+                Task {
+                    if await viewModel.blockHost() {
+                        appState.touchSessionFeedRefresh()
+                        dismiss()
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Their sessions will be hidden from Discover and you won't be able to join their games.")
         }
     }
 

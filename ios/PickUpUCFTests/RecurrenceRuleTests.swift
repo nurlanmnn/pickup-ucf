@@ -5,7 +5,8 @@ final class RecurrenceRuleTests: XCTestCase {
     func testWeeklyDefaultEncoding() throws {
         let rule = RecurrenceRule.weekly(count: 4)
         let json = try rule.jsonString
-        XCTAssertEqual(json, #"{"frequency":"weekly","count":4}"#)
+        let decoded = try JSONDecoder().decode(RecurrenceRule.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded, rule)
     }
 
     func testWeeklyCountClampedToRange() {

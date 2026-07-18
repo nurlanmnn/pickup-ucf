@@ -12,6 +12,7 @@ final class SessionDetailViewModel {
 
     private let repository: SessionRepositoryProtocol
     private let attendanceRepository: AttendanceRepository
+    private let blockRepository: BlockRepositoryProtocol
     private let client: SupabaseClient
     private let userId: UUID?
 
@@ -25,12 +26,14 @@ final class SessionDetailViewModel {
         userId: UUID?,
         repository: SessionRepositoryProtocol = SessionRepository(),
         attendanceRepository: AttendanceRepository = AttendanceRepository(),
+        blockRepository: BlockRepositoryProtocol = BlockRepository(),
         client: SupabaseClient = SupabaseManager.shared
     ) {
         self.sessionId = sessionId
         self.userId = userId
         self.repository = repository
         self.attendanceRepository = attendanceRepository
+        self.blockRepository = blockRepository
         self.client = client
     }
 
@@ -144,6 +147,24 @@ final class SessionDetailViewModel {
         do {
             try await repository.cancelSession(id: current.id)
             await load()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            return true
+        } catch {
+            actionError = AppErrorMapper.message(for: error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            return false
+        }
+    }
+
+    @MainActor
+    func blockHost() async -> Bool {
+        guard !isHost, let hostId = session.value?.hostId else { return false }
+        actionError = nil
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            try await blockRepository.block(userId: hostId)
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             return true
         } catch {

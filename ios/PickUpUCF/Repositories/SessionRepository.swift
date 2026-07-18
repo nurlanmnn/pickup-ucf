@@ -104,6 +104,15 @@ final class SessionRepository: SessionRepositoryProtocol {
         return rows.filter { $0.startsAt > now }
     }
 
+    /// Removes sessions hosted by users the caller has blocked (client-side filter after one block-list fetch).
+    static func filterBlockedHosts(
+        _ sessions: [PickupSession],
+        blockedHostIds: Set<UUID>
+    ) -> [PickupSession] {
+        guard !blockedHostIds.isEmpty else { return sessions }
+        return sessions.filter { !blockedHostIds.contains($0.hostId) }
+    }
+
     func fetchMySessions(userId: UUID) async throws -> [PickupSession] {
         struct ParticipantSessionId: Decodable {
             let sessionId: UUID

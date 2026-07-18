@@ -61,6 +61,9 @@ enum AppErrorMapper {
         if text.contains("session_cancelled") {
             return "This session was cancelled."
         }
+        if text.contains("user_blocked") {
+            return "You can't join this host's sessions."
+        }
         if text.contains("participant_status") && text.contains("invalid input value") {
             return "Could not join this session. Apply the latest database migration (fix_join_session_status_type) in Supabase, then try again."
         }
