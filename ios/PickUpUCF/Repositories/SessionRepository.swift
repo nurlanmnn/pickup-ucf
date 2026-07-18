@@ -268,6 +268,9 @@ final class SessionRepository: SessionRepositoryProtocol {
         )
         try await client.from("session_participants").insert(hostRow).execute()
 
+        if let withWeather = try? await attachWeatherSnapshotIfNeeded(to: created) {
+            return withWeather
+        }
         return created
     }
 
@@ -341,6 +344,52 @@ final class SessionRepository: SessionRepositoryProtocol {
             }
         }
         try await client.rpc("leave_session", params: LeaveParams(pSessionId: id)).execute()
+    }
+
+    /// Fetches forecast via Edge Function and patches `weather_snapshot` for outdoor sessions.
+    private func attachWeatherSnapshotIfNeeded(to session: PickupSession) async throws -> PickupSession {
+        guard session.isOutdoorForWeather, let coordinates = session.weatherCoordinates else {
+            return session
+        }
+
+        struct FetchWeatherBody: Encodable {
+            let lat: Double
+            let lng: Double
+            let startsAt: String
+
+            enum CodingKeys: String, CodingKey {
+                case lat, lng
+                case startsAt = "starts_at"
+            }
+        }
+
+        let snapshot: WeatherSnapshot = try await client.functions.invoke(
+            "fetch-weather",
+            options: FunctionInvokeOptions(
+                body: FetchWeatherBody(
+                    lat: coordinates.lat,
+                    lng: coordinates.lng,
+                    startsAt: session.startsAt.ISO8601Format()
+                )
+            )
+        )
+
+        struct WeatherPatch: Encodable {
+            let weatherSnapshot: WeatherSnapshot
+
+            enum CodingKeys: String, CodingKey {
+                case weatherSnapshot = "weather_snapshot"
+            }
+        }
+
+        return try await client
+            .from("sessions")
+            .update(WeatherPatch(weatherSnapshot: snapshot))
+            .eq("id", value: session.id.uuidString)
+            .select(sessionSelect)
+            .single()
+            .execute()
+            .value
     }
 }
 

@@ -54,6 +54,7 @@ struct PickupSession: Codable, Identifiable, Equatable {
     var status: SessionStatus
     var venue: Venue?
     var host: ProfileSummary?
+    var weatherSnapshot: WeatherSnapshot?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -70,6 +71,7 @@ struct PickupSession: Codable, Identifiable, Equatable {
         case playerCount = "player_count"
         case skillLevel = "skill_level"
         case notes, status, venue, host
+        case weatherSnapshot = "weather_snapshot"
     }
 
     var locationName: String {

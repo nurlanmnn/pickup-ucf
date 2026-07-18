@@ -125,6 +125,11 @@ struct SessionDetailView: View {
 
                         Label(SessionDateFormatter.cardLabel(for: session.startsAt), systemImage: "clock")
                         Label(session.locationName, systemImage: "mappin.and.ellipse")
+                        if session.isOutdoorForWeather, let weather = session.weatherSnapshot {
+                            Label(weather.displayLine, systemImage: "cloud.sun")
+                                .font(AppFont.body())
+                                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        }
                         Label(session.host?.handle ?? "Host", systemImage: "person")
                         SkillPill(skill: session.skillLevel)
 
