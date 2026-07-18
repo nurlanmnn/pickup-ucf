@@ -175,12 +175,14 @@ struct SessionDetailView: View {
                                 .font(AppFont.body())
                                 .foregroundStyle(AppColor.textSecondary(colorScheme))
                         }
-                        Label(session.host?.handle ?? "Host", systemImage: "person")
+                        hostRow(session: session)
                         SkillPill(skill: session.skillLevel)
 
                         Text("\(session.playerCount) of \(session.capacity) players")
                             .font(AppFont.headline(.semibold))
                             .animation(nil, value: session.playerCount)
+
+                        rosterSection()
 
                         if session.status == .cancelled {
                             FormFieldHint(text: "This session was cancelled.")
@@ -206,6 +208,58 @@ struct SessionDetailView: View {
             }
 
             sessionBottomBar(session)
+        }
+    }
+
+    @ViewBuilder
+    private func hostRow(session: PickupSession) -> some View {
+        NavigationLink {
+            HostProfileView(
+                userId: session.hostId,
+                currentUserId: appState.session?.userId,
+                onBlocked: {
+                    appState.touchSessionFeedRefresh()
+                    dismiss()
+                }
+            )
+        } label: {
+            Label(session.host?.handle ?? "Host", systemImage: "person")
+        }
+    }
+
+    @ViewBuilder
+    private func rosterSection() -> some View {
+        switch viewModel.roster {
+        case .idle:
+            EmptyView()
+        case .loading:
+            ProgressView("Loading players…")
+                .font(AppFont.caption())
+                .padding(.top, Spacing.s)
+        case .failed(let message):
+            FormFieldHint(text: message)
+                .padding(.top, Spacing.s)
+        case .loaded(let roster):
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text("Players (\(roster.joined.count))")
+                    .font(AppFont.headline(.semibold))
+
+                ForEach(roster.joined) { member in
+                    Label {
+                        Text(member.displayName)
+                    } icon: {
+                        Image(systemName: member.role == .host ? "star.fill" : "person")
+                    }
+                    .font(AppFont.body())
+                }
+
+                if let waitlistLabel = roster.waitlistLabel(
+                    participantStatus: viewModel.participantStatus
+                ) {
+                    FormFieldHint(text: waitlistLabel)
+                }
+            }
+            .padding(.top, Spacing.s)
         }
     }
 

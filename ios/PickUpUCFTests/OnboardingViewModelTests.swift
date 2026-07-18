@@ -37,6 +37,10 @@ private final class StubProfileRepository: ProfileRepositoryProtocol {
         Profile(id: userId, displayName: "Test")
     }
 
+    func fetchProfile(userId: UUID) async throws -> Profile {
+        Profile(id: userId, displayName: "Test")
+    }
+
     func completeOnboarding(sports: [SportType]) async throws {
         XCTFail("completeOnboarding should not be called without selected sports")
     }

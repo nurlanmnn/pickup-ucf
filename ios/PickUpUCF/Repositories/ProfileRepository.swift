@@ -5,6 +5,7 @@ protocol ProfileRepositoryProtocol {
     func ensureProfileForCurrentUser() async throws
     func ensureProfile(userId: UUID, displayName: String) async throws
     func fetchCurrentProfile() async throws -> Profile
+    func fetchProfile(userId: UUID) async throws -> Profile
     func completeOnboarding(sports: [SportType]) async throws
     func updatePreferredSports(_ sports: [SportType]) async throws
     func updateUsername(_ username: String) async throws
@@ -43,6 +44,18 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             .from("profiles")
             .select(
                 "id, display_name, username, games_played, show_up_streak, preferred_sports, onboarding_completed_at"
+            )
+            .eq("id", value: userId.uuidString)
+            .single()
+            .execute()
+            .value
+    }
+
+    func fetchProfile(userId: UUID) async throws -> Profile {
+        try await client
+            .from("profiles")
+            .select(
+                "id, display_name, username, games_played, show_up_streak, preferred_sports"
             )
             .eq("id", value: userId.uuidString)
             .single()

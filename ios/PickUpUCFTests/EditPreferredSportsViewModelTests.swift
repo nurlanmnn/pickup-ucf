@@ -36,6 +36,10 @@ private final class StubEditSportsRepository: ProfileRepositoryProtocol {
         Profile(id: UUID(), displayName: "Test", preferredSports: [.basketball])
     }
 
+    func fetchProfile(userId: UUID) async throws -> Profile {
+        Profile(id: userId, displayName: "Test", preferredSports: [.basketball])
+    }
+
     func completeOnboarding(sports: [SportType]) async throws {}
 
     func updatePreferredSports(_ sports: [SportType]) async throws {
