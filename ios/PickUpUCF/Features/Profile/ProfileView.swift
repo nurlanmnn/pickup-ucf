@@ -30,6 +30,15 @@ struct ProfileView: View {
                                 .foregroundStyle(AppColor.textSecondary(colorScheme))
                         }
 
+                        if let profile {
+                            Text("\(profile.gamesPlayed) games played")
+                                .font(AppFont.caption())
+                                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                            Text("\(profile.showUpStreak) show-up streak")
+                                .font(AppFont.caption())
+                                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        }
+
                         if let profileLoadError {
                             Text(profileLoadError)
                                 .font(AppFont.caption())

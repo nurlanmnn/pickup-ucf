@@ -39,7 +39,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         let userId = try await client.auth.session.user.id
         return try await client
             .from("profiles")
-            .select("id, display_name, username")
+            .select("id, display_name, username, games_played, show_up_streak")
             .eq("id", value: userId.uuidString)
             .single()
             .execute()
