@@ -49,6 +49,18 @@ enum AppErrorMapper {
         if text.contains("session_not_joinable") {
             return "This session is no longer open for new players."
         }
+        if text.contains("not_host") {
+            return "Only the host can mark attendance."
+        }
+        if text.contains("session_not_started") {
+            return "Attendance opens when the game starts."
+        }
+        if text.contains("attendance_window_closed") {
+            return "The attendance window has closed."
+        }
+        if text.contains("session_cancelled") {
+            return "This session was cancelled."
+        }
         if text.contains("participant_status") && text.contains("invalid input value") {
             return "Could not join this session. Apply the latest database migration (fix_join_session_status_type) in Supabase, then try again."
         }
