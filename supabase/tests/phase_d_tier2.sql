@@ -64,6 +64,8 @@ BEGIN
   VALUES (v_session_id, v_sender_id, 'Anyone bringing a ball?')
   RETURNING id INTO v_message_id;
 
+  RESET role;
+
   SELECT count(*) INTO v_count
   FROM public.notification_outbox
   WHERE session_id = v_session_id
@@ -111,8 +113,6 @@ BEGIN
       'chat_message payload failed: expected open_chat true, got %',
       v_payload->>'open_chat';
   END IF;
-
-  RESET role;
 
   DELETE FROM public.notification_outbox WHERE session_id = v_session_id;
   DELETE FROM public.messages WHERE session_id = v_session_id;
@@ -186,6 +186,8 @@ BEGIN
   INSERT INTO public.messages (session_id, user_id, body)
   VALUES (v_session_id, v_sender_id, 'Still on for tonight?');
 
+  RESET role;
+
   SELECT count(*) INTO v_count
   FROM public.notification_outbox
   WHERE session_id = v_session_id
@@ -196,8 +198,6 @@ BEGIN
       'chat_message pref off failed: expected 0 outbox rows, got %',
       v_count;
   END IF;
-
-  RESET role;
 
   DELETE FROM public.notification_preferences WHERE user_id = v_recipient_id;
   DELETE FROM public.messages WHERE session_id = v_session_id;
