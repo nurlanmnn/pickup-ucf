@@ -71,6 +71,8 @@ final class AppState {
     var sessionDetailDeepLinkTarget: SessionDetailDeepLinkTarget = .discover
     /// Opened via `pickupucf://session/…` before the user signed in.
     var pendingSessionDeepLink: UUID?
+    /// True when the signed-in user has not finished first-run onboarding.
+    var needsOnboarding = false
 
     var isAuthenticated: Bool {
         session?.isEmailConfirmed == true

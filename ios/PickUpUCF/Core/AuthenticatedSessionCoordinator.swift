@@ -6,7 +6,10 @@ enum AuthenticatedSessionCoordinator {
         appState.session = session
         guard session.isEmailConfirmed else { return }
         do {
-            try await ProfileRepository().ensureProfileForCurrentUser()
+            let repository = ProfileRepository()
+            try await repository.ensureProfileForCurrentUser()
+            let profile = try await repository.fetchCurrentProfile()
+            appState.needsOnboarding = profile.onboardingCompletedAt == nil
         } catch {
             appState.showError(error)
         }
