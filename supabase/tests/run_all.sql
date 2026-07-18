@@ -5,3 +5,4 @@
 \ir phase_c_recurrence.sql
 \ir phase_c_blocks.sql
 \ir phase_c_reports.sql
+\ir phase_d_tier1.sql
