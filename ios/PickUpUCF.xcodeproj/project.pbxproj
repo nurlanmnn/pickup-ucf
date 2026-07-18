@@ -30,6 +30,7 @@
 		2E6C0F9DEC5F52355F29190B /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC885F5B31CF2D5018C6A23 /* EmptyStateView.swift */; };
 		30C8D2DA99F1818A525BBE3D /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5B9EBDCDFA2CA4B0ADFB17 /* ProfileView.swift */; };
 		30EAEE75972A6B5B177D5441 /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F41934D424C3E536ADDF27C /* DeleteAccountView.swift */; };
+		34BC530435959DBD8F476DDA /* DiscoverFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */; };
 		355884855F8A822D36412239 /* Venue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 595E5AA65818CEB63427D402 /* Venue.swift */; };
 		3DB20B32CFBBDD6DCBAB65DB /* SessionParticipant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 242F6C5B140576E7FF5E9C2E /* SessionParticipant.swift */; };
 		404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */; };
@@ -64,6 +65,7 @@
 		93B3FC4BB76EC457A1C618A4 /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAC2C01F0B798CF2E11AA57 /* DiscoverView.swift */; };
 		95D8C2CB8AB788675CC22E9F /* EditUsernameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF445AF6D20EE3B6517C37A7 /* EditUsernameView.swift */; };
 		9B364341B2297A924B66E20A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6849B06D30B12DF30371DC /* RootView.swift */; };
+		9B62B1AA95C38FE416E5B6F5 /* DiscoverTimeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */; };
 		9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */; };
 		A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
@@ -122,6 +124,7 @@
 		17DE4EF93FE96E1BB8896C27 /* SessionLocationMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLocationMap.swift; sourceTree = "<group>"; };
 		19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRepository.swift; sourceTree = "<group>"; };
 		1BAC2C01F0B798CF2E11AA57 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
+		21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverFilterTests.swift; sourceTree = "<group>"; };
 		242F6C5B140576E7FF5E9C2E /* SessionParticipant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionParticipant.swift; sourceTree = "<group>"; };
 		2BFF6D330274A9993FEC935D /* UsernameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameValidator.swift; sourceTree = "<group>"; };
 		2CA8AE43E1632088B2201AAC /* PickUpUCF.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PickUpUCF.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +147,7 @@
 		6C46444DC8B9DB494A9E836E /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		6EB3B21A7FC682C24BAB27D4 /* Loadable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loadable.swift; sourceTree = "<group>"; };
 		70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRepositoryTests.swift; sourceTree = "<group>"; };
+		74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverTimeWindow.swift; sourceTree = "<group>"; };
 		7A6849B06D30B12DF30371DC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		7C91FF20CB1FB3BF80FECF4B /* MyGamesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyGamesViewModel.swift; sourceTree = "<group>"; };
 		80CFD47CFBD59B406F70E5CB /* CustomLocationPickerRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLocationPickerRow.swift; sourceTree = "<group>"; };
@@ -286,6 +290,7 @@
 			isa = PBXGroup;
 			children = (
 				F6B1B677E948D2B276B4A142 /* CustomLocationSelection.swift */,
+				74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */,
 				FE6DB7D6E3579CB040FB9225 /* OtherSportNotes.swift */,
 				699CE3048C4ED16348EC4831 /* PickupSession.swift */,
 				C45AB7447F8A2EB3FAB2814C /* Profile.swift */,
@@ -311,6 +316,7 @@
 			children = (
 				B62E8779F4471C7B04CC3240 /* AppErrorMapperTests.swift */,
 				70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */,
+				21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */,
 				0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */,
 				BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */,
 				DA6F174FDB0787634098299F /* SportTypeTests.swift */,
@@ -519,7 +525,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_992334B3-426E-4D97-A917-93CF174BA639" /* ios */ = {
+		"TEMP_2B9D0FE9-4A8B-4DC4-B277-FAE09F781A49" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -637,6 +643,7 @@
 				D982CD6650029B10BAB16429 /* DeepLinkRouter.swift in Sources */,
 				30EAEE75972A6B5B177D5441 /* DeleteAccountView.swift in Sources */,
 				91CCEC67E890E9E7052FEC20 /* DeviceTokenRepository.swift in Sources */,
+				9B62B1AA95C38FE416E5B6F5 /* DiscoverTimeWindow.swift in Sources */,
 				93B3FC4BB76EC457A1C618A4 /* DiscoverView.swift in Sources */,
 				7C3A380853BF93690359C51F /* DiscoverViewModel.swift in Sources */,
 				4961BC9DDEB18C3A8B97DF07 /* EditPreferredSportsView.swift in Sources */,
@@ -710,6 +717,7 @@
 			files = (
 				B0C9930503BC7431D551C099 /* AppErrorMapperTests.swift in Sources */,
 				404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */,
+				34BC530435959DBD8F476DDA /* DiscoverFilterTests.swift in Sources */,
 				A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */,
 				9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */,
 				1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */,

@@ -11,6 +11,7 @@ struct DiscoverView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     sportChips
+                    filterRow
 
                     if let joinError = viewModel.joinErrorMessage {
                         ErrorBanner(message: joinError)
@@ -30,6 +31,12 @@ struct DiscoverView: View {
                 viewModel.load(currentUserId: appState.session?.userId)
             }
             .onChange(of: viewModel.selectedSport) { _, _ in
+                viewModel.load(currentUserId: appState.session?.userId)
+            }
+            .onChange(of: viewModel.selectedTimeWindow) { _, _ in
+                viewModel.load(currentUserId: appState.session?.userId)
+            }
+            .onChange(of: viewModel.selectedSkillLevel) { _, _ in
                 viewModel.load(currentUserId: appState.session?.userId)
             }
             .onChange(of: appState.sessionFeedRefreshNonce) { _, _ in
@@ -139,6 +146,29 @@ struct DiscoverView: View {
                 }
             }
         }
+    }
+
+    private var filterRow: some View {
+        HStack(spacing: Spacing.s) {
+            Picker("When", selection: $viewModel.selectedTimeWindow) {
+                ForEach(DiscoverTimeWindow.allCases) { window in
+                    Text(window.displayName).tag(window)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(AppColor.gold)
+
+            Picker("Skill", selection: $viewModel.selectedSkillLevel) {
+                ForEach(SkillLevel.allCases) { level in
+                    Text(level.displayName).tag(level)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(AppColor.gold)
+
+            Spacer(minLength: 0)
+        }
+        .font(AppFont.caption(.semibold))
     }
 }
 

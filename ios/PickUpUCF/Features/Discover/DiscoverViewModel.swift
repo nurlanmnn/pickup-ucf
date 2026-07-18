@@ -5,6 +5,8 @@ import UIKit
 final class DiscoverViewModel {
     var sessions = Loadable<[PickupSession]>.idle
     var selectedSport: SportType?
+    var selectedTimeWindow: DiscoverTimeWindow = .next48h
+    var selectedSkillLevel: SkillLevel = .any
     var searchText = ""
     var joiningSessionId: UUID?
     var leavingSessionId: UUID?
@@ -75,7 +77,12 @@ final class DiscoverViewModel {
         let previousStatuses = participantStatusBySessionId
         sessions = .loading
         do {
-            let items = try await repository.fetchUpcoming(sport: selectedSport)
+            let skillFilter = selectedSkillLevel == .any ? nil : selectedSkillLevel
+            let items = try await repository.fetchUpcoming(
+                sport: selectedSport,
+                timeWindow: selectedTimeWindow,
+                skillLevel: skillFilter
+            )
             if Task.isCancelled {
                 sessions = previous
                 participantStatusBySessionId = previousStatuses

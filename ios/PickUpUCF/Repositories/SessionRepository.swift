@@ -27,7 +27,11 @@ struct UpdateSessionInput {
 }
 
 protocol SessionRepositoryProtocol {
-    func fetchUpcoming(sport: SportType?) async throws -> [PickupSession]
+    func fetchUpcoming(
+        sport: SportType?,
+        timeWindow: DiscoverTimeWindow,
+        skillLevel: SkillLevel?
+    ) async throws -> [PickupSession]
     /// Sessions the user has joined or is waitlisted for, starting from now (open or full only).
     func fetchMySessions(userId: UUID) async throws -> [PickupSession]
     func fetchMyPastSessions(limit: Int, offset: Int) async throws -> [PickupSession]
@@ -66,32 +70,31 @@ final class SessionRepository: SessionRepositoryProtocol {
         return String(trimmed.prefix(maxCustomSportNameLength))
     }
 
-    func fetchUpcoming(sport: SportType?) async throws -> [PickupSession] {
+    func fetchUpcoming(
+        sport: SportType?,
+        timeWindow: DiscoverTimeWindow = .next48h,
+        skillLevel: SkillLevel? = nil
+    ) async throws -> [PickupSession] {
         let now = Date.now
-        let windowEnd = Calendar.current.date(byAdding: .hour, value: 48, to: now) ?? now
+        let range = timeWindow.queryRange(relativeTo: now)
         let statuses = [SessionStatus.open.rawValue, SessionStatus.full.rawValue]
 
-        if let sport {
-            let rows: [PickupSession] = try await client
-                .from("sessions")
-                .select(sessionSelect)
-                .in("status", values: statuses)
-                .eq("sport", value: sport.rawValue)
-                .gte("starts_at", value: now.ISO8601Format())
-                .lte("starts_at", value: windowEnd.ISO8601Format())
-                .order("starts_at", ascending: true)
-                .limit(AppPagination.discoverSessions)
-                .execute()
-                .value
-            return rows.filter { $0.startsAt > now }
-        }
-
-        let rows: [PickupSession] = try await client
+        var query = client
             .from("sessions")
             .select(sessionSelect)
             .in("status", values: statuses)
-            .gte("starts_at", value: now.ISO8601Format())
-            .lte("starts_at", value: windowEnd.ISO8601Format())
+            .gte("starts_at", value: range.lowerBound.ISO8601Format())
+            .lte("starts_at", value: range.upperBound.ISO8601Format())
+
+        if let sport {
+            query = query.eq("sport", value: sport.rawValue)
+        }
+
+        if let skillLevel, skillLevel != .any {
+            query = query.eq("skill_level", value: skillLevel.rawValue)
+        }
+
+        let rows: [PickupSession] = try await query
             .order("starts_at", ascending: true)
             .limit(AppPagination.discoverSessions)
             .execute()
