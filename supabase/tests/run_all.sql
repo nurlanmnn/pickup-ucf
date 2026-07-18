@@ -6,3 +6,4 @@
 \ir phase_c_blocks.sql
 \ir phase_c_reports.sql
 \ir phase_d_tier1.sql
+\ir phase_d_tier2.sql
