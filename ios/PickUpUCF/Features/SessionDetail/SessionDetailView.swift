@@ -8,6 +8,7 @@ struct SessionDetailView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel: SessionDetailViewModel
     @State private var showEditSheet = false
+    @State private var showAttendanceSheet = false
     @State private var showCancelConfirm = false
 
     init(sessionId: UUID) {
@@ -80,6 +81,12 @@ struct SessionDetailView: View {
                 }
                 .presentationDetents([.large])
             }
+        }
+        .sheet(isPresented: $showAttendanceSheet) {
+            NavigationStack {
+                AttendanceSheet(viewModel: viewModel)
+            }
+            .presentationDetents([.large])
         }
         .confirmationDialog(
             "Cancel this session for everyone?",
@@ -172,7 +179,7 @@ struct SessionDetailView: View {
     @ViewBuilder
     private func sessionBottomBar(_ session: PickupSession) -> some View {
         let showsHostActions = viewModel.isHost
-            && (viewModel.canHostEditSession || viewModel.canHostCancelSession)
+            && (viewModel.canHostEditSession || viewModel.canHostCancelSession || viewModel.canSubmitAttendance)
         let showsJoinActions = !viewModel.isHost
             && (session.status == .open || session.status == .full)
 
@@ -182,6 +189,11 @@ struct SessionDetailView: View {
                     if viewModel.canHostEditSession {
                         SecondaryButton(title: "Edit session") {
                             showEditSheet = true
+                        }
+                    }
+                    if viewModel.canSubmitAttendance {
+                        SecondaryButton(title: "Mark attendance") {
+                            showAttendanceSheet = true
                         }
                     }
                     if viewModel.canHostCancelSession {

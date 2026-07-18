@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		013583CE83E1EADAECD70FBE /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45AB7447F8A2EB3FAB2814C /* Profile.swift */; };
+		01A2B3C4D5E6F708192A3B4C /* AttendanceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B3C4D5E6F708192A3B4C5D /* AttendanceRepository.swift */; };
+		03C4D5E6F708192A3B4C5D6E /* AttendanceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5E6F708192A3B4C5D6E7F /* AttendanceSheet.swift */; };
+		05E6F708192A3B4C5D6E7F80 /* SessionParticipant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F708192A3B4C5D6E7F8091 /* SessionParticipant.swift */; };
 		05B3FC8574440A6E20AD4115 /* MyGamesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C91FF20CB1FB3BF80FECF4B /* MyGamesViewModel.swift */; };
 		05BC2E4E84D47AFAF78959D4 /* SignInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F21B57FD815D6D1FBCB999F /* SignInViewModel.swift */; };
 		06B4EBC362038DCD2B2C8350 /* VerifyEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C308462F40BE323DAE136D94 /* VerifyEmailViewModel.swift */; };
@@ -103,6 +106,9 @@
 
 /* Begin PBXFileReference section */
 		11469B5CBFCFEE7B515C49F1 /* CreateSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionView.swift; sourceTree = "<group>"; };
+		02B3C4D5E6F708192A3B4C5D /* AttendanceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceRepository.swift; sourceTree = "<group>"; };
+		04D5E6F708192A3B4C5D6E7F /* AttendanceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceSheet.swift; sourceTree = "<group>"; };
+		06F708192A3B4C5D6E7F8091 /* SessionParticipant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionParticipant.swift; sourceTree = "<group>"; };
 		1361D112819B3647AC788DA8 /* ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorBanner.swift; sourceTree = "<group>"; };
 		14A57198420B50B36CA6070A /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
 		15866006217050F82E09128A /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -245,6 +251,7 @@
 		40F89E4E28087FA48FBB64EB /* SessionDetail */ = {
 			isa = PBXGroup;
 			children = (
+				04D5E6F708192A3B4C5D6E7F /* AttendanceSheet.swift */,
 				CFDC7CBF5BEF836EA9D3BC57 /* SessionDetailView.swift */,
 				D9E2811071ACC03F3C447E36 /* SessionDetailViewModel.swift */,
 			);
@@ -267,6 +274,7 @@
 				699CE3048C4ED16348EC4831 /* PickupSession.swift */,
 				C45AB7447F8A2EB3FAB2814C /* Profile.swift */,
 				ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */,
+				06F708192A3B4C5D6E7F8091 /* SessionParticipant.swift */,
 				E9F6DA7D0CEC225CAE8B3D8B /* SportType.swift */,
 				595E5AA65818CEB63427D402 /* Venue.swift */,
 			);
@@ -428,6 +436,7 @@
 		CCC286BF5203194A83BE59A8 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				02B3C4D5E6F708192A3B4C5D /* AttendanceRepository.swift */,
 				8746DB50D2CFBB7020D10E61 /* AuthRepository.swift */,
 				AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */,
 				19EC209DF3BBDA3A067F1D95 /* DeviceTokenRepository.swift */,
@@ -577,6 +586,8 @@
 				F700B8A9852BCB68B01DF592 /* AppDelegate.swift in Sources */,
 				BBE9368E8B98CACD5669E63C /* AppErrorMapper.swift in Sources */,
 				0D732B02EED4B7C11D5CD88E /* AppPagination.swift in Sources */,
+				01A2B3C4D5E6F708192A3B4C /* AttendanceRepository.swift in Sources */,
+				03C4D5E6F708192A3B4C5D6E /* AttendanceSheet.swift in Sources */,
 				56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */,
 				E39DD70AE3DEC88A300D7DD6 /* AuthenticatedSessionCoordinator.swift in Sources */,
 				2B3A702BEA6B7678B67ECB7B /* CampusCoordinates.swift in Sources */,
@@ -634,6 +645,7 @@
 				68FAF7D20CAADD4426BFE0C2 /* SessionLocationMap.swift in Sources */,
 				B7CB91B04CA9DE2164619C13 /* SessionLocationResolver.swift in Sources */,
 				1FCA653716B1F4393E14EEB0 /* SessionMessage.swift in Sources */,
+				05E6F708192A3B4C5D6E7F80 /* SessionParticipant.swift in Sources */,
 				ADC7102007A4BB723B0CB63C /* SessionRepository.swift in Sources */,
 				7095F1C98411BF3151328AE4 /* SessionShareLink.swift in Sources */,
 				0B0E1966DFC6C0A1961BDB75 /* SignInView.swift in Sources */,

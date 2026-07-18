@@ -11,8 +11,11 @@ final class SessionDetailViewModel {
     var actionError: String?
 
     private let repository: SessionRepositoryProtocol
+    private let attendanceRepository: AttendanceRepository
     private let client: SupabaseClient
     private let userId: UUID?
+
+    var attendanceParticipants = Loadable<[SessionParticipant]>.idle
 
     private var realtimeChannel: RealtimeChannelV2?
     private var realtimeTask: Task<Void, Never>?
@@ -21,11 +24,13 @@ final class SessionDetailViewModel {
         sessionId: UUID,
         userId: UUID?,
         repository: SessionRepositoryProtocol = SessionRepository(),
+        attendanceRepository: AttendanceRepository = AttendanceRepository(),
         client: SupabaseClient = SupabaseManager.shared
     ) {
         self.sessionId = sessionId
         self.userId = userId
         self.repository = repository
+        self.attendanceRepository = attendanceRepository
         self.client = client
     }
 
@@ -44,6 +49,15 @@ final class SessionDetailViewModel {
     var canHostCancelSession: Bool {
         guard isHost, let s = session.value else { return false }
         return (s.status == .open || s.status == .full) && s.endsAt > Date()
+    }
+
+    /// Host can mark attendance from session start through 24h after it ends.
+    var canSubmitAttendance: Bool {
+        guard isHost, let s = session.value else { return false }
+        let now = Date()
+        return s.status != .cancelled
+            && s.startsAt <= now
+            && now <= s.endsAt.addingTimeInterval(86400)
     }
 
     @MainActor
@@ -83,6 +97,40 @@ final class SessionDetailViewModel {
         } catch {
             actionError = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+    }
+
+    @MainActor
+    func loadAttendanceParticipants() async {
+        attendanceParticipants = .loading
+        do {
+            let participants = try await attendanceRepository.fetchJoinedParticipants(
+                sessionId: sessionId
+            )
+            attendanceParticipants = .loaded(participants)
+        } catch {
+            attendanceParticipants = .failed(AppErrorMapper.message(for: error))
+        }
+    }
+
+    @MainActor
+    func submitAttendance(attendedUserIds: [UUID]) async -> Bool {
+        actionError = nil
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            try await attendanceRepository.submitAttendance(
+                sessionId: sessionId,
+                attendedUserIds: attendedUserIds
+            )
+            await load()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            return true
+        } catch {
+            actionError = AppErrorMapper.message(for: error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            return false
         }
     }
 
