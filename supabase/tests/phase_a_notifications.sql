@@ -610,3 +610,75 @@ BEGIN
 
   RAISE NOTICE 'phase_a_notifications: leave_session waitlist promotion OK';
 END $$;
+
+-- Phase A Task 4: enqueue_session_reminders (1h window)
+DO $$
+DECLARE
+  v_host_id uuid := gen_random_uuid();
+  v_player_id uuid := gen_random_uuid();
+  v_session_id uuid := gen_random_uuid();
+  v_venue_id uuid := gen_random_uuid();
+  v_count int;
+  v_outbox_count int;
+BEGIN
+  INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at
+  ) VALUES
+    (
+      '00000000-0000-0000-0000-000000000000',
+      v_host_id, 'authenticated', 'authenticated',
+      'test-reminder-host@knights.ucf.edu', '', now(), now(), now()
+    ),
+    (
+      '00000000-0000-0000-0000-000000000000',
+      v_player_id, 'authenticated', 'authenticated',
+      'test-reminder-player@knights.ucf.edu', '', now(), now(), now()
+    );
+
+  INSERT INTO public.profiles (id, display_name)
+  VALUES
+    (v_host_id, 'Reminder Host'),
+    (v_player_id, 'Reminder Player');
+
+  INSERT INTO public.venues (id, name, lat, lng)
+  VALUES (v_venue_id, 'Student Union', 28.6024, -81.2001);
+
+  INSERT INTO public.sessions (
+    id, host_id, sport, venue_id, starts_at, ends_at, capacity, skill_level, status
+  ) VALUES (
+    v_session_id, v_host_id, 'basketball', v_venue_id,
+    now() + interval '1 hour', now() + interval '2 hours',
+    10, 'any', 'open'
+  );
+
+  INSERT INTO public.session_participants (session_id, user_id, role, status)
+  VALUES (v_session_id, v_player_id, 'player', 'joined');
+
+  v_count := public.enqueue_session_reminders('1h');
+
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION 'enqueue_session_reminders failed: expected count 1, got %', v_count;
+  END IF;
+
+  SELECT count(*) INTO v_outbox_count
+  FROM public.notification_outbox
+  WHERE session_id = v_session_id
+    AND type = 'session_reminder_1h'
+    AND user_id = v_player_id;
+
+  IF v_outbox_count <> 1 THEN
+    RAISE EXCEPTION
+      'enqueue_session_reminders failed: expected 1 outbox row, got %',
+      v_outbox_count;
+  END IF;
+
+  DELETE FROM public.notification_outbox WHERE session_id = v_session_id;
+  DELETE FROM public.session_participants WHERE session_id = v_session_id;
+  DELETE FROM public.sessions WHERE id = v_session_id;
+  DELETE FROM public.venues WHERE id = v_venue_id;
+  DELETE FROM public.profiles WHERE id IN (v_host_id, v_player_id);
+  DELETE FROM auth.users WHERE id IN (v_host_id, v_player_id);
+
+  RAISE NOTICE 'phase_a_notifications: enqueue_session_reminders 1h OK';
+END $$;
