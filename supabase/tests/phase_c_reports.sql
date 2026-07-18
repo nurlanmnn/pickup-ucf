@@ -102,6 +102,8 @@ BEGIN
       NULL;
   END;
 
+  -- RLS isolation: run as authenticated role (service role bypasses RLS)
+  SET LOCAL role authenticated;
   PERFORM set_config('request.jwt.claim.sub', v_other_id::text, true);
 
   IF EXISTS (
@@ -111,6 +113,8 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'session_reports failed: other user should not see reporter row';
   END IF;
+
+  RESET role;
 
   DELETE FROM public.session_reports WHERE session_id = v_session_id;
   DELETE FROM public.session_participants WHERE session_id = v_session_id;
