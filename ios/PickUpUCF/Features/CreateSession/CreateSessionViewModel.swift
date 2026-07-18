@@ -20,6 +20,8 @@ final class CreateSessionViewModel {
 
     var skillLevel: SkillLevel = .intermediate
     var notes = ""
+    var repeatWeekly = false
+    var recurrenceWeekCount = 4
     var venues: [Venue] = []
     var errorMessage: String?
     var isLoading = false
@@ -163,6 +165,8 @@ final class CreateSessionViewModel {
         isLoading = true
         defer { isLoading = false }
 
+        let recurrenceRule = repeatWeekly ? RecurrenceRule.weekly(count: recurrenceWeekCount) : nil
+
         let input = CreateSessionInput(
             sport: sport,
             customSportName: sport == .other ? customSportName : nil,
@@ -172,7 +176,8 @@ final class CreateSessionViewModel {
             durationMinutes: durationMinutes,
             capacity: capacity,
             skillLevel: skillLevel,
-            notes: notes
+            notes: notes,
+            recurrenceRule: recurrenceRule
         )
 
         do {

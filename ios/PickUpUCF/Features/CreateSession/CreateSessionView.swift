@@ -91,6 +91,20 @@ struct CreateSessionView: View {
             }
 
             Section {
+                Toggle("Repeat weekly", isOn: $vm.repeatWeekly)
+
+                if vm.repeatWeekly {
+                    Stepper("Weeks (2–4): \(vm.recurrenceWeekCount)", value: $vm.recurrenceWeekCount, in: 2 ... 4)
+                }
+            } header: {
+                Text("Repeat")
+            } footer: {
+                if vm.repeatWeekly {
+                    FormFieldHint(text: "Creates \(vm.recurrenceWeekCount) sessions, one week apart.")
+                }
+            }
+
+            Section {
                 StepperNumberFieldRow(
                     title: "Capacity",
                     prompt: "2–50 players",

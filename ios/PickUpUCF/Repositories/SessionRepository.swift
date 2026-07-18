@@ -12,6 +12,7 @@ struct CreateSessionInput {
     let capacity: Int
     let skillLevel: SkillLevel
     let notes: String?
+    let recurrenceRule: RecurrenceRule?
 }
 
 struct UpdateSessionInput {
@@ -228,6 +229,13 @@ final class SessionRepository: SessionRepositoryProtocol {
             userNotes: input.notes
         )
 
+        let recurrenceRuleJSON: String?
+        if let rule = input.recurrenceRule {
+            recurrenceRuleJSON = try rule.jsonString
+        } else {
+            recurrenceRuleJSON = nil
+        }
+
         let payload = SessionInsert(
             hostId: userId,
             sport: input.sport,
@@ -240,7 +248,8 @@ final class SessionRepository: SessionRepositoryProtocol {
             capacity: input.capacity,
             playerCount: 1,
             skillLevel: input.skillLevel,
-            notes: notesToStore
+            notes: notesToStore,
+            recurrenceRule: recurrenceRuleJSON
         )
 
         let created: PickupSession = try await client

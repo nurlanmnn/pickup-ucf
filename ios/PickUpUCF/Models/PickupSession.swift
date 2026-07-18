@@ -124,6 +124,7 @@ struct SessionInsert: Encodable {
     let playerCount: Int
     let skillLevel: SkillLevel
     let notes: String?
+    let recurrenceRule: String?
 
     enum CodingKeys: String, CodingKey {
         case hostId = "host_id"
@@ -138,6 +139,7 @@ struct SessionInsert: Encodable {
         case playerCount = "player_count"
         case skillLevel = "skill_level"
         case notes
+        case recurrenceRule = "recurrence_rule"
     }
 }
 

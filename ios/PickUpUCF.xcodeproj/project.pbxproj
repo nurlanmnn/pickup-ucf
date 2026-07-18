@@ -41,6 +41,7 @@
 		552BE0E9011E0A498381D082 /* EditUsernameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3509DA3160CF7BCDD9FD66F1 /* EditUsernameViewModel.swift */; };
 		56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8746DB50D2CFBB7020D10E61 /* AuthRepository.swift */; };
 		5687C604A6664DCFDD845365 /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3523B06F8873C00F770B66FD /* ChatViewModel.swift */; };
+		56ED8D848D0AA140D1C2C5AE /* RecurrenceRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB493A3368FB259329D196F3 /* RecurrenceRuleTests.swift */; };
 		60858CF9EAA0617DD207CDDE /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C473979ACD862ECDE952298B /* Typography.swift */; };
 		68FAF7D20CAADD4426BFE0C2 /* SessionLocationMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DE4EF93FE96E1BB8896C27 /* SessionLocationMap.swift */; };
 		6996F8C1F0E0B2E699960466 /* ChatRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */; };
@@ -56,6 +57,7 @@
 		86427D8BBDBAD85C2F40C5E6 /* FormKeyboardToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DA2A5DF08255873C1EFFCAE /* FormKeyboardToolbar.swift */; };
 		876850D75AB2E33EB78DEA9F /* SessionDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FC3258DCC109C54C88586E /* SessionDateFormatter.swift */; };
 		889B2A01D3E8976C3C54428C /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC8A893C34284A16BDF463AC /* ForgotPasswordView.swift */; };
+		8AB6DFAFD73DB2F90A7DDD54 /* RecurrenceRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922932D31906E6D43ED92499 /* RecurrenceRule.swift */; };
 		8D941DA20A0F09679DF73600 /* FormFieldHint.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4347A1042FDCC9EFFD1D054 /* FormFieldHint.swift */; };
 		91150E6516C989BC27BCA2C0 /* GlobalBannerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0716219CB340B39112A954 /* GlobalBannerOverlay.swift */; };
 		9186DF0F8B226AB01EEE1691 /* SessionShareLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46639F1C4419568BEE244DE4 /* SessionShareLinkTests.swift */; };
@@ -161,6 +163,7 @@
 		8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedSessionCoordinator.swift; sourceTree = "<group>"; };
 		8DA2A5DF08255873C1EFFCAE /* FormKeyboardToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormKeyboardToolbar.swift; sourceTree = "<group>"; };
 		90AC00654710CD46F917DCFA /* EmailDomainValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailDomainValidator.swift; sourceTree = "<group>"; };
+		922932D31906E6D43ED92499 /* RecurrenceRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceRule.swift; sourceTree = "<group>"; };
 		932E5EE39C04EB3463CAD452 /* EditSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSessionViewModel.swift; sourceTree = "<group>"; };
 		9359C55D45A8EC91EF723C1B /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		96FB4C920FF85773CF1C7EEF /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
@@ -184,6 +187,7 @@
 		C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C75CED8901BA2E4A48CEADEE /* KeyboardDismissModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDismissModifier.swift; sourceTree = "<group>"; };
 		CA5B9EBDCDFA2CA4B0ADFB17 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		CB493A3368FB259329D196F3 /* RecurrenceRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceRuleTests.swift; sourceTree = "<group>"; };
 		CDC40C1DFA9F752787809BE4 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		CEA6AC9B4CFBCA863AF51059 /* SkillPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillPill.swift; sourceTree = "<group>"; };
 		CFDC7CBF5BEF836EA9D3BC57 /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailView.swift; sourceTree = "<group>"; };
@@ -296,6 +300,7 @@
 				FE6DB7D6E3579CB040FB9225 /* OtherSportNotes.swift */,
 				699CE3048C4ED16348EC4831 /* PickupSession.swift */,
 				C45AB7447F8A2EB3FAB2814C /* Profile.swift */,
+				922932D31906E6D43ED92499 /* RecurrenceRule.swift */,
 				ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */,
 				242F6C5B140576E7FF5E9C2E /* SessionParticipant.swift */,
 				E9F6DA7D0CEC225CAE8B3D8B /* SportType.swift */,
@@ -321,6 +326,7 @@
 				21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */,
 				0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */,
 				BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */,
+				CB493A3368FB259329D196F3 /* RecurrenceRuleTests.swift */,
 				46639F1C4419568BEE244DE4 /* SessionShareLinkTests.swift */,
 				DA6F174FDB0787634098299F /* SportTypeTests.swift */,
 			);
@@ -528,7 +534,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_742A79AB-E928-44AF-87B6-6120D2F7201B" /* ios */ = {
+		"TEMP_677BFA45-FD46-4721-9606-C3DE25534F20" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -682,6 +688,7 @@
 				2678F0E5AB056C08AA5A4DCA /* ProfileSettingsView.swift in Sources */,
 				30C8D2DA99F1818A525BBE3D /* ProfileView.swift in Sources */,
 				ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */,
+				8AB6DFAFD73DB2F90A7DDD54 /* RecurrenceRule.swift in Sources */,
 				9B364341B2297A924B66E20A /* RootView.swift in Sources */,
 				D8B7A3E64B7FA2A652D89C58 /* SecondaryButton.swift in Sources */,
 				6F673F14965C2E8BFB64D8C4 /* SessionCard.swift in Sources */,
@@ -723,6 +730,7 @@
 				34BC530435959DBD8F476DDA /* DiscoverFilterTests.swift in Sources */,
 				A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */,
 				9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */,
+				56ED8D848D0AA140D1C2C5AE /* RecurrenceRuleTests.swift in Sources */,
 				9186DF0F8B226AB01EEE1691 /* SessionShareLinkTests.swift in Sources */,
 				1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */,
 			);
