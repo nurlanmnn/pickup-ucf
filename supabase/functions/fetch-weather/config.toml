@@ -1,0 +1,2 @@
+[functions.fetch-weather]
+verify_jwt = true
