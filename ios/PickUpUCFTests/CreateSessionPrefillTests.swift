@@ -46,7 +46,7 @@ final class CreateSessionPrefillTests: XCTestCase {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         let now = Date(timeIntervalSince1970: 1_700_000_000)
-        let sourceStartsAt = now.addingTimeInterval(3600)
+        let sourceStartsAt = now.addingTimeInterval(-86400 * 6)
 
         let withinWindow = CreateSessionPrefill.clampedStartsAt(
             from: sourceStartsAt,
