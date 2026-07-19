@@ -14,9 +14,8 @@ struct PickUpUCFApp: App {
                     handleDeepLink(url)
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
-                    guard let url = note.object as? URL,
-                          case .session(let id) = DeepLinkRouter.destination(from: url) else { return }
-                    appState.queueSessionDeepLink(id: id)
+                    guard let target = note.object as? PushNavigationTarget else { return }
+                    appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
                 }
                 .task {
                     if !AppConfig.isConfigured {
@@ -46,7 +45,7 @@ struct PickUpUCFApp: App {
                 }
             }
         case .session(let id):
-            appState.queueSessionDeepLink(id: id)
+            appState.queueSessionDeepLink(id: id, openChat: false)
         }
     }
 }
@@ -54,6 +53,11 @@ struct PickUpUCFApp: App {
 enum SessionDetailDeepLinkTarget {
     case discover
     case myGames
+}
+
+struct PushNavigationTarget: Equatable {
+    let sessionId: UUID
+    let openChat: Bool
 }
 
 @Observable
@@ -71,6 +75,9 @@ final class AppState {
     var sessionDetailDeepLinkTarget: SessionDetailDeepLinkTarget = .discover
     /// Opened via `pickupucf://session/…` before the user signed in.
     var pendingSessionDeepLink: UUID?
+    var pendingSessionDeepLinkOpenChat = false
+    /// When true, session detail should push chat after loading (from chat push).
+    var sessionDetailOpenChat = false
     /// True when the signed-in user has not finished first-run onboarding.
     var needsOnboarding = false
 
@@ -93,20 +100,31 @@ final class AppState {
 
     func clearSessionDetailDeepLink() {
         sessionDetailDeepLink = nil
+        sessionDetailOpenChat = false
     }
 
-    func queueSessionDeepLink(id: UUID) {
+    func queueSessionDeepLink(id: UUID, openChat: Bool = false) {
+        sessionDetailOpenChat = openChat
         if isAuthenticated {
             presentSessionDetail(id: id, on: .discover)
         } else {
             pendingSessionDeepLink = id
+            pendingSessionDeepLinkOpenChat = openChat
         }
     }
 
     func consumePendingSessionDeepLinkIfNeeded() {
         guard let id = pendingSessionDeepLink, isAuthenticated else { return }
+        let openChat = pendingSessionDeepLinkOpenChat
         pendingSessionDeepLink = nil
-        presentSessionDetail(id: id, on: .discover)
+        pendingSessionDeepLinkOpenChat = false
+        queueSessionDeepLink(id: id, openChat: openChat)
+    }
+
+    func consumeSessionDetailOpenChat(for sessionId: UUID) -> Bool {
+        guard sessionDetailDeepLink == sessionId, sessionDetailOpenChat else { return false }
+        sessionDetailOpenChat = false
+        return true
     }
 
     func showError(_ error: Error) {

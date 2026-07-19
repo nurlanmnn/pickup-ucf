@@ -9,7 +9,8 @@ export interface OutboxRow {
   user_id: string;
   title: string;
   body: string;
-  payload?: { session_id?: string };
+  type?: string;
+  payload?: { session_id?: string; open_chat?: boolean; message_id?: string };
 }
 
 export interface HandlerDeps {
@@ -57,6 +58,7 @@ export async function sendToUserDevices(
   const jwt = await getJwt();
   const sessionId = row.payload?.session_id;
   const url = sessionId ? `pickupucf://session/${sessionId}` : undefined;
+  const openChat = row.payload?.open_chat === true || row.type === "chat_message";
 
   let anySuccess = false;
   for (const { apns_token } of tokens) {
@@ -73,6 +75,7 @@ export async function sendToUserDevices(
         body: JSON.stringify({
           aps: { alert: { title: row.title, body: row.body }, sound: "default" },
           ...(url ? { url } : {}),
+          ...(openChat ? { open_chat: true } : {}),
         }),
       },
     );
@@ -99,7 +102,7 @@ export async function handler(req: Request, deps: HandlerDeps = {}): Promise<Res
 
   const { data: pending, error } = await supabase
     .from("notification_outbox")
-    .select("id, user_id, title, body, payload")
+    .select("id, user_id, title, body, type, payload")
     .is("sent_at", null)
     .order("created_at", { ascending: true })
     .limit(BATCH_SIZE);

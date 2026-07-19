@@ -23,9 +23,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         defer { completionHandler() }
-        guard let urlString = response.notification.request.content.userInfo["url"] as? String,
-              let url = URL(string: urlString) else { return }
-        NotificationCenter.default.post(name: .pushDeepLink, object: url)
+        let userInfo = response.notification.request.content.userInfo
+        guard let urlString = userInfo["url"] as? String,
+              let url = URL(string: urlString),
+              case .session(let id) = DeepLinkRouter.destination(from: url) else { return }
+        let openChat = (userInfo["open_chat"] as? Bool) == true
+        NotificationCenter.default.post(
+            name: .pushDeepLink,
+            object: PushNavigationTarget(sessionId: id, openChat: openChat)
+        )
     }
 }
 

@@ -171,6 +171,38 @@ Deno.test("handler marks outbox row sent after successful APNs delivery", async 
   assertStringIncludes(fetchCalls[0].body, "pickupucf://session/session-1");
 });
 
+Deno.test("sendToUserDevices includes open_chat for chat_message notifications", async () => {
+  setTestEnv({ APNS_ENV: "sandbox" });
+
+  const row: OutboxRow = {
+    id: "outbox-chat",
+    user_id: "user-chat",
+    title: "New message",
+    body: "Someone: hello",
+    type: "chat_message",
+    payload: { session_id: "session-chat", open_chat: true },
+  };
+
+  const { supabase } = createMockSupabase({
+    tokensByUser: { "user-chat": [{ apns_token: "chat-token" }] },
+  });
+
+  let body = "";
+  const fetchImpl = async (_input: string | URL | Request, init?: RequestInit) => {
+    body = String(init?.body ?? "");
+    return new Response(null, { status: 200 });
+  };
+
+  const ok = await sendToUserDevices(supabase as never, row, {
+    fetchImpl,
+    getJwt: async () => "mock-jwt",
+  });
+
+  assertEquals(ok, true);
+  assertStringIncludes(body, "pickupucf://session/session-chat");
+  assertStringIncludes(body, '"open_chat":true');
+});
+
 Deno.test("sendToUserDevices deletes stale tokens on APNs 410", async () => {
   setTestEnv({ APNS_ENV: "production" });
 
