@@ -15,6 +15,7 @@ struct SessionDetailView: View {
     @State private var showRunItBackSheet = false
     @State private var showChat = false
     @State private var isAddingToCalendar = false
+    @State private var isSessionInCalendar = false
 
     init(sessionId: UUID) {
         self.sessionId = sessionId
@@ -222,11 +223,16 @@ struct SessionDetailView: View {
                         }
 
                         if viewModel.canAddToCalendar {
-                            SecondaryButton(title: isAddingToCalendar ? "Adding…" : "Add to Calendar") {
+                            SecondaryButton(title: calendarButtonTitle) {
                                 Task { await addToCalendar(session) }
                             }
                             .disabled(isAddingToCalendar)
                             .padding(.top, Spacing.s)
+                            .task(id: session.id) {
+                                isSessionInCalendar = CalendarExportService.shared.isSessionInCalendar(
+                                    sessionId: session.id
+                                )
+                            }
                         }
                     }
                     .foregroundStyle(AppColor.textPrimary(colorScheme))
@@ -389,6 +395,12 @@ struct SessionDetailView: View {
         .frame(height: 50)
     }
 
+    private var calendarButtonTitle: String {
+        if isAddingToCalendar { return "Adding…" }
+        if isSessionInCalendar { return "In Calendar" }
+        return "Add to Calendar"
+    }
+
     @MainActor
     private func addToCalendar(_ session: PickupSession) async {
         isAddingToCalendar = true
@@ -396,7 +408,11 @@ struct SessionDetailView: View {
 
         do {
             try await CalendarExportService.shared.addToCalendar(session: session)
+            isSessionInCalendar = true
             appState.showSuccess("Added to Calendar")
+        } catch CalendarExportError.alreadyAdded {
+            isSessionInCalendar = true
+            appState.showSuccess("Already in Calendar")
         } catch CalendarExportError.accessDenied {
             viewModel.actionError = "Calendar access is required to save this game."
         } catch {

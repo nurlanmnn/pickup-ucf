@@ -1,17 +1,11 @@
 import Foundation
 import Supabase
 
-struct BlockUserParams: Encodable {
-    let pBlockedId: UUID
-
-    enum CodingKeys: String, CodingKey {
-        case pBlockedId = "p_blocked_id"
-    }
-}
-
 protocol BlockRepositoryProtocol {
     func block(userId: UUID) async throws
+    func unblock(userId: UUID) async throws
     func fetchBlockedUserIds() async throws -> Set<UUID>
+    func fetchBlockedUsers() async throws -> [BlockedUser]
 }
 
 final class BlockRepository: BlockRepositoryProtocol {
@@ -25,21 +19,21 @@ final class BlockRepository: BlockRepositoryProtocol {
         try await client.rpc("block_user", params: BlockUserParams(pBlockedId: userId)).execute()
     }
 
+    func unblock(userId: UUID) async throws {
+        try await client.rpc("unblock_user", params: UnblockUserParams(pBlockedId: userId)).execute()
+    }
+
     func fetchBlockedUserIds() async throws -> Set<UUID> {
-        struct Row: Decodable {
-            let blockedId: UUID
+        Set(try await fetchBlockedUsers().map(\.id))
+    }
 
-            enum CodingKeys: String, CodingKey {
-                case blockedId = "blocked_id"
-            }
-        }
-
-        let rows: [Row] = try await client
+    func fetchBlockedUsers() async throws -> [BlockedUser] {
+        let rows: [BlockedUserRow] = try await client
             .from("user_blocks")
-            .select("blocked_id")
+            .select("blocked_id, profiles!user_blocks_blocked_id_fkey(id, display_name, username)")
             .execute()
             .value
 
-        return Set(rows.map(\.blockedId))
+        return rows.map(\.blockedUser)
     }
 }

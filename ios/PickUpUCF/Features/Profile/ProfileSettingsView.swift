@@ -29,6 +29,18 @@ struct ProfileSettingsView: View {
                 }
             }
 
+            Section("Notifications") {
+                NavigationLink("Notification settings") {
+                    NotificationSettingsView()
+                }
+            }
+
+            Section("Privacy") {
+                NavigationLink("Blocked users") {
+                    BlockedUsersView()
+                }
+            }
+
             Section {
                 NavigationLink("Delete account") {
                     DeleteAccountView()

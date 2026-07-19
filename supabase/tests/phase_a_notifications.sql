@@ -657,8 +657,8 @@ BEGIN
 
   v_count := public.enqueue_session_reminders('1h');
 
-  IF v_count <> 1 THEN
-    RAISE EXCEPTION 'enqueue_session_reminders failed: expected count 1, got %', v_count;
+  IF v_count <> 2 THEN
+    RAISE EXCEPTION 'enqueue_session_reminders failed: expected count 2, got %', v_count;
   END IF;
 
   SELECT count(*) INTO v_outbox_count
@@ -669,7 +669,19 @@ BEGIN
 
   IF v_outbox_count <> 1 THEN
     RAISE EXCEPTION
-      'enqueue_session_reminders failed: expected 1 outbox row, got %',
+      'enqueue_session_reminders failed: expected 1 player outbox row, got %',
+      v_outbox_count;
+  END IF;
+
+  SELECT count(*) INTO v_outbox_count
+  FROM public.notification_outbox
+  WHERE session_id = v_session_id
+    AND type = 'host_session_reminder_1h'
+    AND user_id = v_host_id;
+
+  IF v_outbox_count <> 1 THEN
+    RAISE EXCEPTION
+      'enqueue_session_reminders failed: expected 1 host outbox row, got %',
       v_outbox_count;
   END IF;
 

@@ -45,6 +45,7 @@ protocol SessionRepositoryProtocol {
     func cancelSession(id: UUID) async throws
     func joinSession(id: UUID) async throws -> ParticipantStatus
     func leaveSession(id: UUID) async throws
+    func fetchRoster(sessionId: UUID) async throws -> SessionRoster
 }
 
 final class SessionRepository: SessionRepositoryProtocol {
@@ -353,6 +354,13 @@ final class SessionRepository: SessionRepositoryProtocol {
             }
         }
         try await client.rpc("leave_session", params: LeaveParams(pSessionId: id)).execute()
+    }
+
+    func fetchRoster(sessionId: UUID) async throws -> SessionRoster {
+        try await client
+            .rpc("get_session_roster", params: GetSessionRosterParams(pSessionId: sessionId))
+            .execute()
+            .value
     }
 
     /// Fetches forecast via Edge Function and patches `weather_snapshot` for outdoor sessions.

@@ -30,9 +30,6 @@ struct DiscoverView: View {
             .task(id: appState.session?.userId) {
                 viewModel.load(currentUserId: appState.session?.userId)
             }
-            .onChange(of: viewModel.selectedSport) { _, _ in
-                viewModel.load(currentUserId: appState.session?.userId)
-            }
             .onChange(of: viewModel.selectedTimeWindow) { _, _ in
                 viewModel.load(currentUserId: appState.session?.userId)
             }
@@ -136,12 +133,28 @@ struct DiscoverView: View {
     private var sportChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.s) {
-                SportChip(title: "All", isSelected: viewModel.selectedSport == nil) {
-                    viewModel.selectedSport = nil
+                if viewModel.showMySportsChip {
+                    SportChip(
+                        title: "My sports",
+                        isSelected: viewModel.filterMode == .mySports
+                    ) {
+                        viewModel.setFilterMode(.mySports, currentUserId: appState.session?.userId)
+                    }
                 }
+
+                SportChip(
+                    title: "All",
+                    isSelected: viewModel.filterMode == .single(nil)
+                ) {
+                    viewModel.setFilterMode(.single(nil), currentUserId: appState.session?.userId)
+                }
+
                 ForEach(SportType.allCases) { sport in
-                    SportChip(title: sport.displayName, isSelected: viewModel.selectedSport == sport) {
-                        viewModel.selectedSport = sport
+                    SportChip(
+                        title: sport.displayName,
+                        isSelected: viewModel.filterMode == .single(sport)
+                    ) {
+                        viewModel.setFilterMode(.single(sport), currentUserId: appState.session?.userId)
                     }
                 }
             }

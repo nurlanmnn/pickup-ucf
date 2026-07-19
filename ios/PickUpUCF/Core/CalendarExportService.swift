@@ -3,14 +3,44 @@ import Foundation
 
 enum CalendarExportError: LocalizedError {
     case accessDenied
+    case alreadyAdded
     case saveFailed
 
     var errorDescription: String? {
         switch self {
         case .accessDenied:
             return "Calendar access is required to save this game."
+        case .alreadyAdded:
+            return "This game is already in your calendar."
         case .saveFailed:
             return "Could not save this game to your calendar."
+        }
+    }
+}
+
+protocol CalendarExportEventStorageProtocol {
+    func eventIdentifier(for sessionId: UUID) -> String?
+    func setEventIdentifier(_ identifier: String?, for sessionId: UUID)
+}
+
+struct UserDefaultsCalendarExportEventStorage: CalendarExportEventStorageProtocol {
+    private let defaults: UserDefaults
+    private let keyPrefix = "calendar_export_event_id_"
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    func eventIdentifier(for sessionId: UUID) -> String? {
+        defaults.string(forKey: keyPrefix + sessionId.uuidString)
+    }
+
+    func setEventIdentifier(_ identifier: String?, for sessionId: UUID) {
+        let key = keyPrefix + sessionId.uuidString
+        if let identifier {
+            defaults.set(identifier, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
         }
     }
 }
@@ -38,14 +68,39 @@ final class CalendarExportService {
     static let shared = CalendarExportService()
 
     private let eventStore: EKEventStore
+    private let storage: CalendarExportEventStorageProtocol
 
-    init(eventStore: EKEventStore = EKEventStore()) {
+    init(
+        eventStore: EKEventStore = EKEventStore(),
+        storage: CalendarExportEventStorageProtocol = UserDefaultsCalendarExportEventStorage()
+    ) {
         self.eventStore = eventStore
+        self.storage = storage
+    }
+
+    func isSessionInCalendar(sessionId: UUID) -> Bool {
+        guard let storedEventId = storage.eventIdentifier(for: sessionId) else { return false }
+
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .fullAccess, .writeOnly:
+            if eventStore.event(withIdentifier: storedEventId) != nil {
+                return true
+            }
+            storage.setEventIdentifier(nil, for: sessionId)
+            return false
+        default:
+            // Added before but calendar access is unavailable — assume still present.
+            return true
+        }
     }
 
     func addToCalendar(session: PickupSession) async throws {
         let granted = try await requestAccess()
         guard granted else { throw CalendarExportError.accessDenied }
+
+        if isSessionInCalendar(sessionId: session.id) {
+            throw CalendarExportError.alreadyAdded
+        }
 
         let event = EKEvent(eventStore: eventStore)
         event.title = CalendarEventFormatting.title(for: session)
@@ -60,6 +115,11 @@ final class CalendarExportService {
         } catch {
             throw CalendarExportError.saveFailed
         }
+
+        guard let eventIdentifier = event.eventIdentifier else {
+            throw CalendarExportError.saveFailed
+        }
+        storage.setEventIdentifier(eventIdentifier, for: session.id)
     }
 
     private func requestAccess() async throws -> Bool {

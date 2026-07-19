@@ -4,26 +4,36 @@ import UIKit
 @Observable
 final class DiscoverViewModel {
     var sessions = Loadable<[PickupSession]>.idle
-    var selectedSport: SportType?
+    var filterMode: DiscoverSportFilterMode
     var selectedTimeWindow: DiscoverTimeWindow = .next48h
     var selectedSkillLevel: SkillLevel = .any
     var searchText = ""
     var joiningSessionId: UUID?
     var leavingSessionId: UUID?
     var joinErrorMessage: String?
+    private(set) var preferredSports: [SportType] = []
     /// Active join/waitlist status for the signed-in user per session id.
     private(set) var participantStatusBySessionId: [UUID: ParticipantStatus] = [:]
 
     private let repository: SessionRepositoryProtocol
     private let blockRepository: BlockRepositoryProtocol
+    private let profileRepository: ProfileRepositoryProtocol
     private var loadTask: Task<Void, Never>?
+    private var hasLoadedPreferredSports = false
 
     init(
         repository: SessionRepositoryProtocol = SessionRepository(),
-        blockRepository: BlockRepositoryProtocol = BlockRepository()
+        blockRepository: BlockRepositoryProtocol = BlockRepository(),
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository()
     ) {
         self.repository = repository
         self.blockRepository = blockRepository
+        self.profileRepository = profileRepository
+        self.filterMode = DiscoverSportFilterStorage.load() ?? .single(nil)
+    }
+
+    var showMySportsChip: Bool {
+        !preferredSports.isEmpty
     }
 
     var filteredSessions: [PickupSession] {
@@ -46,6 +56,12 @@ final class DiscoverViewModel {
     func load(currentUserId: UUID?) {
         loadTask?.cancel()
         loadTask = Task { await fetchSessions(currentUserId: currentUserId) }
+    }
+
+    func setFilterMode(_ mode: DiscoverSportFilterMode, currentUserId: UUID?) {
+        filterMode = mode
+        DiscoverSportFilterStorage.save(mode)
+        load(currentUserId: currentUserId)
     }
 
     func participantStatus(for sessionId: UUID) -> ParticipantStatus? {
@@ -76,18 +92,37 @@ final class DiscoverViewModel {
         isParticipating(in: session.id)
     }
 
+    static func applySportFilter(
+        _ sessions: [PickupSession],
+        mode: DiscoverSportFilterMode,
+        preferredSports: [SportType]
+    ) -> [PickupSession] {
+        guard case .mySports = mode else { return sessions }
+        let preferred = Set(preferredSports)
+        return sessions.filter { preferred.contains($0.sport) }
+    }
+
     @MainActor
     func fetchSessions(currentUserId: UUID?) async {
         let previous = sessions
         let previousStatuses = participantStatusBySessionId
         sessions = .loading
         do {
+            await ensurePreferredSports(currentUserId: currentUserId)
+
             let skillFilter = selectedSkillLevel == .any ? nil : selectedSkillLevel
+            let sportFilter: SportType? = {
+                if case .single(let sport) = filterMode { return sport }
+                return nil
+            }()
+
             var items = try await repository.fetchUpcoming(
-                sport: selectedSport,
+                sport: sportFilter,
                 timeWindow: selectedTimeWindow,
                 skillLevel: skillFilter
             )
+            items = Self.applySportFilter(items, mode: filterMode, preferredSports: preferredSports)
+
             if currentUserId != nil {
                 let blockedHostIds = try await blockRepository.fetchBlockedUserIds()
                 items = SessionRepository.filterBlockedHosts(items, blockedHostIds: blockedHostIds)
@@ -122,6 +157,20 @@ final class DiscoverViewModel {
             }
             participantStatusBySessionId = [:]
             sessions = .failed(AppErrorMapper.message(for: error))
+        }
+    }
+
+    @MainActor
+    private func ensurePreferredSports(currentUserId: UUID?) async {
+        guard !hasLoadedPreferredSports, currentUserId != nil else { return }
+        hasLoadedPreferredSports = true
+
+        if let profile = try? await profileRepository.fetchCurrentProfile() {
+            preferredSports = profile.preferredSports
+            if DiscoverSportFilterStorage.load() == nil {
+                filterMode = preferredSports.isEmpty ? .single(nil) : .mySports
+                DiscoverSportFilterStorage.save(filterMode)
+            }
         }
     }
 
