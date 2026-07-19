@@ -12,6 +12,9 @@ struct SessionDetailView: View {
     @State private var showReportSheet = false
     @State private var showCancelConfirm = false
     @State private var showBlockConfirm = false
+    @State private var showRunItBackSheet = false
+    @State private var showChat = false
+    @State private var isAddingToCalendar = false
 
     init(sessionId: UUID) {
         self.sessionId = sessionId
@@ -81,6 +84,9 @@ struct SessionDetailView: View {
                 userId: appState.session?.userId
             )
             await viewModel.load()
+            if appState.consumeSessionDetailOpenChat(for: sessionId), viewModel.canAccessChat {
+                showChat = true
+            }
             await withTaskCancellationHandler {
                 await viewModel.startSessionRealtime()
             } onCancel: {
@@ -115,6 +121,18 @@ struct SessionDetailView: View {
                 ReportSheet(sessionId: sessionId)
             }
             .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showRunItBackSheet) {
+            if let session = viewModel.session.value {
+                NavigationStack {
+                    CreateSessionView(prefill: CreateSessionPrefill(from: session)) { created in
+                        showRunItBackSheet = false
+                        appState.presentSessionDetail(id: created.id, on: .myGames)
+                        appState.touchSessionFeedRefresh()
+                    }
+                }
+                .presentationDetents([.large])
+            }
         }
         .confirmationDialog(
             "Cancel this session for everyone?",
@@ -195,6 +213,21 @@ struct SessionDetailView: View {
                         }
 
                         chatEntry(session)
+
+                        if viewModel.canRunItBack {
+                            SecondaryButton(title: "Run it back") {
+                                showRunItBackSheet = true
+                            }
+                            .padding(.top, Spacing.s)
+                        }
+
+                        if viewModel.canAddToCalendar {
+                            SecondaryButton(title: isAddingToCalendar ? "Adding…" : "Add to Calendar") {
+                                Task { await addToCalendar(session) }
+                            }
+                            .disabled(isAddingToCalendar)
+                            .padding(.top, Spacing.s)
+                        }
                     }
                     .foregroundStyle(AppColor.textPrimary(colorScheme))
                     .padding(.horizontal, Spacing.m)
@@ -266,7 +299,7 @@ struct SessionDetailView: View {
     @ViewBuilder
     private func chatEntry(_ session: PickupSession) -> some View {
         if viewModel.canAccessChat, let userId = appState.session?.userId {
-            NavigationLink {
+            NavigationLink(isActive: $showChat) {
                 ChatView(sessionId: session.id, currentUserId: userId)
             } label: {
                 Label("Session chat", systemImage: "bubble.left.and.bubble.right")
@@ -354,6 +387,21 @@ struct SessionDetailView: View {
             Spacer()
         }
         .frame(height: 50)
+    }
+
+    @MainActor
+    private func addToCalendar(_ session: PickupSession) async {
+        isAddingToCalendar = true
+        defer { isAddingToCalendar = false }
+
+        do {
+            try await CalendarExportService.shared.addToCalendar(session: session)
+            appState.showSuccess("Added to Calendar")
+        } catch CalendarExportError.accessDenied {
+            viewModel.actionError = "Calendar access is required to save this game."
+        } catch {
+            viewModel.actionError = AppErrorMapper.message(for: error)
+        }
     }
 }
 

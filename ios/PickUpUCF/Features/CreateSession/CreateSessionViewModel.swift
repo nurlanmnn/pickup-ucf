@@ -27,6 +27,8 @@ final class CreateSessionViewModel {
     var isLoading = false
     var didCreate = false
 
+    private var pendingVenueId: UUID?
+    private var pendingCustomLocationLabel: String?
     private let repository: SessionRepositoryProtocol
 
     init(repository: SessionRepositoryProtocol = SessionRepository()) {
@@ -38,7 +40,8 @@ final class CreateSessionViewModel {
     }
 
     var showsCustomLocationField: Bool {
-        venuePickerOptionId == Self.customVenuePickerTag
+        guard !venues.isEmpty || pendingVenueId == nil else { return false }
+        return venuePickerOptionId == Self.customVenuePickerTag
     }
 
     var canSubmit: Bool {
@@ -83,10 +86,54 @@ final class CreateSessionViewModel {
         capacityText = "\(capacity)"
     }
 
+    func applyPrefill(_ prefill: CreateSessionPrefill) {
+        sport = prefill.sport
+        customSportName = prefill.customSportName ?? ""
+        skillLevel = prefill.skillLevel
+        capacity = prefill.capacity
+        capacityText = "\(prefill.capacity)"
+        durationMinutes = prefill.durationMinutes
+        durationText = "\(prefill.durationMinutes)"
+        notes = prefill.notes
+        startsAt = prefill.startsAt
+        repeatWeekly = false
+
+        if let venueId = prefill.venueId {
+            pendingVenueId = venueId
+            venuePickerOptionId = Self.customVenuePickerTag
+            customLocationSelection = nil
+            pendingCustomLocationLabel = nil
+        } else {
+            pendingVenueId = nil
+            venuePickerOptionId = Self.customVenuePickerTag
+            customLocationSelection = prefill.customLocationSelection
+            pendingCustomLocationLabel = prefill.customLocationLabel
+        }
+    }
+
+    @MainActor
+    func hydrateCustomLocationIfNeeded() async {
+        guard customLocationSelection == nil,
+              let label = pendingCustomLocationLabel else { return }
+        if let hydrated = await LocationGeocoding.selectionForExistingSession(
+            label: label,
+            latitude: nil,
+            longitude: nil
+        ) {
+            customLocationSelection = hydrated
+            pendingCustomLocationLabel = nil
+        }
+    }
+
     @MainActor
     func loadVenues() async {
         do {
             venues = try await repository.fetchVenues()
+            if let pendingVenueId,
+               venues.contains(where: { $0.id == pendingVenueId }) {
+                venuePickerOptionId = pendingVenueId.uuidString
+            }
+            self.pendingVenueId = nil
             if venuePickerOptionId != Self.customVenuePickerTag,
                UUID(uuidString: venuePickerOptionId) == nil
                    || !venues.contains(where: { $0.id.uuidString == venuePickerOptionId }) {

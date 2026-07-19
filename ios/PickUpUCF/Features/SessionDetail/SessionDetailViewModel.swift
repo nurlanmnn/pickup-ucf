@@ -7,6 +7,7 @@ final class SessionDetailViewModel {
     let sessionId: UUID
     var session = Loadable<PickupSession>.idle
     var participantStatus: ParticipantStatus?
+    var roster = Loadable<SessionRoster>.idle
     var isSubmitting = false
     var actionError: String?
 
@@ -66,6 +67,7 @@ final class SessionDetailViewModel {
     @MainActor
     func load() async {
         session = .loading
+        roster = userId == nil ? .idle : .loading
         do {
             let item = try await repository.fetchSession(id: sessionId)
             session = .loaded(item)
@@ -74,9 +76,18 @@ final class SessionDetailViewModel {
                     sessionId: sessionId,
                     userId: userId
                 )
+                do {
+                    let rosterItem = try await repository.fetchRoster(sessionId: sessionId)
+                    roster = .loaded(rosterItem)
+                } catch {
+                    roster = .failed(AppErrorMapper.message(for: error))
+                }
+            } else {
+                roster = .idle
             }
         } catch {
             session = .failed(AppErrorMapper.message(for: error))
+            roster = .idle
         }
     }
 
@@ -250,6 +261,32 @@ final class SessionDetailViewModel {
     }
 
     var canAccessChat: Bool {
+        if isHost { return true }
+        switch participantStatus {
+        case .joined, .waitlist:
+            return true
+        case .left, .none:
+            return false
+        }
+    }
+
+    var canRunItBack: Bool {
+        guard userId != nil, let session = session.value, session.status == .completed else {
+            return false
+        }
+        if isHost { return true }
+        switch participantStatus {
+        case .joined, .waitlist:
+            return true
+        case .left, .none:
+            return false
+        }
+    }
+
+    var canAddToCalendar: Bool {
+        guard let session = session.value else { return false }
+        guard session.startsAt > Date() else { return false }
+        guard session.status == .open || session.status == .full else { return false }
         if isHost { return true }
         switch participantStatus {
         case .joined, .waitlist:

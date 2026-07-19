@@ -2,8 +2,17 @@ import SwiftUI
 
 struct CreateSessionView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel = CreateSessionViewModel()
+    @State private var viewModel: CreateSessionViewModel
     var onCreated: ((PickupSession) -> Void)?
+
+    init(prefill: CreateSessionPrefill? = nil, onCreated: ((PickupSession) -> Void)? = nil) {
+        let model = CreateSessionViewModel()
+        if let prefill {
+            model.applyPrefill(prefill)
+        }
+        _viewModel = State(initialValue: model)
+        self.onCreated = onCreated
+    }
 
     private enum NumericField: Hashable {
         case duration
@@ -162,6 +171,7 @@ struct CreateSessionView: View {
         }
         .task {
             await viewModel.loadVenues()
+            await viewModel.hydrateCustomLocationIfNeeded()
         }
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: focusedNumeric) { _, newValue in
