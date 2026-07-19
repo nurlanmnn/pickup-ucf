@@ -31,7 +31,8 @@ protocol SessionRepositoryProtocol {
     func fetchUpcoming(
         sport: SportType?,
         timeWindow: DiscoverTimeWindow,
-        skillLevel: SkillLevel?
+        skillLevel: SkillLevel?,
+        venueId: UUID?
     ) async throws -> [PickupSession]
     /// Sessions the user has joined or is waitlisted for, starting from now (open or full only).
     func fetchMySessions(userId: UUID) async throws -> [PickupSession]
@@ -75,7 +76,8 @@ final class SessionRepository: SessionRepositoryProtocol {
     func fetchUpcoming(
         sport: SportType?,
         timeWindow: DiscoverTimeWindow = .next48h,
-        skillLevel: SkillLevel? = nil
+        skillLevel: SkillLevel? = nil,
+        venueId: UUID? = nil
     ) async throws -> [PickupSession] {
         let now = Date.now
         let range = timeWindow.queryRange(relativeTo: now)
@@ -94,6 +96,10 @@ final class SessionRepository: SessionRepositoryProtocol {
 
         if let skillLevel, skillLevel != .any {
             query = query.eq("skill_level", value: skillLevel.rawValue)
+        }
+
+        if let venueId {
+            query = query.eq("venue_id", value: venueId.uuidString)
         }
 
         let rows: [PickupSession] = try await query

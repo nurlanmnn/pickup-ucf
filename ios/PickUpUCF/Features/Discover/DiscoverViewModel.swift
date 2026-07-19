@@ -1,17 +1,37 @@
 import Foundation
 import UIKit
 
+struct DiscoverEmptyStateContent: Equatable {
+    let title: String
+    let message: String
+}
+
+private struct DiscoverFilterSnapshot {
+    let sportMode: DiscoverSportFilterMode
+    let timeWindow: DiscoverTimeWindow
+    let skillLevel: SkillLevel
+    let venueId: UUID?
+}
+
+private enum VenueLoadState {
+    case notStarted
+    case loading(id: Int, task: Task<[Venue], Error>)
+    case finished
+}
+
 @Observable
 final class DiscoverViewModel {
     var sessions = Loadable<[PickupSession]>.idle
     var filterMode: DiscoverSportFilterMode
     var selectedTimeWindow: DiscoverTimeWindow = .next48h
     var selectedSkillLevel: SkillLevel = .any
+    var selectedVenueId: UUID?
     var searchText = ""
     var joiningSessionId: UUID?
     var leavingSessionId: UUID?
     var joinErrorMessage: String?
     private(set) var preferredSports: [SportType] = []
+    private(set) var venues: [Venue] = []
     /// Active join/waitlist status for the signed-in user per session id.
     private(set) var participantStatusBySessionId: [UUID: ParticipantStatus] = [:]
 
@@ -20,6 +40,12 @@ final class DiscoverViewModel {
     private let profileRepository: ProfileRepositoryProtocol
     private var loadTask: Task<Void, Never>?
     private var hasLoadedPreferredSports = false
+    private var preferredSportsLoadTask: Task<Profile?, Never>?
+    private var venueLoadState = VenueLoadState.notStarted
+    private var venueLoadGeneration = 0
+    private var requestGeneration = 0
+    private var lastSettledSessions = Loadable<[PickupSession]>.idle
+    private var lastSettledStatuses: [UUID: ParticipantStatus] = [:]
 
     init(
         repository: SessionRepositoryProtocol = SessionRepository(),
@@ -36,11 +62,16 @@ final class DiscoverViewModel {
         !preferredSports.isEmpty
     }
 
+    var officialVenues: [Venue] {
+        venues.filter(\.isOfficial)
+    }
+
     var filteredSessions: [PickupSession] {
         guard let items = sessions.value else { return [] }
+        let venueFiltered = Self.applyVenueFilter(items, selectedVenueId: selectedVenueId)
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !query.isEmpty else { return items }
-        return items.filter { session in
+        guard !query.isEmpty else { return venueFiltered }
+        return venueFiltered.filter { session in
             session.locationName.lowercased().contains(query)
                 || session.sportDisplayName.lowercased().contains(query)
                 || (session.notesForDisplay?.lowercased().contains(query) ?? false)
@@ -53,14 +84,44 @@ final class DiscoverViewModel {
         filteredSessions.filter { $0.startsAt > referenceDate }
     }
 
-    func load(currentUserId: UUID?) {
-        loadTask?.cancel()
-        loadTask = Task { await fetchSessions(currentUserId: currentUserId) }
+    func emptyStateContent(serverItemsAreEmpty: Bool) -> DiscoverEmptyStateContent {
+        let hasSearch = !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasActiveFilter = selectedVenueId != nil
+            || filterMode != .single(nil)
+            || selectedSkillLevel != .any
+            || selectedTimeWindow != .next48h
+            || hasSearch
+
+        if serverItemsAreEmpty, !hasActiveFilter {
+            return DiscoverEmptyStateContent(
+                title: "No games yet",
+                message: "Be the first to host a pickup session on campus."
+            )
+        }
+
+        return DiscoverEmptyStateContent(
+            title: "No upcoming games",
+            message: hasActiveFilter
+                ? "Try another venue, sport, or search term."
+                : "Check back soon for new sessions."
+        )
     }
 
+    @MainActor
+    func load(currentUserId: UUID?) {
+        startSessionRequest(currentUserId: currentUserId)
+    }
+
+    @MainActor
     func setFilterMode(_ mode: DiscoverSportFilterMode, currentUserId: UUID?) {
         filterMode = mode
         DiscoverSportFilterStorage.save(mode)
+        load(currentUserId: currentUserId)
+    }
+
+    @MainActor
+    func setVenueFilter(_ venueId: UUID?, currentUserId: UUID?) {
+        selectedVenueId = venueId
         load(currentUserId: currentUserId)
     }
 
@@ -102,34 +163,79 @@ final class DiscoverViewModel {
         return sessions.filter { preferred.contains($0.sport) }
     }
 
+    static func applyVenueFilter(
+        _ sessions: [PickupSession],
+        selectedVenueId: UUID?
+    ) -> [PickupSession] {
+        guard let selectedVenueId else { return sessions }
+        return sessions.filter { $0.venueId == selectedVenueId }
+    }
+
     @MainActor
     func fetchSessions(currentUserId: UUID?) async {
-        let previous = sessions
-        let previousStatuses = participantStatusBySessionId
+        let task = startSessionRequest(currentUserId: currentUserId)
+        await task.value
+    }
+
+    @MainActor
+    @discardableResult
+    private func startSessionRequest(currentUserId: UUID?) -> Task<Void, Never> {
+        loadTask?.cancel()
+        requestGeneration += 1
+        let generation = requestGeneration
         sessions = .loading
+
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performSessionRequest(
+                currentUserId: currentUserId,
+                generation: generation
+            )
+        }
+        loadTask = task
+        return task
+    }
+
+    @MainActor
+    private func performSessionRequest(
+        currentUserId: UUID?,
+        generation: Int
+    ) async {
         do {
+            await ensureVenues()
             await ensurePreferredSports(currentUserId: currentUserId)
 
-            let skillFilter = selectedSkillLevel == .any ? nil : selectedSkillLevel
+            guard generation == requestGeneration else { return }
+
+            let filters = DiscoverFilterSnapshot(
+                sportMode: filterMode,
+                timeWindow: selectedTimeWindow,
+                skillLevel: selectedSkillLevel,
+                venueId: selectedVenueId
+            )
+            let skillFilter = filters.skillLevel == .any ? nil : filters.skillLevel
             let sportFilter: SportType? = {
-                if case .single(let sport) = filterMode { return sport }
+                if case .single(let sport) = filters.sportMode { return sport }
                 return nil
             }()
 
             var items = try await repository.fetchUpcoming(
                 sport: sportFilter,
-                timeWindow: selectedTimeWindow,
-                skillLevel: skillFilter
+                timeWindow: filters.timeWindow,
+                skillLevel: skillFilter,
+                venueId: filters.venueId
             )
-            items = Self.applySportFilter(items, mode: filterMode, preferredSports: preferredSports)
+            items = Self.applySportFilter(items, mode: filters.sportMode, preferredSports: preferredSports)
+            items = Self.applyVenueFilter(items, selectedVenueId: filters.venueId)
 
             if currentUserId != nil {
                 let blockedHostIds = try await blockRepository.fetchBlockedUserIds()
                 items = SessionRepository.filterBlockedHosts(items, blockedHostIds: blockedHostIds)
             }
+            guard generation == requestGeneration else { return }
             if Task.isCancelled {
-                sessions = previous
-                participantStatusBySessionId = previousStatuses
+                sessions = lastSettledSessions
+                participantStatusBySessionId = lastSettledStatuses
                 return
             }
 
@@ -141,31 +247,93 @@ final class DiscoverViewModel {
                 )
             }
 
+            guard generation == requestGeneration else { return }
             if Task.isCancelled {
-                sessions = previous
-                participantStatusBySessionId = previousStatuses
+                sessions = lastSettledSessions
+                participantStatusBySessionId = lastSettledStatuses
                 return
             }
 
             participantStatusBySessionId = statuses
             sessions = .loaded(items)
+            lastSettledStatuses = statuses
+            lastSettledSessions = sessions
         } catch {
+            guard generation == requestGeneration else { return }
             if Task.isCancelled {
-                sessions = previous
-                participantStatusBySessionId = previousStatuses
+                sessions = lastSettledSessions
+                participantStatusBySessionId = lastSettledStatuses
                 return
             }
             participantStatusBySessionId = [:]
             sessions = .failed(AppErrorMapper.message(for: error))
+            lastSettledStatuses = [:]
+            lastSettledSessions = sessions
         }
+    }
+
+    @MainActor
+    private func ensureVenues() async {
+        while true {
+            let loadId: Int
+            let task: Task<[Venue], Error>
+
+            switch venueLoadState {
+            case .finished:
+                return
+            case .loading(let existingId, let existingTask):
+                loadId = existingId
+                task = existingTask
+            case .notStarted:
+                venueLoadGeneration += 1
+                loadId = venueLoadGeneration
+                task = Task { try await repository.fetchVenues() }
+                venueLoadState = .loading(id: loadId, task: task)
+            }
+
+            do {
+                let fetchedVenues = try await task.value
+                guard isCurrentVenueLoad(loadId) else { continue }
+                venues = fetchedVenues
+                venueLoadState = .finished
+                return
+            } catch is CancellationError {
+                if isCurrentVenueLoad(loadId) {
+                    venueLoadState = .notStarted
+                }
+                if Task.isCancelled { return }
+            } catch {
+                guard isCurrentVenueLoad(loadId) else { continue }
+                venueLoadState = .finished
+                return
+            }
+        }
+    }
+
+    @MainActor
+    private func isCurrentVenueLoad(_ id: Int) -> Bool {
+        guard case .loading(let currentId, _) = venueLoadState else { return false }
+        return currentId == id
     }
 
     @MainActor
     private func ensurePreferredSports(currentUserId: UUID?) async {
         guard !hasLoadedPreferredSports, currentUserId != nil else { return }
-        hasLoadedPreferredSports = true
 
-        if let profile = try? await profileRepository.fetchCurrentProfile() {
+        let task: Task<Profile?, Never>
+        if let preferredSportsLoadTask {
+            task = preferredSportsLoadTask
+        } else {
+            task = Task { try? await profileRepository.fetchCurrentProfile() }
+            preferredSportsLoadTask = task
+        }
+
+        let profile = await task.value
+        guard !hasLoadedPreferredSports else { return }
+        hasLoadedPreferredSports = true
+        preferredSportsLoadTask = nil
+
+        if let profile {
             preferredSports = profile.preferredSports
             if DiscoverSportFilterStorage.load() == nil {
                 filterMode = preferredSports.isEmpty ? .single(nil) : .mySports

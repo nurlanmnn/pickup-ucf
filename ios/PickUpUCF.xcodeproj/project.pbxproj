@@ -121,6 +121,7 @@
 		E2A8F5416CC0B22A888D717C /* SkillPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA6AC9B4CFBCA863AF51059 /* SkillPill.swift */; };
 		E39DD70AE3DEC88A300D7DD6 /* AuthenticatedSessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */; };
 		E4298C1A219AE166C53E63BB /* NotificationPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336569D4B245D5DB651AF88A /* NotificationPreferencesTests.swift */; };
+		E44CEAB1C0B3B1C04DF6A637 /* VenueFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE87B36254BB241917DEEED1 /* VenueFilterTests.swift */; };
 		E59B15718EEC92202747F9BC /* EmailDomainValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90AC00654710CD46F917DCFA /* EmailDomainValidator.swift */; };
 		E8A02339F8D72552982E891B /* SessionRosterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEA5C6C56E7CA3C4380EAEE /* SessionRosterTests.swift */; };
 		EA561775D30DC16DE4F724A2 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15866006217050F82E09128A /* Colors.swift */; };
@@ -266,6 +267,7 @@
 		FC8A893C34284A16BDF463AC /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		FDBA5BAF1831E0A1CE172F3A /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		FE6DB7D6E3579CB040FB9225 /* OtherSportNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherSportNotes.swift; sourceTree = "<group>"; };
+		FE87B36254BB241917DEEED1 /* VenueFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VenueFilterTests.swift; sourceTree = "<group>"; };
 		FEB6169C48AC8E55D8E8546A /* CalendarEventFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventFormattingTests.swift; sourceTree = "<group>"; };
 		FF6026265B8F45C4360C5600 /* BlockedUsersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUsersTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -392,6 +394,7 @@
 				2FEA5C6C56E7CA3C4380EAEE /* SessionRosterTests.swift */,
 				46639F1C4419568BEE244DE4 /* SessionShareLinkTests.swift */,
 				DA6F174FDB0787634098299F /* SportTypeTests.swift */,
+				FE87B36254BB241917DEEED1 /* VenueFilterTests.swift */,
 				EB22EFA9B510696F61750AD5 /* WeatherSnapshotTests.swift */,
 			);
 			path = PickUpUCFTests;
@@ -828,6 +831,7 @@
 				E8A02339F8D72552982E891B /* SessionRosterTests.swift in Sources */,
 				9186DF0F8B226AB01EEE1691 /* SessionShareLinkTests.swift in Sources */,
 				1FA59202A1E4652997C929BC /* SportTypeTests.swift in Sources */,
+				E44CEAB1C0B3B1C04DF6A637 /* VenueFilterTests.swift in Sources */,
 				3076AC5ABEE0C2340CD44E42 /* WeatherSnapshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

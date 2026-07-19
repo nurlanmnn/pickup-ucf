@@ -12,6 +12,8 @@ struct DiscoverView: View {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     sportChips
                     filterRow
+                    venueChips
+                    venueFilterHint
 
                     if let joinError = viewModel.joinErrorMessage {
                         ErrorBanner(message: joinError)
@@ -66,19 +68,12 @@ struct DiscoverView: View {
             TimelineView(.periodic(from: .now, by: 60)) { context in
                 let rows = viewModel.discoverList(at: context.date)
                 let uid = appState.session?.userId
-                if items.isEmpty {
+                if rows.isEmpty {
+                    let emptyState = viewModel.emptyStateContent(serverItemsAreEmpty: items.isEmpty)
                     EmptyStateView(
                         symbol: "sportscourt",
-                        title: "No games yet",
-                        message: "Be the first to host a pickup session on campus."
-                    )
-                } else if rows.isEmpty {
-                    EmptyStateView(
-                        symbol: "sportscourt",
-                        title: "No upcoming games",
-                        message: viewModel.searchText.isEmpty
-                            ? "Check back soon for new sessions."
-                            : "Try another sport or search term."
+                        title: emptyState.title,
+                        message: emptyState.message
                     )
                 } else {
                     LazyVStack(spacing: Spacing.m) {
@@ -182,6 +177,42 @@ struct DiscoverView: View {
             Spacer(minLength: 0)
         }
         .font(AppFont.caption(.semibold))
+    }
+
+    private var venueChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.s) {
+                SportChip(
+                    title: "All venues",
+                    isSelected: viewModel.selectedVenueId == nil
+                ) {
+                    viewModel.setVenueFilter(nil, currentUserId: appState.session?.userId)
+                }
+
+                ForEach(viewModel.officialVenues) { venue in
+                    SportChip(
+                        title: venue.name,
+                        isSelected: viewModel.selectedVenueId == venue.id
+                    ) {
+                        viewModel.setVenueFilter(venue.id, currentUserId: appState.session?.userId)
+                    }
+                }
+            }
+        }
+        .accessibilityLabel("Venue filters")
+    }
+
+    @ViewBuilder
+    private var venueFilterHint: some View {
+        if viewModel.selectedVenueId != nil {
+            Label(
+                "Custom-location sessions are hidden while a venue filter is active.",
+                systemImage: "info.circle"
+            )
+            .font(AppFont.caption())
+            .foregroundStyle(AppColor.textSecondary(colorScheme))
+            .accessibilityElement(children: .combine)
+        }
     }
 }
 
