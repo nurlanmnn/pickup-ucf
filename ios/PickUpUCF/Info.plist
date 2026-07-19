@@ -29,6 +29,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Add PickUp UCF games to your calendar so you do not miss them.</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>SUPABASE_URL</key>
@@ -38,11 +40,11 @@
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<true/>
 	</dict>
-	<key>UILaunchScreen</key>
-	<dict/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>UILaunchScreen</key>
+	<dict/>
 </dict>
 </plist>

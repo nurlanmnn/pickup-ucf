@@ -12,6 +12,11 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     SWIFT_VERSION: "5.9"
     TARGETED_DEVICE_FAMILY: "1"
+    # Apple Silicon: avoid x86_64 simulator builds (breaks SPM package resolution in Xcode).
+    EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
+  configs:
+    Debug:
+      ONLY_ACTIVE_ARCH: YES
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
@@ -46,6 +51,7 @@ targets:
         # PickUpUCF target → Signing & Capabilities → + Capability → Push Notifications
         UIBackgroundModes:
           - remote-notification
+        NSCalendarsFullAccessUsageDescription: Add PickUp UCF games to your calendar so you do not miss them.
     settings:
       base:
         PRODUCT_NAME: PickUpUCF
