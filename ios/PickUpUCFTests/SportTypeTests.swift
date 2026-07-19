@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 @testable import PickUpUCF
 
 final class SportTypeTests: XCTestCase {
@@ -19,5 +20,14 @@ final class SportTypeTests: XCTestCase {
         let data = try JSONEncoder().encode(SportType.flagFootball)
         let decoded = try JSONDecoder().decode(SportType.self, from: data)
         XCTAssertEqual(decoded, .flagFootball)
+    }
+
+    func testSystemImagesExistOnIOS17() {
+        for sport in SportType.allCases {
+            XCTAssertNotNil(
+                UIImage(systemName: sport.systemImage),
+                "Missing SF Symbol for \(sport.rawValue): \(sport.systemImage)"
+            )
+        }
     }
 }

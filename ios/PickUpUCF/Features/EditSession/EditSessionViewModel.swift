@@ -25,6 +25,7 @@ final class EditSessionViewModel {
     var errorMessage: String?
     var isLoading = false
 
+    private var pendingVenueId: UUID?
     private var pendingCustomLocationLabel: String?
 
     private let repository: SessionRepositoryProtocol
@@ -41,7 +42,8 @@ final class EditSessionViewModel {
     }
 
     var showsCustomLocationField: Bool {
-        venuePickerOptionId == Self.customVenuePickerTag
+        guard !venues.isEmpty else { return false }
+        return venuePickerOptionId == Self.customVenuePickerTag
     }
 
     var canSubmit: Bool {
@@ -88,6 +90,11 @@ final class EditSessionViewModel {
     func loadVenues() async {
         do {
             venues = try await repository.fetchVenues()
+            if let pendingVenueId,
+               venues.contains(where: { $0.id == pendingVenueId }) {
+                venuePickerOptionId = pendingVenueId.uuidString
+            }
+            self.pendingVenueId = nil
             if venuePickerOptionId != Self.customVenuePickerTag,
                UUID(uuidString: venuePickerOptionId) == nil
                    || !venues.contains(where: { $0.id.uuidString == venuePickerOptionId }) {
@@ -154,8 +161,10 @@ final class EditSessionViewModel {
         customSportName = fromDb.isEmpty ? (parsed.embeddedName ?? "") : fromDb
         notes = parsed.userNotes ?? ""
         if let vid = session.venueId {
-            venuePickerOptionId = vid.uuidString
+            pendingVenueId = vid
+            venuePickerOptionId = Self.customVenuePickerTag
         } else {
+            pendingVenueId = nil
             venuePickerOptionId = Self.customVenuePickerTag
         }
         if session.venueId == nil {

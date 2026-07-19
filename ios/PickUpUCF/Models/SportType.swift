@@ -47,15 +47,15 @@ enum SportType: String, CaseIterable, Codable, Identifiable {
         case .volleyball: return "volleyball.fill"
         case .football: return "football.fill"
         case .other: return "sportscourt.fill"
-        case .pickleball: return "figure.racquet"
+        case .pickleball: return "tennisball"
         case .flagFootball: return "figure.american.football"
-        case .spikeball: return "sportscourt.fill"
+        case .spikeball: return "network"
         case .softball: return "figure.softball"
         case .floorHockey: return "figure.hockey"
-        case .dodgeball: return "sportscourt.fill"
-        case .racquetball: return "figure.racquet"
+        case .dodgeball: return "figure.run"
+        case .racquetball: return "circle.circle"
         case .badminton: return "figure.badminton"
-        case .cornhole: return "sportscourt.fill"
+        case .cornhole: return "target"
         }
     }
 }

@@ -73,16 +73,24 @@ struct EditSessionView: View {
             }
 
             Section {
-                Picker("Venue", selection: $vm.venuePickerOptionId) {
-                    Text("Custom location").tag(EditSessionViewModel.customVenuePickerTag)
-                    ForEach(vm.venues) { venue in
-                        Text(venue.name).tag(venue.id.uuidString)
+                if vm.venues.isEmpty {
+                    HStack(spacing: Spacing.s) {
+                        ProgressView()
+                        Text("Loading venues…")
+                            .foregroundStyle(.secondary)
                     }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: vm.venuePickerOptionId) { _, newValue in
-                    if newValue != EditSessionViewModel.customVenuePickerTag {
-                        vm.customLocationSelection = nil
+                } else {
+                    Picker("Venue", selection: $vm.venuePickerOptionId) {
+                        Text("Custom location").tag(EditSessionViewModel.customVenuePickerTag)
+                        ForEach(vm.venues) { venue in
+                            Text(venue.name).tag(venue.id.uuidString)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: vm.venuePickerOptionId) { _, newValue in
+                        if newValue != EditSessionViewModel.customVenuePickerTag {
+                            vm.customLocationSelection = nil
+                        }
                     }
                 }
 
