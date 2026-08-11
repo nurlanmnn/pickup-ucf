@@ -5,6 +5,7 @@ struct DiscoverView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = DiscoverViewModel()
     @State private var navigationPath = NavigationPath()
+    @State private var presentation: DiscoverPresentation = .list
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -14,6 +15,7 @@ struct DiscoverView: View {
                     filterRow
                     venueChips
                     venueFilterHint
+                    presentationPicker
 
                     if let joinError = viewModel.joinErrorMessage {
                         ErrorBanner(message: joinError)
@@ -76,42 +78,60 @@ struct DiscoverView: View {
                         message: emptyState.message
                     )
                 } else {
-                    LazyVStack(spacing: Spacing.m) {
-                        ForEach(rows) { session in
-                            NavigationLink(value: session.id) {
-                                SessionCard(
-                                    session: session,
-                                    isJoining: viewModel.joiningSessionId == session.id
-                                        || viewModel.leavingSessionId == session.id,
-                                    actionTitle: viewModel.cardActionTitle(for: session),
-                                    isDestructiveAction: viewModel.isDestructiveCardAction(for: session),
-                                    onJoin: uid == session.hostId
-                                        ? nil
-                                        : {
-                                            Task {
-                                                if viewModel.isParticipating(in: session.id) {
-                                                    await viewModel.quickLeave(
-                                                        session: session,
-                                                        currentUserId: uid
-                                                    )
-                                                    appState.touchSessionFeedRefresh()
-                                                } else {
-                                                    await viewModel.quickJoin(
-                                                        session: session,
-                                                        currentUserId: uid
-                                                    )
-                                                    appState.touchSessionFeedRefresh()
+                    switch presentation {
+                    case .list:
+                        LazyVStack(spacing: Spacing.m) {
+                            ForEach(rows) { session in
+                                NavigationLink(value: session.id) {
+                                    SessionCard(
+                                        session: session,
+                                        isJoining: viewModel.joiningSessionId == session.id
+                                            || viewModel.leavingSessionId == session.id,
+                                        actionTitle: viewModel.cardActionTitle(for: session),
+                                        isDestructiveAction: viewModel.isDestructiveCardAction(for: session),
+                                        onJoin: uid == session.hostId
+                                            ? nil
+                                            : {
+                                                Task {
+                                                    if viewModel.isParticipating(in: session.id) {
+                                                        await viewModel.quickLeave(
+                                                            session: session,
+                                                            currentUserId: uid
+                                                        )
+                                                        appState.touchSessionFeedRefresh()
+                                                    } else {
+                                                        await viewModel.quickJoin(
+                                                            session: session,
+                                                            currentUserId: uid
+                                                        )
+                                                        appState.touchSessionFeedRefresh()
+                                                    }
                                                 }
                                             }
-                                        }
-                                )
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                    case .map:
+                        DiscoverMapView(sessions: rows) { sessionId in
+                            navigationPath.append(sessionId)
+                        }
+                        .frame(height: 480)
                     }
                 }
             }
         }
+    }
+
+    private var presentationPicker: some View {
+        Picker("Presentation", selection: $presentation) {
+            ForEach(DiscoverPresentation.allCases) { presentation in
+                Text(presentation.displayName).tag(presentation)
+            }
+        }
+        .pickerStyle(.segmented)
+        .accessibilityLabel("Discover presentation")
     }
 
     private var loadingPlaceholders: some View {
@@ -213,6 +233,19 @@ struct DiscoverView: View {
             .foregroundStyle(AppColor.textSecondary(colorScheme))
             .accessibilityElement(children: .combine)
         }
+    }
+}
+
+private enum DiscoverPresentation: String, CaseIterable, Identifiable {
+    case list
+    case map
+
+    var id: String {
+        rawValue
+    }
+
+    var displayName: String {
+        rawValue.capitalized
     }
 }
 
