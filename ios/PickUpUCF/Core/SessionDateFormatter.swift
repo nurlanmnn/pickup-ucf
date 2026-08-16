@@ -31,4 +31,22 @@ enum SessionDateFormatter {
         let day = weekdayFormatter.string(from: date)
         return "\(day) · \(timeFormatter.string(from: date))"
     }
+
+    /// Live countdown for games starting within two hours. Nil otherwise.
+    static func relativeStartLabel(for date: Date, relativeTo now: Date = .now) -> String? {
+        let seconds = date.timeIntervalSince(now)
+        guard seconds > 0 else { return nil }
+        if seconds < 60 { return "Starts now" }
+
+        let totalMinutes = Int((seconds / 60.0).rounded(.up))
+        guard totalMinutes <= 120 else { return nil }
+        return "Starts in \(totalMinutes)m"
+    }
+
+    static func cardTimeLine(for date: Date, relativeTo now: Date = .now) -> String {
+        if let relative = relativeStartLabel(for: date, relativeTo: now) {
+            return "\(relative) · \(timeFormatter.string(from: date))"
+        }
+        return cardLabel(for: date, relativeTo: now)
+    }
 }

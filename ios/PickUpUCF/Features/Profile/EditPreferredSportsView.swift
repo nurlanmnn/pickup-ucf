@@ -8,21 +8,18 @@ struct EditPreferredSportsView: View {
     var body: some View {
         @Bindable var vm = viewModel
 
-        Form {
-            InlineFeedbackSection(error: vm.errorMessage, success: vm.successMessage)
+        ScrollView {
+            VStack(spacing: Spacing.m) {
+                InlineFeedbackSection(error: vm.errorMessage, success: vm.successMessage)
 
-            Section {
-                SportPickerGrid(
-                    selectedSports: vm.selectedSports,
-                    onToggle: { vm.toggleSport($0) }
-                )
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-            } footer: {
-                Text("Pick one or more sports you play on campus.")
-            }
+                FormCard(footer: "Pick one or more sports you play on campus.") {
+                    SportPickerGrid(
+                        selectedSports: vm.selectedSports,
+                        onToggle: { vm.toggleSport($0) }
+                    )
+                    .padding(Spacing.m)
+                }
 
-            Section {
                 PrimaryButton(
                     title: "Save",
                     isLoading: vm.isLoading,
@@ -36,16 +33,13 @@ struct EditPreferredSportsView: View {
                         }
                     }
                 }
-                .buttonStyle(.borderless)
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
             }
+            .padding(Spacing.m)
         }
+        .appScreenBackground()
         .navigationTitle("Edit sports")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await viewModel.loadExistingSports()
-        }
+        .task { await viewModel.loadExistingSports() }
     }
 }
 

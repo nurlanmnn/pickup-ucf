@@ -6,6 +6,13 @@ struct DiscoverEmptyStateContent: Equatable {
     let message: String
 }
 
+struct QuickCreatePreset: Equatable, Identifiable {
+    let sport: SportType
+    let venueId: UUID?
+
+    var id: String { sport.rawValue }
+}
+
 private struct DiscoverFilterSnapshot {
     let sportMode: DiscoverSportFilterMode
     let timeWindow: DiscoverTimeWindow
@@ -84,6 +91,94 @@ final class DiscoverViewModel {
         filteredSessions.filter { $0.startsAt > referenceDate }
     }
 
+    func hostNudgeCTATitle() -> String {
+        Self.hostNudgeCTATitle(filterMode: filterMode)
+    }
+
+    func hostNudgePrefill() -> CreateSessionPrefill {
+        Self.hostNudgePrefill(
+            filterMode: filterMode,
+            preferredSports: preferredSports,
+            selectedVenueId: selectedVenueId,
+            officialVenues: officialVenues
+        )
+    }
+
+    func emptyStateSymbol() -> String {
+        Self.emptyStateSymbol(filterMode: filterMode)
+    }
+
+    func quickCreatePresets() -> [QuickCreatePreset] {
+        Self.quickCreatePresets(
+            filterMode: filterMode,
+            preferredSports: preferredSports,
+            selectedVenueId: selectedVenueId,
+            officialVenues: officialVenues
+        )
+    }
+
+    static func hostNudgeCTATitle(filterMode: DiscoverSportFilterMode) -> String {
+        if case .single(let sport?) = filterMode {
+            return "Host \(sport.displayName.lowercased()) game"
+        }
+        return "Host a game"
+    }
+
+    static func hostNudgePrefill(
+        filterMode: DiscoverSportFilterMode,
+        preferredSports: [SportType],
+        selectedVenueId: UUID? = nil,
+        officialVenues: [Venue] = [],
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> CreateSessionPrefill {
+        let venueId = selectedVenueId ?? officialVenues.first?.id
+        let sport: SportType
+        if case .single(let selected?) = filterMode {
+            sport = selected
+        } else if case .mySports = filterMode, let firstPreferred = preferredSports.first {
+            sport = firstPreferred
+        } else {
+            sport = .basketball
+        }
+        return CreateSessionPrefill(sport: sport, venueId: venueId, now: now, calendar: calendar)
+    }
+
+    static func emptyStateSymbol(filterMode: DiscoverSportFilterMode) -> String {
+        if case .single(let sport?) = filterMode {
+            return sport.systemImage
+        }
+        return "sportscourt"
+    }
+
+    static let defaultQuickCreateSports: [SportType] = [
+        .basketball, .soccer, .volleyball, .flagFootball,
+    ]
+
+    static func quickCreatePresets(
+        filterMode: DiscoverSportFilterMode,
+        preferredSports: [SportType],
+        selectedVenueId: UUID?,
+        officialVenues: [Venue]
+    ) -> [QuickCreatePreset] {
+        if case .single(.some(_)) = filterMode {
+            return []
+        }
+
+        let sports: [SportType]
+        if case .mySports = filterMode {
+            let preferred = preferredSports.filter { $0 != .other }
+            sports = preferred.isEmpty
+                ? defaultQuickCreateSports
+                : Array(preferred.prefix(4))
+        } else {
+            sports = defaultQuickCreateSports
+        }
+
+        let venueId = selectedVenueId ?? officialVenues.first?.id
+        return sports.map { QuickCreatePreset(sport: $0, venueId: venueId) }
+    }
+
     func emptyStateContent(serverItemsAreEmpty: Bool) -> DiscoverEmptyStateContent {
         let hasSearch = !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasActiveFilter = selectedVenueId != nil
@@ -116,12 +211,14 @@ final class DiscoverViewModel {
     func setFilterMode(_ mode: DiscoverSportFilterMode, currentUserId: UUID?) {
         filterMode = mode
         DiscoverSportFilterStorage.save(mode)
+        UISelectionFeedbackGenerator().selectionChanged()
         load(currentUserId: currentUserId)
     }
 
     @MainActor
     func setVenueFilter(_ venueId: UUID?, currentUserId: UUID?) {
         selectedVenueId = venueId
+        UISelectionFeedbackGenerator().selectionChanged()
         load(currentUserId: currentUserId)
     }
 
@@ -352,7 +449,7 @@ final class DiscoverViewModel {
             let status = try await repository.joinSession(id: session.id)
             participantStatusBySessionId[session.id] = status
             await fetchSessions(currentUserId: currentUserId)
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             joinErrorMessage = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
@@ -369,7 +466,7 @@ final class DiscoverViewModel {
             try await repository.leaveSession(id: session.id)
             participantStatusBySessionId.removeValue(forKey: session.id)
             await fetchSessions(currentUserId: currentUserId)
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             joinErrorMessage = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)

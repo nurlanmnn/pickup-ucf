@@ -30,7 +30,7 @@ struct OnboardingView: View {
             }
             .padding(Spacing.l)
         }
-        .background(AppColor.background(colorScheme))
+        .appScreenBackground()
     }
 
     private var header: some View {

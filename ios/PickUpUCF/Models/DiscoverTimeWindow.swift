@@ -15,6 +15,15 @@ enum DiscoverTimeWindow: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Short label for compact filter chips.
+    var chipLabel: String {
+        switch self {
+        case .next48h: return "48 hours"
+        case .today: return "Today"
+        case .thisWeekend: return "Weekend"
+        }
+    }
+
     static var campusCalendar: Calendar {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "America/New_York")!

@@ -29,7 +29,6 @@ final class BlockedUsersViewModel {
         errorMessage = nil
         unblockingUserId = user.id
         defer { unblockingUserId = nil }
-
         do {
             try await repository.unblock(userId: user.id)
             await load()
@@ -40,6 +39,7 @@ final class BlockedUsersViewModel {
 }
 
 struct BlockedUsersView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @State private var viewModel = BlockedUsersViewModel()
 
     var body: some View {
@@ -66,51 +66,59 @@ struct BlockedUsersView: View {
                         message: "People you block won't appear in Discover and you can't join their games."
                     )
                 } else {
-                    List {
-                        if let errorMessage = vm.errorMessage {
-                            Section {
+                    ScrollView {
+                        VStack(spacing: Spacing.m) {
+                            if let errorMessage = vm.errorMessage {
                                 ErrorBanner(message: errorMessage)
                             }
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                        }
 
-                        Section {
-                            ForEach(users) { user in
-                                HStack {
-                                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                                        Text(user.displayName)
-                                        Text(user.handle)
-                                            .font(AppFont.caption())
-                                            .foregroundStyle(.secondary)
+                            SettingsCardGroup {
+                                ForEach(Array(users.enumerated()), id: \.element.id) { index, user in
+                                    if index > 0 { Divider().padding(.leading, Spacing.m) }
+
+                                    HStack(spacing: Spacing.m) {
+                                        Image(systemName: "person.fill")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                            .frame(width: 30, height: 30)
+                                            .background(AppColor.textSecondary(colorScheme))
+                                            .clipShape(Circle())
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(user.displayName)
+                                                .font(AppFont.body(.semibold))
+                                            Text(user.handle)
+                                                .font(AppFont.caption())
+                                                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                                        }
+
+                                        Spacer()
+
+                                        Button("Unblock") {
+                                            Task { await viewModel.unblock(user: user) }
+                                        }
+                                        .font(AppFont.caption(.semibold))
+                                        .foregroundStyle(AppColor.gold)
+                                        .disabled(vm.unblockingUserId == user.id)
                                     }
-
-                                    Spacer()
-
-                                    Button("Unblock") {
-                                        Task { await viewModel.unblock(user: user) }
-                                    }
-                                    .disabled(vm.unblockingUserId == user.id)
+                                    .padding(.vertical, Spacing.s + 2)
+                                    .padding(.horizontal, Spacing.m)
                                 }
                             }
                         }
+                        .padding(Spacing.m)
                     }
                 }
             }
         }
+        .appScreenBackground()
         .navigationTitle("Blocked users")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await viewModel.load()
-        }
-        .refreshable {
-            await viewModel.load()
-        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 }
 
 #Preview {
-    NavigationStack {
-        BlockedUsersView()
-    }
+    NavigationStack { BlockedUsersView() }
 }

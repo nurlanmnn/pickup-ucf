@@ -7,22 +7,19 @@ struct EditUsernameView: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        Form {
-            InlineFeedbackSection(error: viewModel.errorMessage, success: viewModel.successMessage)
+        ScrollView {
+            VStack(spacing: Spacing.m) {
+                InlineFeedbackSection(error: viewModel.errorMessage, success: viewModel.successMessage)
 
-            Section {
-                TextField("Username", text: $viewModel.username)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .focused($isFocused)
-            } footer: {
-                Text(
-                    "3–20 characters: letters, numbers, underscore. Shown as @username. "
-                        + "This is separate from your display name from sign up."
-                )
-            }
+                FormCard(footer: "3–20 characters: letters, numbers, underscore. Shown as @username.") {
+                    FormFieldRow {
+                        TextField("Username", text: $viewModel.username)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .focused($isFocused)
+                    }
+                }
 
-            Section {
                 PrimaryButton(
                     title: "Save",
                     isLoading: viewModel.isLoading,
@@ -36,19 +33,16 @@ struct EditUsernameView: View {
                         }
                     }
                 }
-                .buttonStyle(.borderless)
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
             }
+            .padding(Spacing.m)
         }
+        .appScreenBackground()
+        .dismissKeyboardOnBackgroundTap()
         .navigationTitle("Username")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(onDone: { isFocused = false })
         }
-        .dismissKeyboardOnBackgroundTap()
-        .task {
-            await viewModel.loadExistingUsername()
-        }
+        .task { await viewModel.loadExistingUsername() }
     }
 }

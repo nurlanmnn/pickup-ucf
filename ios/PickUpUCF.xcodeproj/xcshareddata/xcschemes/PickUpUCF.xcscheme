@@ -21,6 +21,20 @@
                ReferencedContainer = "container:PickUpUCF.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "60A522ED59512D6AAA70817B"
+               BuildableName = "PickUpUCFWidget.appex"
+               BlueprintName = "PickUpUCFWidget"
+               ReferencedContainer = "container:PickUpUCF.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

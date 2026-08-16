@@ -8,22 +8,23 @@ enum DiscoverSportFilterMode: Equatable {
 enum DiscoverSportFilterStorage {
     private static let key = "discoverSportFilterMode"
 
+    /// Returns the persisted filter mode.
+    /// Only the "My Sports" preference is remembered across sessions;
+    /// individual sport chip selections always reset to "All" on relaunch.
     static func load() -> DiscoverSportFilterMode? {
         guard let raw = UserDefaults.standard.string(forKey: key) else { return nil }
         if raw == "mySports" { return .mySports }
-        if raw == "all" { return .single(nil) }
-        if let sport = SportType(rawValue: raw) { return .single(sport) }
-        return nil
+        // Any previously-saved specific sport or "all" → start on All.
+        return .single(nil)
     }
 
     static func save(_ mode: DiscoverSportFilterMode) {
         switch mode {
         case .mySports:
             UserDefaults.standard.set("mySports", forKey: key)
-        case .single(nil):
+        case .single(nil), .single(_?):
+            // Don't persist specific sport chips — they reset to All on next launch.
             UserDefaults.standard.set("all", forKey: key)
-        case .single(let sport?):
-            UserDefaults.standard.set(sport.rawValue, forKey: key)
         }
     }
 }

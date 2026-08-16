@@ -1,10 +1,13 @@
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     @Environment(AppState.self) private var appState
     @State private var selectedTab = 0
     @State private var previousNonCreateTab = 0
     @State private var showCreate = false
+    @State private var createPrefill: CreateSessionPrefill?
+    @State private var createBounceToken = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -22,7 +25,12 @@ struct MainTabView: View {
 
             Color.clear
                 .tabItem {
-                    Label("Create", systemImage: "plus.circle.fill")
+                    Label {
+                        Text("Create")
+                    } icon: {
+                        Image(systemName: "plus.circle.fill")
+                            .symbolEffect(.bounce, value: createBounceToken)
+                    }
                 }
                 .tag(2)
 
@@ -44,23 +52,32 @@ struct MainTabView: View {
         }
         .onChange(of: selectedTab) { _, newValue in
             if newValue == 2 {
+                createBounceToken += 1
+                TabBarItemBounce.bounceItem(at: 2)
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                createPrefill = nil
                 showCreate = true
                 selectedTab = previousNonCreateTab
             } else {
                 previousNonCreateTab = newValue
             }
         }
+        .onChange(of: appState.createSessionRequestNonce) { _, _ in
+            createPrefill = appState.consumePendingCreateSessionPrefill()
+            showCreate = true
+        }
         .sheet(isPresented: $showCreate) {
             NavigationStack {
-                CreateSessionView { session in
+                CreateSessionView(prefill: createPrefill) { session in
                     showCreate = false
+                    createPrefill = nil
                     appState.presentSessionDetail(id: session.id, on: .myGames)
                     appState.touchSessionFeedRefresh()
                     previousNonCreateTab = 1
                     selectedTab = 1
                 }
             }
-            .presentationDetents([.large])
+            .appSheetChrome()
         }
     }
 }

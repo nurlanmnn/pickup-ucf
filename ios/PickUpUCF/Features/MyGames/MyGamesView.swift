@@ -15,9 +15,9 @@ struct MyGamesView: View {
                     .font(AppFont.body())
                     .foregroundStyle(AppColor.textSecondary(colorScheme))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .appScreenBackground()
             }
         }
-        .background(AppColor.background(colorScheme))
     }
 
     @ViewBuilder
@@ -36,6 +36,8 @@ struct MyGamesView: View {
                 }
                 .padding(Spacing.m)
             }
+            .appScreenBackground()
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationTitle("My Games")
             .refreshable {
                 guard let vm = viewModel else { return }
@@ -69,13 +71,12 @@ struct MyGamesView: View {
         }
     }
 
+    // MARK: - Upcoming Section
+
     @ViewBuilder
     private func upcomingSection(_ vm: MyGamesViewModel, currentUserId: UUID) -> some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text("Upcoming")
-                .font(AppFont.caption(.semibold))
-                .foregroundStyle(AppColor.textSecondary(colorScheme))
-                .textCase(.uppercase)
+            sectionLabel("Upcoming", value: upcomingCount(vm))
 
             switch vm.upcomingSessions {
             case .idle, .loading:
@@ -99,24 +100,56 @@ struct MyGamesView: View {
         }
     }
 
+    private func upcomingCount(_ vm: MyGamesViewModel) -> String? {
+        guard let items = vm.upcomingSessions.value, !items.isEmpty else { return nil }
+        return "\(items.count)"
+    }
+
+    // MARK: - Past Section
+
     @ViewBuilder
     private func pastSection(_ vm: MyGamesViewModel, currentUserId: UUID) -> some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
+            // Tappable elevated card for the history entry point
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                     vm.isPastSectionExpanded.toggle()
                 }
                 if vm.isPastSectionExpanded {
                     vm.loadPastIfNeeded()
                 }
             } label: {
-                CollapsibleSectionHeader(
-                    title: "Past games",
-                    subtitle: pastSectionSubtitle(vm),
-                    isExpanded: vm.isPastSectionExpanded
-                )
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 32, height: 32)
+                        .background(AppColor.textSecondary(colorScheme).opacity(0.55))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Past games")
+                            .font(AppFont.body(.semibold))
+                            .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        Text(pastSectionSubtitle(vm))
+                            .font(AppFont.caption())
+                            .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+                        .rotationEffect(.degrees(vm.isPastSectionExpanded ? 90 : 0))
+                        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: vm.isPastSectionExpanded)
+                }
+                .padding(Spacing.m)
+                .background(AppColor.elevatedSurface(colorScheme))
+                .appCardStyle(cornerRadius: 16)
             }
             .buttonStyle(.plain)
+            .accessibilityHint(vm.isPastSectionExpanded ? "Collapse section" : "Load game history")
 
             if vm.isPastSectionExpanded {
                 if vm.pastSessions.isLoading, vm.pastSessions.value == nil {
@@ -142,7 +175,6 @@ struct MyGamesView: View {
                 }
             }
         }
-        .padding(.top, Spacing.s)
     }
 
     private func pastSectionSubtitle(_ vm: MyGamesViewModel) -> String {
@@ -150,6 +182,38 @@ struct MyGamesView: View {
             return "\(count) shown · tap to collapse"
         }
         return "Tap to load history"
+    }
+
+    /// Styled section label with an optional count badge and a gold accent line.
+    private func sectionLabel(_ title: String, value: String? = nil) -> some View {
+        HStack(alignment: .center, spacing: Spacing.s) {
+            Text(title)
+                .font(AppFont.caption(.semibold))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .textCase(.uppercase)
+                .tracking(0.6)
+
+            if let value {
+                Text(value)
+                    .font(AppFont.caption2(.bold))
+                    .foregroundStyle(Color.black)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(AppColor.gold)
+                    .clipShape(Capsule())
+            }
+
+            // Gold accent line
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [AppColor.gold.opacity(0.5), AppColor.gold.opacity(0)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 1.5)
+        }
     }
 
     @ViewBuilder
@@ -172,7 +236,7 @@ struct MyGamesView: View {
                             : nil
                     )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(GameCardButtonStyle(sport: session.sport))
             }
         }
     }

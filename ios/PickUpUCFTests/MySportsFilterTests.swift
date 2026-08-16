@@ -35,14 +35,19 @@ final class MySportsFilterTests: XCTestCase {
     }
 
     func testDiscoverSportFilterStorageRoundTrip() {
+        // "My Sports" preference is remembered across launches.
         DiscoverSportFilterStorage.save(.mySports)
         XCTAssertEqual(DiscoverSportFilterStorage.load(), .mySports)
 
+        // "All" persists as All.
         DiscoverSportFilterStorage.save(.single(nil))
         XCTAssertEqual(DiscoverSportFilterStorage.load(), .single(nil))
 
+        // Specific sport chips always reset to All on next launch —
+        // this prevents the invisible-active-filter problem where a
+        // scrolled-off chip silently hides all sessions.
         DiscoverSportFilterStorage.save(.single(.pickleball))
-        XCTAssertEqual(DiscoverSportFilterStorage.load(), .single(.pickleball))
+        XCTAssertEqual(DiscoverSportFilterStorage.load(), .single(nil))
     }
 
     private func makeSession(sport: SportType) -> PickupSession {

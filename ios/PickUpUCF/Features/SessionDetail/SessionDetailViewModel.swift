@@ -103,11 +103,15 @@ final class SessionDetailViewModel {
             if participantStatus == .joined || participantStatus == .waitlist {
                 try await repository.leaveSession(id: current.id)
                 participantStatus = .left
+                GameLiveActivityCoordinator.end(forSessionId: current.id)
             } else {
                 participantStatus = try await repository.joinSession(id: current.id)
+                if participantStatus == .joined {
+                    GameLiveActivityCoordinator.start(for: current)
+                }
             }
             await load()
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             actionError = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)

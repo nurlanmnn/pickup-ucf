@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SessionDetailView: View {
     let sessionId: UUID
@@ -40,7 +41,7 @@ struct SessionDetailView: View {
                 sessionContent(session)
             }
         }
-        .background(AppColor.background(colorScheme))
+        .appScreenBackground()
         .navigationTitle("Session")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -108,20 +109,20 @@ struct SessionDetailView: View {
                         Task { await viewModel.load() }
                     }
                 }
-                .presentationDetents([.large])
+                .appSheetChrome()
             }
         }
         .sheet(isPresented: $showAttendanceSheet) {
             NavigationStack {
                 AttendanceSheet(viewModel: viewModel)
             }
-            .presentationDetents([.large])
+            .appSheetChrome()
         }
         .sheet(isPresented: $showReportSheet) {
             NavigationStack {
                 ReportSheet(sessionId: sessionId)
             }
-            .presentationDetents([.medium, .large])
+            .appSheetChrome(detents: [.medium, .large])
         }
         .sheet(isPresented: $showRunItBackSheet) {
             if let session = viewModel.session.value {
@@ -132,7 +133,7 @@ struct SessionDetailView: View {
                         appState.touchSessionFeedRefresh()
                     }
                 }
-                .presentationDetents([.large])
+                .appSheetChrome()
             }
         }
         .confirmationDialog(
@@ -173,210 +174,540 @@ struct SessionDetailView: View {
 
     @ViewBuilder
     private func sessionContent(_ session: PickupSession) -> some View {
-        VStack(spacing: 0) {
-            ScrollView {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                heroSection(session)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.top, Spacing.xs)
+
                 VStack(alignment: .leading, spacing: Spacing.l) {
                     SessionLocationMap(session: session)
-                        .padding(.horizontal, Spacing.m)
+                    infoCard(session)
+                    rosterCard(session)
 
-                    VStack(alignment: .leading, spacing: Spacing.s) {
-                        HStack {
-                            Image(systemName: session.sport.systemImage)
-                                .foregroundStyle(AppColor.sportAccent(session.sport))
-                            Text(session.sportDisplayName)
-                                .font(AppFont.title())
-                        }
-
-                        Label(SessionDateFormatter.cardLabel(for: session.startsAt), systemImage: "clock")
-                        Label(session.locationName, systemImage: "mappin.and.ellipse")
-                        if session.isOutdoorForWeather, let weather = session.weatherSnapshot {
-                            Label(weather.displayLine, systemImage: "cloud.sun")
-                                .font(AppFont.body())
-                                .foregroundStyle(AppColor.textSecondary(colorScheme))
-                        }
-                        hostRow(session: session)
-                        SkillPill(skill: session.skillLevel)
-
-                        Text("\(session.playerCount) of \(session.capacity) players")
-                            .font(AppFont.headline(.semibold))
-                            .animation(nil, value: session.playerCount)
-
-                        rosterSection()
-
-                        if session.status == .cancelled {
-                            FormFieldHint(text: "This session was cancelled.")
-                        }
-
-                        if let notes = session.notesForDisplay, !notes.isEmpty {
-                            Text(notes)
-                                .font(AppFont.body())
-                                .foregroundStyle(AppColor.textSecondary(colorScheme))
-                        }
-
-                        chatEntry(session)
-
-                        if viewModel.canRunItBack {
-                            SecondaryButton(title: "Run it back") {
-                                showRunItBackSheet = true
-                            }
-                            .padding(.top, Spacing.s)
-                        }
-
-                        if viewModel.canAddToCalendar {
-                            SecondaryButton(title: calendarButtonTitle) {
-                                Task { await addToCalendar(session) }
-                            }
-                            .disabled(isAddingToCalendar)
-                            .padding(.top, Spacing.s)
-                            .task(id: session.id) {
-                                isSessionInCalendar = CalendarExportService.shared.isSessionInCalendar(
-                                    sessionId: session.id
-                                )
-                            }
-                        }
+                    if let notes = session.notesForDisplay, !notes.isEmpty {
+                        notesCard(notes)
                     }
-                    .foregroundStyle(AppColor.textPrimary(colorScheme))
-                    .padding(.horizontal, Spacing.m)
+                    if session.status == .cancelled {
+                        cancelledBanner()
+                    }
 
-                    if let actionError = viewModel.actionError {
-                        ErrorBanner(message: actionError)
-                            .padding(.horizontal, Spacing.m)
+                    chatCard(session)
+
+                    if viewModel.canAddToCalendar {
+                        calendarCard(session)
                     }
                 }
-                .padding(.bottom, Spacing.m)
+                .padding(.horizontal, Spacing.m)
+            }
+            .padding(.bottom, Spacing.xl)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            stickyBottomChrome(session)
+        }
+    }
+
+    // MARK: - Hero
+
+    private func heroSection(_ session: PickupSession) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            AppTheme.sportCardGradient(session.sport, scheme: colorScheme)
+
+            Image(systemName: session.sport.systemImage)
+                .font(.system(size: 110, weight: .black))
+                .foregroundStyle(Color.white.opacity(0.12))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                .padding(.trailing, Spacing.m)
+
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack {
+                    if session.status == .cancelled {
+                        heroPill("Cancelled", color: AppColor.destructive)
+                    } else if session.status == .completed {
+                        heroPill("Completed", color: Color.white.opacity(0.45))
+                    } else if session.status == .full {
+                        heroPill("Full", color: AppColor.gold)
+                    }
+                    Spacer()
+                }
+
+                Text(session.sportDisplayName)
+                    .font(AppFont.display(.bold))
+                    .foregroundStyle(.white)
+
+                HStack(alignment: .center, spacing: Spacing.s) {
+                    TimelineView(.periodic(from: .now, by: 60)) { ctx in
+                        Label(
+                            SessionDateFormatter.cardTimeLine(for: session.startsAt, relativeTo: ctx.date),
+                            systemImage: "clock"
+                        )
+                        .font(AppFont.caption(.semibold))
+                        .foregroundStyle(Color.white.opacity(0.85))
+                    }
+
+                    Spacer()
+
+                    CapacityIndicator(
+                        playerCount: session.playerCount,
+                        capacity: session.capacity,
+                        filledColor: .white,
+                        dotSize: 7,
+                        emptyColor: Color.white.opacity(0.25),
+                        labelColor: Color.white.opacity(0.85)
+                    )
+                }
+            }
+            .padding(Spacing.m)
+        }
+        .frame(height: 148)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .appCardStyle(cornerRadius: 20)
+    }
+
+    private func heroPill(_ label: String, color: Color) -> some View {
+        Text(label)
+            .font(AppFont.caption2(.bold))
+            .textCase(.uppercase)
+            .tracking(0.6)
+            .foregroundStyle(color == AppColor.gold ? Color.black : Color.white)
+            .padding(.horizontal, Spacing.s)
+            .padding(.vertical, 3)
+            .background(color.opacity(color == AppColor.gold ? 1 : 0.55))
+            .clipShape(Capsule())
+    }
+
+    // MARK: - Info Card
+
+    @ViewBuilder
+    private func infoCard(_ session: PickupSession) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            infoRow(icon: "clock.fill", color: AppColor.sportAccent(session.sport)) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(SessionDateFormatter.cardLabel(for: session.startsAt))
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                    Text(detailTimeRange(session))
+                        .font(AppFont.caption())
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                }
             }
 
-            sessionBottomBar(session)
-        }
-    }
+            Divider().padding(.leading, 52)
 
-    @ViewBuilder
-    private func hostRow(session: PickupSession) -> some View {
-        NavigationLink {
-            HostProfileView(
-                userId: session.hostId,
-                currentUserId: appState.session?.userId,
-                onBlocked: {
-                    appState.touchSessionFeedRefresh()
-                    dismiss()
+            Button { openLocationInMaps(session) } label: {
+                infoRow(icon: "mappin.and.ellipse", color: AppColor.sportAccent(session.sport)) {
+                    HStack {
+                        Text(session.locationName)
+                            .font(AppFont.body(.semibold))
+                            .foregroundStyle(AppColor.textPrimary(colorScheme))
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+                    }
                 }
-            )
-        } label: {
-            Label(session.host?.handle ?? "Host", systemImage: "person")
+            }
+            .buttonStyle(.plain)
+
+            Divider().padding(.leading, 52)
+
+            NavigationLink {
+                HostProfileView(
+                    userId: session.hostId,
+                    currentUserId: appState.session?.userId,
+                    onBlocked: {
+                        appState.touchSessionFeedRefresh()
+                        dismiss()
+                    }
+                )
+            } label: {
+                infoRow(icon: "person.fill", color: AppColor.sportAccent(session.sport)) {
+                    HStack {
+                        Text(session.host?.handle ?? "Host")
+                            .font(AppFont.body(.semibold))
+                            .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+
+            if session.isOutdoorForWeather, let weather = session.weatherSnapshot {
+                Divider().padding(.leading, 52)
+                infoRow(icon: "cloud.sun.fill", color: .orange) {
+                    Text(weather.displayLine)
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                }
+            }
+
+            Divider().padding(.leading, 52)
+
+            infoRow(icon: "chart.bar.fill", color: AppColor.sportAccent(session.sport)) {
+                HStack {
+                    Text("Skill level")
+                        .font(AppFont.body())
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    Spacer()
+                    SkillPill(skill: session.skillLevel)
+                }
+            }
         }
+        .background(AppColor.elevatedSurface(colorScheme))
+        .appCardStyle(cornerRadius: 16)
     }
 
     @ViewBuilder
-    private func rosterSection() -> some View {
+    private func infoRow<Content: View>(
+        icon: String,
+        color: Color,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(color)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+
+            content()
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+    }
+
+    private func detailTimeRange(_ session: PickupSession) -> String {
+        let f = DateFormatter()
+        f.timeZone = TimeZone(identifier: "America/New_York")!
+        f.timeStyle = .short
+        f.dateStyle = .none
+        return "\(f.string(from: session.startsAt)) – \(f.string(from: session.endsAt))"
+    }
+
+    private func openLocationInMaps(_ session: PickupSession) {
+        let name = session.locationName
+        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        if let lat = session.customLat, let lng = session.customLng,
+           let url = URL(string: "maps://?ll=\(lat),\(lng)&q=\(encoded)") {
+            UIApplication.shared.open(url)
+        } else if let url = URL(string: "maps://?q=\(encoded)") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    // MARK: - Roster Card
+
+    @ViewBuilder
+    private func rosterCard(_ session: PickupSession) -> some View {
         switch viewModel.roster {
         case .idle:
             EmptyView()
         case .loading:
-            ProgressView("Loading players…")
-                .font(AppFont.caption())
-                .padding(.top, Spacing.s)
+            HStack(spacing: Spacing.s) {
+                ProgressView()
+                Text("Loading players…")
+                    .font(AppFont.caption())
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+            }
+            .padding(Spacing.m)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppColor.elevatedSurface(colorScheme))
+            .appCardStyle(cornerRadius: 16)
         case .failed(let message):
             FormFieldHint(text: message)
-                .padding(.top, Spacing.s)
         case .loaded(let roster):
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text("Players (\(roster.joined.count))")
-                    .font(AppFont.headline(.semibold))
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Players")
+                        .font(AppFont.headline(.bold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                    Spacer()
+                    CapacityIndicator(
+                        playerCount: session.playerCount,
+                        capacity: session.capacity,
+                        filledColor: AppColor.sportAccent(session.sport)
+                    )
+                }
+                .padding(Spacing.m)
 
-                ForEach(roster.joined) { member in
-                    Label {
-                        Text(member.displayName)
-                    } icon: {
-                        Image(systemName: member.role == .host ? "star.fill" : "person")
+                if !roster.joined.isEmpty {
+                    Divider()
+                    ForEach(Array(roster.joined.enumerated()), id: \.element.id) { idx, member in
+                        playerRow(member)
+                        if idx < roster.joined.count - 1 {
+                            Divider().padding(.leading, 56)
+                        }
                     }
-                    .font(AppFont.body())
                 }
 
-                if let waitlistLabel = roster.waitlistLabel(
-                    participantStatus: viewModel.participantStatus
-                ) {
-                    FormFieldHint(text: waitlistLabel)
+                if let waitlistLabel = roster.waitlistLabel(participantStatus: viewModel.participantStatus) {
+                    Divider()
+                    HStack(spacing: Spacing.s) {
+                        Image(systemName: "clock")
+                            .foregroundStyle(AppColor.gold)
+                        Text(waitlistLabel)
+                            .font(AppFont.caption(.semibold))
+                            .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    }
+                    .padding(Spacing.m)
                 }
             }
-            .padding(.top, Spacing.s)
+            .background(AppColor.elevatedSurface(colorScheme))
+            .appCardStyle(cornerRadius: 16)
         }
     }
 
+    private func playerRow(_ member: SessionRosterMember) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(AppColor.mutedSurface(colorScheme))
+                Text(String(member.displayName.prefix(1)).uppercased())
+                    .font(AppFont.caption(.bold))
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+            }
+            .frame(width: 36, height: 36)
+            .overlay {
+                if member.role == .host {
+                    Circle().stroke(AppColor.gold, lineWidth: 2)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(member.handle)
+                    .font(AppFont.body(.semibold))
+                    .foregroundStyle(AppColor.textPrimary(colorScheme))
+                if member.role == .host {
+                    Text("Host")
+                        .font(AppFont.caption2(.semibold))
+                        .foregroundStyle(AppColor.gold)
+                }
+            }
+
+            Spacer()
+
+            if member.role == .host {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppColor.gold)
+            }
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, 10)
+    }
+
+    // MARK: - Notes Card
+
+    private func notesCard(_ notes: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text("Notes")
+                .font(AppFont.caption(.semibold))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .textCase(.uppercase)
+                .tracking(0.5)
+                .padding(.horizontal, Spacing.xs)
+
+            Text(notes)
+                .font(AppFont.body())
+                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                .padding(Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppColor.elevatedSurface(colorScheme))
+                .appCardStyle(cornerRadius: 16)
+        }
+    }
+
+    private func cancelledBanner() -> some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(AppColor.destructive)
+            Text("This session was cancelled.")
+                .font(AppFont.body(.semibold))
+                .foregroundStyle(AppColor.destructive)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppColor.destructive.opacity(0.10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(AppColor.destructive.opacity(0.25), lineWidth: 1)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Chat Card
+
     @ViewBuilder
-    private func chatEntry(_ session: PickupSession) -> some View {
+    private func chatCard(_ session: PickupSession) -> some View {
         if viewModel.canAccessChat, let userId = appState.session?.userId {
             NavigationLink(isActive: $showChat) {
                 ChatView(sessionId: session.id, currentUserId: userId)
             } label: {
-                Label("Session chat", systemImage: "bubble.left.and.bubble.right")
-                    .font(AppFont.headline(.semibold))
-                    .foregroundStyle(AppColor.gold)
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 36, height: 36)
+                        .background(AppColor.gold)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Session Chat")
+                            .font(AppFont.body(.semibold))
+                            .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        Text("Chat with players in this game")
+                            .font(AppFont.caption())
+                            .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+                }
+                .padding(Spacing.m)
+                .background(AppColor.elevatedSurface(colorScheme))
+                .appCardStyle(cornerRadius: 16)
             }
-            .padding(.top, Spacing.s)
+            .buttonStyle(.plain)
         } else if appState.isAuthenticated {
-            FormFieldHint(text: "Join this session to chat with other players.")
-                .padding(.top, Spacing.s)
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    .frame(width: 36, height: 36)
+                    .background(AppColor.mutedSurface(colorScheme))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                Text("Join this session to chat with other players.")
+                    .font(AppFont.caption())
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+
+                Spacer()
+            }
+            .padding(Spacing.m)
+            .background(AppColor.mutedSurface(colorScheme))
+            .appCardStyle(cornerRadius: 16)
+        }
+    }
+
+    // MARK: - Calendar Card
+
+    @ViewBuilder
+    private func calendarCard(_ session: PickupSession) -> some View {
+        Button {
+            Task { await addToCalendar(session) }
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: isSessionInCalendar ? "checkmark.circle.fill" : "calendar.badge.plus")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(isSessionInCalendar ? AppColor.success : .black)
+                    .frame(width: 36, height: 36)
+                    .background(isSessionInCalendar ? AppColor.success.opacity(0.15) : AppColor.gold)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                Text(calendarButtonTitle)
+                    .font(AppFont.body(.semibold))
+                    .foregroundStyle(AppColor.textPrimary(colorScheme))
+
+                Spacer()
+            }
+            .padding(Spacing.m)
+            .background(AppColor.elevatedSurface(colorScheme))
+            .appCardStyle(cornerRadius: 16)
+        }
+        .buttonStyle(.plain)
+        .disabled(isAddingToCalendar)
+        .task(id: session.id) {
+            isSessionInCalendar = CalendarExportService.shared.isSessionInCalendar(sessionId: session.id)
+        }
+    }
+
+    @ViewBuilder
+    private func stickyBottomChrome(_ session: PickupSession) -> some View {
+        let showsHostActions = viewModel.isHost
+            && (viewModel.canHostEditSession || viewModel.canHostCancelSession || viewModel.canSubmitAttendance)
+        let showsJoinActions = !viewModel.isHost
+            && (session.status == .open || session.status == .full)
+        let showsRunItBack = viewModel.canRunItBack
+
+        if showsHostActions || showsJoinActions || showsRunItBack || viewModel.actionError != nil {
+            VStack(spacing: Spacing.s) {
+                if let actionError = viewModel.actionError {
+                    ErrorBanner(message: actionError)
+                }
+
+                sessionBottomBar(session)
+            }
+            .padding(.horizontal, Spacing.m)
+            .padding(.top, Spacing.s)
+            .padding(.bottom, Spacing.m)
+            .frame(maxWidth: .infinity)
+            .background(.ultraThinMaterial)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(AppColor.textSecondary(colorScheme).opacity(0.12))
+                    .frame(height: 0.5)
+            }
         }
     }
 
     @ViewBuilder
     private func sessionBottomBar(_ session: PickupSession) -> some View {
-        let showsHostActions = viewModel.isHost
-            && (viewModel.canHostEditSession || viewModel.canHostCancelSession || viewModel.canSubmitAttendance)
-        let showsJoinActions = !viewModel.isHost
-            && (session.status == .open || session.status == .full)
-
-        if showsHostActions || showsJoinActions {
-            VStack(spacing: Spacing.s) {
-                if viewModel.isHost {
-                    if viewModel.canHostEditSession {
-                        SecondaryButton(title: "Edit session") {
-                            showEditSheet = true
-                        }
+        VStack(spacing: Spacing.s) {
+            if viewModel.isHost {
+                if viewModel.canHostEditSession {
+                    SecondaryButton(title: "Edit session") {
+                        showEditSheet = true
                     }
-                    if viewModel.canSubmitAttendance {
-                        SecondaryButton(title: "Mark attendance") {
-                            showAttendanceSheet = true
-                        }
+                }
+                if viewModel.canSubmitAttendance {
+                    SecondaryButton(title: "Mark attendance") {
+                        showAttendanceSheet = true
                     }
-                    if viewModel.canHostCancelSession {
-                        Button(role: .destructive) {
-                            showCancelConfirm = true
-                        } label: {
-                            Text("Cancel session")
-                                .font(AppFont.headline(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(viewModel.isSubmitting)
+                }
+                if viewModel.canHostCancelSession {
+                    Button(role: .destructive) {
+                        showCancelConfirm = true
+                    } label: {
+                        Text("Cancel session")
+                            .font(AppFont.headline(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
                     }
-                } else if showsJoinActions {
-                    if viewModel.isLeaveAction {
-                        Button(role: .destructive) {
-                            Task { await viewModel.joinOrLeave() }
-                        } label: {
-                            bottomButtonLabel(viewModel.primaryActionTitle)
-                        }
-                        .disabled(viewModel.isSubmitting)
-                    } else {
-                        PrimaryButton(
-                            title: viewModel.primaryActionTitle,
-                            isLoading: viewModel.isSubmitting,
-                            isEnabled: !viewModel.isSubmitting
-                        ) {
-                            Task { await viewModel.joinOrLeave() }
-                        }
+                    .buttonStyle(.bordered)
+                    .disabled(viewModel.isSubmitting)
+                }
+            } else if session.status == .open || session.status == .full {
+                if viewModel.isLeaveAction {
+                    Button(role: .destructive) {
+                        Task { await viewModel.joinOrLeave() }
+                    } label: {
+                        bottomButtonLabel(viewModel.primaryActionTitle)
+                    }
+                    .disabled(viewModel.isSubmitting)
+                } else {
+                    PrimaryButton(
+                        title: viewModel.primaryActionTitle,
+                        isLoading: viewModel.isSubmitting,
+                        isEnabled: !viewModel.isSubmitting
+                    ) {
+                        Task { await viewModel.joinOrLeave() }
                     }
                 }
             }
-            .padding(Spacing.m)
-            .frame(maxWidth: .infinity)
-            .background(AppColor.background(colorScheme))
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(AppColor.textSecondary(colorScheme).opacity(0.2))
-                    .frame(height: 1)
+
+            if viewModel.canRunItBack {
+                PrimaryButton(title: "Run it back") {
+                    showRunItBackSheet = true
+                }
             }
         }
     }

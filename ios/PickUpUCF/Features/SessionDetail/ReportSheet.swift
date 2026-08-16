@@ -9,6 +9,7 @@ struct ReportSheet: View {
     @State private var reason = ""
     @State private var isSubmitting = false
     @State private var submitError: String?
+    @FocusState private var reasonFocused: Bool
 
     private let repository = ReportRepository()
 
@@ -35,6 +36,7 @@ struct ReportSheet: View {
                     )
                     .lineLimit(4...8)
                     .textFieldStyle(.roundedBorder)
+                    .focused($reasonFocused)
                     .disabled(isSubmitting)
 
                     FormFieldHint(
@@ -53,11 +55,14 @@ struct ReportSheet: View {
         .background(AppColor.background(colorScheme))
         .navigationTitle("Report session")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnBackgroundTap()
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
                     .disabled(isSubmitting)
             }
+            FormKeyboardToolbar(onDone: { reasonFocused = false })
         }
     }
 

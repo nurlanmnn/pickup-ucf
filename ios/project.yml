@@ -52,6 +52,7 @@ targets:
         UIBackgroundModes:
           - remote-notification
         NSCalendarsFullAccessUsageDescription: Add PickUp UCF games to your calendar so you do not miss them.
+        NSSupportsLiveActivities: true
     settings:
       base:
         PRODUCT_NAME: PickUpUCF
@@ -65,6 +66,36 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+      - target: PickUpUCFWidget
+        embed: true
+      - sdk: ActivityKit.framework
+  PickUpUCFWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCFWidget
+      - path: PickUpUCF/LiveActivity/GameLiveActivityAttributes.swift
+    info:
+      path: PickUpUCFWidget/Info.plist
+      properties:
+        CFBundleDisplayName: PickUp UCF Widget
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_NAME: PickUpUCFWidget
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup.widget
+        GENERATE_INFOPLIST_FILE: false
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        SKIP_INSTALL: YES
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: ActivityKit.framework
   PickUpUCFTests:
     type: bundle.unit-test
     platform: iOS
@@ -86,6 +117,7 @@ schemes:
     build:
       targets:
         PickUpUCF: all
+        PickUpUCFWidget: all
     run:
       config: Debug
     test:

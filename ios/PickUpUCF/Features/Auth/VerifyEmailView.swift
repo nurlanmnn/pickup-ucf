@@ -45,8 +45,8 @@ struct VerifyEmailView: View {
                     .multilineTextAlignment(.center)
                     .font(.system(.title, design: .rounded).monospacedDigit().weight(.semibold))
                     .padding(Spacing.m)
-                    .background(AppColor.surface(colorScheme))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(AppColor.elevatedSurface(colorScheme))
+                    .appCardStyle(cornerRadius: 14)
                     .focused($isOTPFocused)
                     .onChange(of: viewModel.otpCode) { _, newValue in
                         viewModel.otpCode = viewModel.normalizeOTP(newValue)
@@ -69,9 +69,14 @@ struct VerifyEmailView: View {
             }
             .padding(Spacing.l)
         }
+        .appScreenBackground()
         .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnBackgroundTap()
         .navigationTitle("Verify email")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            FormKeyboardToolbar(onDone: { isOTPFocused = false })
+        }
         .onAppear {
             isOTPFocused = true
         }

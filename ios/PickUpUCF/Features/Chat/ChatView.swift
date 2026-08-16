@@ -19,9 +19,13 @@ struct ChatView: View {
             messageList
             composer
         }
-        .background(AppColor.background(colorScheme))
+        .appScreenBackground()
         .navigationTitle("Chat")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            FormKeyboardToolbar(onDone: { composerFocused = false })
+        }
+        .dismissKeyboardOnBackgroundTap()
         .task {
             await viewModel.load()
             await withTaskCancellationHandler {

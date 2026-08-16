@@ -84,6 +84,7 @@ struct HostProfileView: View {
             case .idle, .loading:
                 ProgressView("Loading profile…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .appScreenBackground()
             case .failed(let message):
                 VStack(spacing: Spacing.m) {
                     ErrorBanner(message: message)
@@ -92,11 +93,11 @@ struct HostProfileView: View {
                     }
                     .padding(.horizontal, Spacing.m)
                 }
+                .appScreenBackground()
             case .loaded(let profile):
                 profileContent(profile)
             }
         }
-        .background(AppColor.background(colorScheme))
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: userId) {
@@ -121,63 +122,231 @@ struct HostProfileView: View {
         }
     }
 
+    // MARK: - Profile Content
+
     @ViewBuilder
     private func profileContent(_ profile: Profile) -> some View {
         ScrollView {
-            VStack(spacing: Spacing.l) {
-                VStack(spacing: Spacing.s) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 72))
-                        .foregroundStyle(AppColor.gold)
+            VStack(spacing: 0) {
+                heroHeader(profile)
 
+                VStack(spacing: Spacing.m) {
+                    statTiles(profile)
+
+                    if !profile.preferredSports.isEmpty {
+                        sportChipsCard(profile.preferredSports)
+                    }
+
+                    if let errorMessage = viewModel.errorMessage {
+                        ErrorBanner(message: errorMessage)
+                    }
+
+                    if canShowBlock {
+                        blockCard
+                    }
+                }
+                .padding(Spacing.m)
+                .padding(.top, Spacing.m)
+                .padding(.bottom, Spacing.xl)
+            }
+        }
+        .appScreenBackground()
+        .toolbarBackground(.hidden, for: .navigationBar)
+    }
+
+    // MARK: - Hero
+
+    private func heroHeader(_ profile: Profile) -> some View {
+        ZStack(alignment: .bottom) {
+            // Gold gradient band — bleeds into the nav bar area
+            LinearGradient(
+                colors: [
+                    AppColor.gold.opacity(colorScheme == .dark ? 0.28 : 0.20),
+                    AppColor.gold.opacity(0.06),
+                    Color.clear,
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 240)
+            .ignoresSafeArea(edges: .top)
+
+            VStack(spacing: Spacing.s) {
+                avatarView
+                    .padding(.top, Spacing.xl + Spacing.m)
+
+                VStack(spacing: 4) {
                     Text(profile.displayName)
-                        .font(AppFont.headline())
+                        .font(AppFont.title(.bold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
 
                     if let username = profile.username, !username.isEmpty {
                         Text("@\(username)")
-                            .font(AppFont.caption())
+                            .font(AppFont.caption(.regular))
                             .foregroundStyle(AppColor.textSecondary(colorScheme))
                     }
-
-                    Text("\(profile.gamesPlayed) games played")
-                        .font(AppFont.caption())
-                        .foregroundStyle(AppColor.textSecondary(colorScheme))
-
-                    Text("\(profile.showUpStreak) show-up streak")
-                        .font(AppFont.caption())
-                        .foregroundStyle(AppColor.textSecondary(colorScheme))
-
-                    if !profile.preferredSports.isEmpty {
-                        Text(profile.preferredSports.map(\.displayName).joined(separator: ", "))
-                            .font(AppFont.caption())
-                            .foregroundStyle(AppColor.textSecondary(colorScheme))
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, Spacing.l)
-
-                if let errorMessage = viewModel.errorMessage {
-                    ErrorBanner(message: errorMessage)
-                        .padding(.horizontal, Spacing.m)
-                }
-
-                if canShowBlock {
-                    Button(role: .destructive) {
-                        showBlockConfirm = true
-                    } label: {
-                        Text("Block user")
-                            .font(AppFont.headline(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(viewModel.isBlocking)
-                    .padding(.horizontal, Spacing.m)
                 }
             }
             .padding(.bottom, Spacing.l)
         }
+    }
+
+    private var avatarView: some View {
+        ZStack {
+            Circle()
+                .fill(AppColor.gold.opacity(0.15))
+                .frame(width: 108, height: 108)
+
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [AppColor.gold, AppColor.goldDark],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 88, height: 88)
+
+            Image(systemName: "person.fill")
+                .font(.system(size: 40, weight: .medium))
+                .foregroundStyle(Color.black.opacity(0.60))
+        }
+        .overlay(
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        colors: [AppColor.gold, AppColor.gold.opacity(0.3)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 2.5
+                )
+                .frame(width: 94, height: 94)
+        )
+    }
+
+    // MARK: - Stat Tiles
+
+    private func statTiles(_ profile: Profile) -> some View {
+        HStack(spacing: Spacing.s) {
+            statTile(
+                value: "\(profile.gamesPlayed)",
+                label: "Games",
+                systemImage: "trophy.fill",
+                color: AppColor.gold
+            )
+            statTile(
+                value: "\(profile.showUpStreak)",
+                label: "Streak",
+                systemImage: "flame.fill",
+                color: .orange
+            )
+            if !profile.preferredSports.isEmpty {
+                statTile(
+                    value: "\(profile.preferredSports.count)",
+                    label: "Sports",
+                    systemImage: "sportscourt.fill",
+                    color: Color(red: 0.22, green: 0.72, blue: 0.33)
+                )
+            }
+        }
+    }
+
+    private func statTile(value: String, label: String, systemImage: String, color: Color) -> some View {
+        VStack(spacing: Spacing.s) {
+            Image(systemName: systemImage)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 40, height: 40)
+                .background(color.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Text(value)
+                .font(AppFont.title(.bold))
+                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                .contentTransition(.numericText())
+
+            Text(label)
+                .font(AppFont.caption2(.semibold))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .textCase(.uppercase)
+                .tracking(0.6)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.m)
+        .background(AppColor.elevatedSurface(colorScheme))
+        .appCardStyle(cornerRadius: 16)
+    }
+
+    // MARK: - Sport Chips
+
+    private func sportChipsCard(_ sports: [SportType]) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Label("Preferred sports", systemImage: "star.fill")
+                .font(AppFont.caption(.semibold))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .textCase(.uppercase)
+                .tracking(0.5)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.s) {
+                    ForEach(sports) { sport in
+                        HStack(spacing: 5) {
+                            Image(systemName: sport.systemImage)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(AppColor.sportAccent(sport))
+                            Text(sport.displayName)
+                                .font(AppFont.caption(.semibold))
+                                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        }
+                        .padding(.horizontal, Spacing.s + 2)
+                        .padding(.vertical, Spacing.xs + 2)
+                        .background(AppColor.sportAccent(sport).opacity(0.10))
+                        .overlay {
+                            Capsule()
+                                .stroke(AppColor.sportAccent(sport).opacity(0.30), lineWidth: 1)
+                        }
+                        .clipShape(Capsule())
+                    }
+                }
+            }
+        }
+        .padding(Spacing.m)
+        .background(AppColor.elevatedSurface(colorScheme))
+        .appCardStyle(cornerRadius: 16)
+    }
+
+    // MARK: - Block Card
+
+    private var blockCard: some View {
+        Button {
+            showBlockConfirm = true
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "hand.raised.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(AppColor.destructive)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                Text("Block user")
+                    .font(AppFont.body(.semibold))
+                    .foregroundStyle(AppColor.destructive)
+
+                Spacer()
+            }
+            .padding(Spacing.m)
+            .background(AppColor.destructive.opacity(0.06))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(AppColor.destructive.opacity(0.20), lineWidth: 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isBlocking)
     }
 }
 

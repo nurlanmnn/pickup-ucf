@@ -80,6 +80,9 @@ final class AppState {
     var sessionDetailOpenChat = false
     /// True when the signed-in user has not finished first-run onboarding.
     var needsOnboarding = false
+    /// Incremented to request presenting Create session from tabs (e.g. Discover host nudge).
+    private(set) var createSessionRequestNonce = 0
+    var pendingCreateSessionPrefill: CreateSessionPrefill?
 
     var isAuthenticated: Bool {
         session?.isEmailConfirmed == true
@@ -91,6 +94,16 @@ final class AppState {
 
     func touchSessionFeedRefresh() {
         sessionFeedRefreshNonce += 1
+    }
+
+    func requestCreateSession(prefill: CreateSessionPrefill? = nil) {
+        pendingCreateSessionPrefill = prefill
+        createSessionRequestNonce += 1
+    }
+
+    func consumePendingCreateSessionPrefill() -> CreateSessionPrefill? {
+        defer { pendingCreateSessionPrefill = nil }
+        return pendingCreateSessionPrefill
     }
 
     func presentSessionDetail(id: UUID, on target: SessionDetailDeepLinkTarget) {

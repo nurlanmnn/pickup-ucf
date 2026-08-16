@@ -1,182 +1,281 @@
 import SwiftUI
 
 struct CreateSessionView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: CreateSessionViewModel
+    @State private var currentStep: CreateSessionStep = .sportAndTime
+    @State private var showDiscardDialog = false
+    @State private var showSuccessOverlay = false
+    @State private var scrollToAnchor: CreateSessionScrollAnchor?
+
     var onCreated: ((PickupSession) -> Void)?
+
+    enum FocusField: Hashable {
+        case customSportName
+        case duration
+        case capacity
+        case notes
+    }
+
+    @FocusState private var focusedField: FocusField?
 
     init(prefill: CreateSessionPrefill? = nil, onCreated: ((PickupSession) -> Void)? = nil) {
         let model = CreateSessionViewModel()
         if let prefill {
             model.applyPrefill(prefill)
+        } else {
+            model.applyLastUsedDefaults()
         }
         _viewModel = State(initialValue: model)
         self.onCreated = onCreated
     }
 
-    private enum NumericField: Hashable {
-        case duration
-        case capacity
-    }
-
-    @FocusState private var focusedNumeric: NumericField?
-
-    private var startsAtAllowedRange: ClosedRange<Date> {
-        let start = Date()
-        let end = Calendar.current.date(byAdding: .hour, value: 48, to: start)
-            ?? start.addingTimeInterval(48 * 3600)
-        return start...end
-    }
-
     var body: some View {
         @Bindable var vm = viewModel
-        Form {
-            InlineFeedbackSection(error: vm.errorMessage)
 
-            Section("Sport") {
-                Picker("Sport", selection: $vm.sport) {
-                    ForEach(SportType.allCases) { sport in
-                        Text(sport.displayName).tag(sport)
+        VStack(spacing: 0) {
+            CreateFlowProgressBar(currentStep: currentStep)
+
+            if let error = vm.errorMessage {
+                ErrorBanner(message: error)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.top, Spacing.s)
+            }
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    stepContent(vm: vm)
+                        .padding(Spacing.l)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .dismissKeyboardOnBackgroundTap()
+                .onChange(of: scrollToAnchor) { _, anchor in
+                    guard let anchor else { return }
+                    performScroll(to: anchor, proxy: proxy)
+                }
+                .onChange(of: currentStep) { _, _ in
+                    if let anchor = scrollToAnchor {
+                        performScroll(to: anchor, proxy: proxy)
                     }
                 }
-                .pickerStyle(.menu)
-                .onChange(of: vm.sport) { _, newSport in
-                    if newSport != .other {
-                        vm.customSportName = ""
-                    }
-                }
-
-                if vm.sport == .other {
-                    TextField("Sport name", text: $vm.customSportName)
-                        .textInputAutocapitalization(.words)
-                        .onChange(of: vm.customSportName) { _, newValue in
-                            if newValue.count > 40 {
-                                vm.customSportName = String(newValue.prefix(40))
-                            }
-                        }
-                }
             }
 
-            Section {
-                DatePicker("Starts", selection: $vm.startsAt, in: startsAtAllowedRange)
-
-                StepperNumberFieldRow(
-                    title: "Duration",
-                    prompt: "15–300 min",
-                    text: $vm.durationText,
-                    value: $vm.durationMinutes,
-                    range: 15 ... 300,
-                    step: 5,
-                    focus: $focusedNumeric,
-                    focusValue: .duration
-                )
-            } header: {
-                Text("When")
-            }
-
-            Section {
-                Picker("Venue", selection: $vm.venuePickerOptionId) {
-                    Text("Custom location").tag(CreateSessionViewModel.customVenuePickerTag)
-                    ForEach(vm.venues) { venue in
-                        Text(venue.name).tag(venue.id.uuidString)
-                    }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: vm.venuePickerOptionId) { _, newValue in
-                    if newValue != CreateSessionViewModel.customVenuePickerTag {
-                        vm.customLocationSelection = nil
-                    }
-                }
-
-                if vm.showsCustomLocationField {
-                    CustomLocationPickerRow(selection: $vm.customLocationSelection)
-                }
-            } header: {
-                Text("Where")
-            } footer: {
-                if vm.showsCustomLocationField {
-                    FormFieldHint(text: "Search near campus or tap the map to drop a pin.")
-                }
-            }
-
-            Section {
-                Toggle("Repeat weekly", isOn: $vm.repeatWeekly)
-
-                if vm.repeatWeekly {
-                    Stepper("Weeks (2–4): \(vm.recurrenceWeekCount)", value: $vm.recurrenceWeekCount, in: 2 ... 4)
-                }
-            } header: {
-                Text("Repeat")
-            } footer: {
-                if vm.repeatWeekly {
-                    FormFieldHint(text: "Creates \(vm.recurrenceWeekCount) sessions, one week apart.")
-                }
-            }
-
-            Section {
-                StepperNumberFieldRow(
-                    title: "Capacity",
-                    prompt: "2–50 players",
-                    text: $vm.capacityText,
-                    value: $vm.capacity,
-                    range: 2 ... 50,
-                    step: 1,
-                    focus: $focusedNumeric,
-                    focusValue: .capacity
-                )
-
-                Picker("Skill level", selection: $vm.skillLevel) {
-                    ForEach(SkillLevel.allCases) { level in
-                        Text(level.displayName).tag(level)
-                    }
-                }
-                .pickerStyle(.menu)
-
-                TextField("Notes (optional)", text: $vm.notes, axis: .vertical)
-                    .lineLimit(2...4)
-            } header: {
-                Text("Details")
-            } footer: {
-                FormFieldHint(text: "Defaults: 90 min · 10 players when the fields are empty.")
-            }
-
-            Section {
-                PrimaryButton(
-                    title: "Create session",
-                    isLoading: vm.isLoading,
-                    isEnabled: !vm.isLoading
-                ) {
-                    Task { await submit() }
-                }
-                .buttonStyle(.borderless)
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-            }
+            bottomBar(vm: vm)
         }
+        .appScreenBackground()
         .navigationTitle("Create session")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Close") { dismiss() }
-            }
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    viewModel.commitDurationFromText()
-                    viewModel.commitCapacityFromText()
-                    focusedNumeric = nil
+                Button("Close") {
+                    attemptDismiss()
                 }
-                .fontWeight(.semibold)
+            }
+            keyboardToolbar
+        }
+        .interactiveDismissDisabled(vm.isDirty && !vm.didCreate)
+        .confirmationDialog(
+            "Discard this game?",
+            isPresented: $showDiscardDialog,
+            titleVisibility: .visible
+        ) {
+            Button("Discard", role: .destructive) { dismiss() }
+            Button("Keep editing", role: .cancel) {}
+        } message: {
+            Text("Your changes won't be saved.")
+        }
+        .overlay {
+            if showSuccessOverlay {
+                successOverlay
             }
         }
         .task {
             await viewModel.loadVenues()
             await viewModel.hydrateCustomLocationIfNeeded()
         }
-        .scrollDismissesKeyboard(.interactively)
-        .onChange(of: focusedNumeric) { _, newValue in
+        .onChange(of: focusedField) { _, newValue in
             if newValue != .duration { viewModel.commitDurationFromText() }
             if newValue != .capacity { viewModel.commitCapacityFromText() }
+        }
+    }
+
+    @ViewBuilder
+    private func stepContent(vm: CreateSessionViewModel) -> some View {
+        switch currentStep {
+        case .sportAndTime:
+            CreateSessionSportTimeStep(
+                viewModel: vm,
+                focusedField: $focusedField
+            )
+            .transition(stepTransition)
+        case .location:
+            CreateSessionLocationStep(viewModel: vm)
+                .transition(stepTransition)
+        case .details:
+            CreateSessionDetailsStep(
+                viewModel: vm,
+                focusedField: $focusedField
+            )
+            .transition(stepTransition)
+        }
+    }
+
+    private var stepTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        )
+    }
+
+    private func bottomBar(vm: CreateSessionViewModel) -> some View {
+        HStack(spacing: Spacing.m) {
+            if currentStep != .sportAndTime {
+                SecondaryButton(title: "Back") {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        goBack()
+                    }
+                }
+            }
+
+            if currentStep == .details {
+                PrimaryButton(
+                    title: "Create session",
+                    isLoading: vm.isLoading,
+                    isEnabled: vm.canSubmit && !vm.isLoading
+                ) {
+                    Task { await submit() }
+                }
+            } else {
+                PrimaryButton(title: "Next") {
+                    advanceStep()
+                }
+            }
+        }
+        .padding(Spacing.l)
+        .background(.ultraThinMaterial)
+    }
+
+    @ToolbarContentBuilder
+    private var keyboardToolbar: some ToolbarContent {
+        FormKeyboardToolbar(
+            canGoPrevious: canGoToPreviousField,
+            canGoNext: canGoToNextField,
+            onPrevious: focusPreviousField,
+            onNext: focusNextField,
+            onDone: {
+                viewModel.commitDurationFromText()
+                viewModel.commitCapacityFromText()
+                focusedField = nil
+            }
+        )
+    }
+
+    private var successOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+            VStack(spacing: Spacing.m) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(AppColor.gold)
+                Text("Session created!")
+                    .font(AppFont.headline(.semibold))
+                    .foregroundStyle(.white)
+            }
+            .padding(Spacing.xl)
+        }
+    }
+
+    private var activeFocusFields: [FocusField] {
+        switch currentStep {
+        case .sportAndTime:
+            var fields: [FocusField] = []
+            if viewModel.sport == .other { fields.append(.customSportName) }
+            fields.append(.duration)
+            return fields
+        case .location:
+            return []
+        case .details:
+            return [.capacity, .notes]
+        }
+    }
+
+    private var canGoToPreviousField: Bool {
+        guard let focused = focusedField else { return false }
+        guard let index = activeFocusFields.firstIndex(of: focused) else { return false }
+        return index > 0
+    }
+
+    private var canGoToNextField: Bool {
+        guard let focused = focusedField else { return false }
+        guard let index = activeFocusFields.firstIndex(of: focused) else { return false }
+        return index < activeFocusFields.count - 1
+    }
+
+    private func focusPreviousField() {
+        guard let focused = focusedField,
+              let index = activeFocusFields.firstIndex(of: focused),
+              index > 0 else { return }
+        focusedField = activeFocusFields[index - 1]
+    }
+
+    private func focusNextField() {
+        guard let focused = focusedField,
+              let index = activeFocusFields.firstIndex(of: focused),
+              index < activeFocusFields.count - 1 else { return }
+        focusedField = activeFocusFields[index + 1]
+    }
+
+    private func attemptDismiss() {
+        if viewModel.isDirty && !viewModel.didCreate {
+            showDiscardDialog = true
+        } else {
+            dismiss()
+        }
+    }
+
+    private func goBack() {
+        focusedField = nil
+        currentStep = currentStep.previous ?? currentStep
+    }
+
+    private func advanceStep() {
+        viewModel.revealFieldErrors()
+        viewModel.commitDurationFromText()
+        viewModel.commitCapacityFromText()
+        focusedField = nil
+
+        guard viewModel.canAdvance(from: currentStep),
+              let next = currentStep.next else {
+            scrollToFirstInvalid()
+            return
+        }
+
+        withAnimation(.easeInOut(duration: 0.25)) {
+            currentStep = next
+        }
+    }
+
+    private func scrollToFirstInvalid() {
+        guard let step = viewModel.firstInvalidStep(),
+              let anchor = viewModel.firstInvalidScrollAnchor(for: step) else { return }
+
+        if step != currentStep {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                currentStep = step
+            }
+        }
+        scrollToAnchor = anchor
+    }
+
+    private func performScroll(to anchor: CreateSessionScrollAnchor, proxy: ScrollViewProxy) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(anchor, anchor: .top)
+            }
+            scrollToAnchor = nil
         }
     }
 
@@ -184,10 +283,15 @@ struct CreateSessionView: View {
     private func submit() async {
         viewModel.commitDurationFromText()
         viewModel.commitCapacityFromText()
-        focusedNumeric = nil
+        focusedField = nil
+
         if let session = await viewModel.create() {
+            showSuccessOverlay = true
+            try? await Task.sleep(nanoseconds: 500_000_000)
             onCreated?(session)
             dismiss()
+        } else {
+            scrollToFirstInvalid()
         }
     }
 }

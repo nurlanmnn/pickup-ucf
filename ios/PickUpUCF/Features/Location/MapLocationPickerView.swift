@@ -4,9 +4,11 @@ import SwiftUI
 /// Search campus-area places, tap the map, and confirm a custom session location.
 struct MapLocationPickerView: View {
     @Binding var selection: CustomLocationSelection?
+    var embedded: Bool = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
+    @FocusState private var searchFocused: Bool
     @State private var searchText = ""
     @State private var searchResults: [MKMapItem] = []
     @State private var isSearching = false
@@ -28,21 +30,31 @@ struct MapLocationPickerView: View {
             mapSection
             selectedSummary
         }
-        .background(AppColor.background(colorScheme))
-        .navigationTitle("Choose location")
+        .appScreenBackground()
+        .navigationTitle(embedded ? "" : "Choose location")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
+            if !embedded {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Use this spot") {
+                        confirmSelection()
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
             }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Use this spot") {
-                    confirmSelection()
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    searchFocused = false
                 }
                 .fontWeight(.semibold)
-                .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .onAppear {
             if let existing = selection {
                 pinCoordinate = existing.coordinate
@@ -62,6 +74,7 @@ struct MapLocationPickerView: View {
             TextField("Search near UCF", text: $searchText)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
+                .focused($searchFocused)
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
@@ -130,6 +143,16 @@ struct MapLocationPickerView: View {
                 .font(AppFont.body())
                 .foregroundStyle(AppColor.textPrimary(colorScheme))
             FormFieldHint(text: "Tip: tap the map to fine-tune the pin after searching.")
+
+            if embedded {
+                Button("Confirm this spot") {
+                    confirmSelectionEmbedded()
+                }
+                .font(AppFont.headline(.semibold))
+                .foregroundStyle(AppColor.gold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.m)
@@ -186,6 +209,12 @@ struct MapLocationPickerView: View {
         guard !trimmed.isEmpty else { return }
         selection = CustomLocationSelection(label: trimmed, coordinate: pinCoordinate)
         dismiss()
+    }
+
+    private func confirmSelectionEmbedded() {
+        let trimmed = draftLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        selection = CustomLocationSelection(label: trimmed, coordinate: pinCoordinate)
     }
 
     private func region(around coordinate: CLLocationCoordinate2D) -> MKCoordinateRegion {

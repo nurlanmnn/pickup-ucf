@@ -7,7 +7,25 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        configureNavigationAppearance()
         return true
+    }
+
+    /// Applies SF Rounded to all navigation bar titles app-wide.
+    private func configureNavigationAppearance() {
+        func roundedFont(textStyle: UIFont.TextStyle, traits: UIFontDescriptor.SymbolicTraits = []) -> UIFont {
+            let base = UIFontDescriptor.preferredFontDescriptor(withTextStyle: textStyle)
+            let rounded = base.withDesign(.rounded) ?? base
+            let styled = rounded.withSymbolicTraits(traits) ?? rounded
+            return UIFont(descriptor: styled, size: 0)
+        }
+
+        UINavigationBar.appearance().largeTitleTextAttributes = [
+            .font: roundedFont(textStyle: .largeTitle, traits: .traitBold),
+        ]
+        UINavigationBar.appearance().titleTextAttributes = [
+            .font: roundedFont(textStyle: .headline, traits: .traitBold),
+        ]
     }
 
     func application(

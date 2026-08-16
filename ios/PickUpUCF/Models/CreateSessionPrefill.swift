@@ -12,6 +12,25 @@ struct CreateSessionPrefill: Equatable {
     let notes: String
     let startsAt: Date
 
+    /// Sport + optional venue prefill for Discover empty-state host nudges and last-used defaults.
+    init(
+        sport: SportType,
+        venueId: UUID? = nil,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) {
+        self.sport = sport
+        customSportName = nil
+        self.venueId = venueId
+        customLocationSelection = nil
+        customLocationLabel = nil
+        skillLevel = .intermediate
+        capacity = 10
+        durationMinutes = 90
+        notes = ""
+        startsAt = calendar.date(byAdding: .hour, value: 2, to: now) ?? now
+    }
+
     init(from session: PickupSession, now: Date = Date(), calendar: Calendar = .current) {
         sport = session.sport
         if session.sport == .other {
