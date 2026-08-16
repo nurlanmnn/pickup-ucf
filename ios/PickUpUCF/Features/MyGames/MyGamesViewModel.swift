@@ -52,6 +52,7 @@ final class MyGamesViewModel {
                 return
             }
             upcomingSessions = .loaded(items)
+            GameLiveActivityCoordinator.refresh(upcomingSessions: items)
         } catch {
             if Task.isCancelled {
                 upcomingSessions = previous
@@ -105,11 +106,12 @@ final class MyGamesViewModel {
 
         do {
             try await repository.leaveSession(id: session.id)
+            GameLiveActivityCoordinator.end(forSessionId: session.id)
             await fetchUpcoming()
             if pastLoadedOnce {
                 await fetchPast(reset: true)
             }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             actionError = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)

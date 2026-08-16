@@ -1,6 +1,12 @@
 import Foundation
 import UIKit
 
+enum EditSessionScrollAnchor: String, Hashable {
+    case sport
+    case schedule
+    case location
+}
+
 @Observable
 final class EditSessionViewModel {
     static let customVenuePickerTag = "__custom__"
@@ -24,8 +30,12 @@ final class EditSessionViewModel {
     var venues: [Venue] = []
     var errorMessage: String?
     var isLoading = false
+    var isDirty = false
+    var showFieldErrors = false
 
+    private var pendingVenueId: UUID?
     private var pendingCustomLocationLabel: String?
+    private var suppressDirtyTracking = false
 
     private let repository: SessionRepositoryProtocol
 
@@ -41,7 +51,8 @@ final class EditSessionViewModel {
     }
 
     var showsCustomLocationField: Bool {
-        venuePickerOptionId == Self.customVenuePickerTag
+        guard !venues.isEmpty else { return false }
+        return venuePickerOptionId == Self.customVenuePickerTag
     }
 
     var canSubmit: Bool {
@@ -54,6 +65,48 @@ final class EditSessionViewModel {
         let hasLocation = selectedVenueId != nil || customLocationSelection != nil
         guard hasLocation else { return false }
         return validateSchedule() == nil
+    }
+
+    var sportNameError: String? {
+        guard showFieldErrors else { return nil }
+        if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Enter a sport name (e.g. pickleball)."
+        }
+        return nil
+    }
+
+    var scheduleError: String? {
+        guard showFieldErrors else { return nil }
+        return validateSchedule()
+    }
+
+    var locationError: String? {
+        guard showFieldErrors else { return nil }
+        if showsCustomLocationField {
+            if customLocationSelection == nil {
+                return "Search on the map and choose where you're playing."
+            }
+        } else if selectedVenueId == nil {
+            return "Choose a venue."
+        }
+        return nil
+    }
+
+    func markDirty() {
+        guard !suppressDirtyTracking else { return }
+        isDirty = true
+    }
+
+    func revealFieldErrors() {
+        showFieldErrors = true
+    }
+
+    func firstInvalidScrollAnchor() -> EditSessionScrollAnchor? {
+        guard showFieldErrors else { return nil }
+        if sportNameError != nil { return .sport }
+        if scheduleError != nil { return .schedule }
+        if locationError != nil { return .location }
+        return nil
     }
 
     func commitDurationFromText() {
@@ -88,6 +141,22 @@ final class EditSessionViewModel {
     func loadVenues() async {
         do {
             venues = try await repository.fetchVenues()
+            suppressDirtyTracking = true
+            defer { suppressDirtyTracking = false }
+
+            if let pendingVenueId,
+               venues.contains(where: { $0.id == pendingVenueId }) {
+                venuePickerOptionId = pendingVenueId.uuidString
+            }
+            self.pendingVenueId = nil
+
+            if venuePickerOptionId == Self.customVenuePickerTag,
+               customLocationSelection == nil,
+               pendingCustomLocationLabel == nil,
+               let firstVenue = venues.first {
+                venuePickerOptionId = firstVenue.id.uuidString
+            }
+
             if venuePickerOptionId != Self.customVenuePickerTag,
                UUID(uuidString: venuePickerOptionId) == nil
                    || !venues.contains(where: { $0.id.uuidString == venuePickerOptionId }) {
@@ -101,6 +170,7 @@ final class EditSessionViewModel {
     @MainActor
     func save() async -> PickupSession? {
         errorMessage = nil
+        revealFieldErrors()
         commitDurationFromText()
         commitCapacityFromText()
 
@@ -148,14 +218,22 @@ final class EditSessionViewModel {
     }
 
     private func apply(_ session: PickupSession) {
+        suppressDirtyTracking = true
+        defer {
+            suppressDirtyTracking = false
+            isDirty = false
+        }
+
         sport = session.sport
         let parsed = OtherSportNotes.parse(session.notes)
         let fromDb = session.customSportName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         customSportName = fromDb.isEmpty ? (parsed.embeddedName ?? "") : fromDb
         notes = parsed.userNotes ?? ""
         if let vid = session.venueId {
-            venuePickerOptionId = vid.uuidString
+            pendingVenueId = vid
+            venuePickerOptionId = Self.customVenuePickerTag
         } else {
+            pendingVenueId = nil
             venuePickerOptionId = Self.customVenuePickerTag
         }
         if session.venueId == nil {

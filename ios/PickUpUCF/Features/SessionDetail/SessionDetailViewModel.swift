@@ -7,12 +7,17 @@ final class SessionDetailViewModel {
     let sessionId: UUID
     var session = Loadable<PickupSession>.idle
     var participantStatus: ParticipantStatus?
+    var roster = Loadable<SessionRoster>.idle
     var isSubmitting = false
     var actionError: String?
 
     private let repository: SessionRepositoryProtocol
+    private let attendanceRepository: AttendanceRepository
+    private let blockRepository: BlockRepositoryProtocol
     private let client: SupabaseClient
     private let userId: UUID?
+
+    var attendanceParticipants = Loadable<[SessionParticipant]>.idle
 
     private var realtimeChannel: RealtimeChannelV2?
     private var realtimeTask: Task<Void, Never>?
@@ -21,11 +26,15 @@ final class SessionDetailViewModel {
         sessionId: UUID,
         userId: UUID?,
         repository: SessionRepositoryProtocol = SessionRepository(),
+        attendanceRepository: AttendanceRepository = AttendanceRepository(),
+        blockRepository: BlockRepositoryProtocol = BlockRepository(),
         client: SupabaseClient = SupabaseManager.shared
     ) {
         self.sessionId = sessionId
         self.userId = userId
         self.repository = repository
+        self.attendanceRepository = attendanceRepository
+        self.blockRepository = blockRepository
         self.client = client
     }
 
@@ -46,9 +55,19 @@ final class SessionDetailViewModel {
         return (s.status == .open || s.status == .full) && s.endsAt > Date()
     }
 
+    /// Host can mark attendance from session start through 24h after it ends.
+    var canSubmitAttendance: Bool {
+        guard isHost, let s = session.value else { return false }
+        let now = Date()
+        return s.status != .cancelled
+            && s.startsAt <= now
+            && now <= s.endsAt.addingTimeInterval(86400)
+    }
+
     @MainActor
     func load() async {
         session = .loading
+        roster = userId == nil ? .idle : .loading
         do {
             let item = try await repository.fetchSession(id: sessionId)
             session = .loaded(item)
@@ -57,9 +76,18 @@ final class SessionDetailViewModel {
                     sessionId: sessionId,
                     userId: userId
                 )
+                do {
+                    let rosterItem = try await repository.fetchRoster(sessionId: sessionId)
+                    roster = .loaded(rosterItem)
+                } catch {
+                    roster = .failed(AppErrorMapper.message(for: error))
+                }
+            } else {
+                roster = .idle
             }
         } catch {
             session = .failed(AppErrorMapper.message(for: error))
+            roster = .idle
         }
     }
 
@@ -75,14 +103,52 @@ final class SessionDetailViewModel {
             if participantStatus == .joined || participantStatus == .waitlist {
                 try await repository.leaveSession(id: current.id)
                 participantStatus = .left
+                GameLiveActivityCoordinator.end(forSessionId: current.id)
             } else {
                 participantStatus = try await repository.joinSession(id: current.id)
+                if participantStatus == .joined {
+                    GameLiveActivityCoordinator.start(for: current)
+                }
             }
             await load()
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             actionError = AppErrorMapper.message(for: error)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+    }
+
+    @MainActor
+    func loadAttendanceParticipants() async {
+        attendanceParticipants = .loading
+        do {
+            let participants = try await attendanceRepository.fetchJoinedParticipants(
+                sessionId: sessionId
+            )
+            attendanceParticipants = .loaded(participants)
+        } catch {
+            attendanceParticipants = .failed(AppErrorMapper.message(for: error))
+        }
+    }
+
+    @MainActor
+    func submitAttendance(attendedUserIds: [UUID]) async -> Bool {
+        actionError = nil
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            try await attendanceRepository.submitAttendance(
+                sessionId: sessionId,
+                attendedUserIds: attendedUserIds
+            )
+            await load()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            return true
+        } catch {
+            actionError = AppErrorMapper.message(for: error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            return false
         }
     }
 
@@ -96,6 +162,24 @@ final class SessionDetailViewModel {
         do {
             try await repository.cancelSession(id: current.id)
             await load()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            return true
+        } catch {
+            actionError = AppErrorMapper.message(for: error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            return false
+        }
+    }
+
+    @MainActor
+    func blockHost() async -> Bool {
+        guard !isHost, let hostId = session.value?.hostId else { return false }
+        actionError = nil
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        do {
+            try await blockRepository.block(userId: hostId)
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             return true
         } catch {
@@ -181,6 +265,32 @@ final class SessionDetailViewModel {
     }
 
     var canAccessChat: Bool {
+        if isHost { return true }
+        switch participantStatus {
+        case .joined, .waitlist:
+            return true
+        case .left, .none:
+            return false
+        }
+    }
+
+    var canRunItBack: Bool {
+        guard userId != nil, let session = session.value, session.status == .completed else {
+            return false
+        }
+        if isHost { return true }
+        switch participantStatus {
+        case .joined, .waitlist:
+            return true
+        case .left, .none:
+            return false
+        }
+    }
+
+    var canAddToCalendar: Bool {
+        guard let session = session.value else { return false }
+        guard session.startsAt > Date() else { return false }
+        guard session.status == .open || session.status == .full else { return false }
         if isHost { return true }
         switch participantStatus {
         case .joined, .waitlist:

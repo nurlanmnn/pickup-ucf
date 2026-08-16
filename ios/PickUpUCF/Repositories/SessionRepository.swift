@@ -12,6 +12,7 @@ struct CreateSessionInput {
     let capacity: Int
     let skillLevel: SkillLevel
     let notes: String?
+    let recurrenceRule: RecurrenceRule?
 }
 
 struct UpdateSessionInput {
@@ -27,7 +28,12 @@ struct UpdateSessionInput {
 }
 
 protocol SessionRepositoryProtocol {
-    func fetchUpcoming(sport: SportType?) async throws -> [PickupSession]
+    func fetchUpcoming(
+        sport: SportType?,
+        timeWindow: DiscoverTimeWindow,
+        skillLevel: SkillLevel?,
+        venueId: UUID?
+    ) async throws -> [PickupSession]
     /// Sessions the user has joined or is waitlisted for, starting from now (open or full only).
     func fetchMySessions(userId: UUID) async throws -> [PickupSession]
     func fetchMyPastSessions(limit: Int, offset: Int) async throws -> [PickupSession]
@@ -40,6 +46,7 @@ protocol SessionRepositoryProtocol {
     func cancelSession(id: UUID) async throws
     func joinSession(id: UUID) async throws -> ParticipantStatus
     func leaveSession(id: UUID) async throws
+    func fetchRoster(sessionId: UUID) async throws -> SessionRoster
 }
 
 final class SessionRepository: SessionRepositoryProtocol {
@@ -66,38 +73,51 @@ final class SessionRepository: SessionRepositoryProtocol {
         return String(trimmed.prefix(maxCustomSportNameLength))
     }
 
-    func fetchUpcoming(sport: SportType?) async throws -> [PickupSession] {
+    func fetchUpcoming(
+        sport: SportType?,
+        timeWindow: DiscoverTimeWindow = .next48h,
+        skillLevel: SkillLevel? = nil,
+        venueId: UUID? = nil
+    ) async throws -> [PickupSession] {
         let now = Date.now
-        let windowEnd = Calendar.current.date(byAdding: .hour, value: 48, to: now) ?? now
+        let range = timeWindow.queryRange(relativeTo: now)
         let statuses = [SessionStatus.open.rawValue, SessionStatus.full.rawValue]
 
-        if let sport {
-            let rows: [PickupSession] = try await client
-                .from("sessions")
-                .select(sessionSelect)
-                .in("status", values: statuses)
-                .eq("sport", value: sport.rawValue)
-                .gte("starts_at", value: now.ISO8601Format())
-                .lte("starts_at", value: windowEnd.ISO8601Format())
-                .order("starts_at", ascending: true)
-                .limit(AppPagination.discoverSessions)
-                .execute()
-                .value
-            return rows.filter { $0.startsAt > now }
-        }
-
-        let rows: [PickupSession] = try await client
+        var query = client
             .from("sessions")
             .select(sessionSelect)
             .in("status", values: statuses)
-            .gte("starts_at", value: now.ISO8601Format())
-            .lte("starts_at", value: windowEnd.ISO8601Format())
+            .gte("starts_at", value: range.lowerBound.ISO8601Format())
+            .lte("starts_at", value: range.upperBound.ISO8601Format())
+
+        if let sport {
+            query = query.eq("sport", value: sport.rawValue)
+        }
+
+        if let skillLevel, skillLevel != .any {
+            query = query.eq("skill_level", value: skillLevel.rawValue)
+        }
+
+        if let venueId {
+            query = query.eq("venue_id", value: venueId.uuidString)
+        }
+
+        let rows: [PickupSession] = try await query
             .order("starts_at", ascending: true)
             .limit(AppPagination.discoverSessions)
             .execute()
             .value
 
         return rows.filter { $0.startsAt > now }
+    }
+
+    /// Removes sessions hosted by users the caller has blocked (client-side filter after one block-list fetch).
+    static func filterBlockedHosts(
+        _ sessions: [PickupSession],
+        blockedHostIds: Set<UUID>
+    ) -> [PickupSession] {
+        guard !blockedHostIds.isEmpty else { return sessions }
+        return sessions.filter { !blockedHostIds.contains($0.hostId) }
     }
 
     func fetchMySessions(userId: UUID) async throws -> [PickupSession] {
@@ -225,6 +245,13 @@ final class SessionRepository: SessionRepositoryProtocol {
             userNotes: input.notes
         )
 
+        let recurrenceRuleJSON: String?
+        if let rule = input.recurrenceRule {
+            recurrenceRuleJSON = try rule.jsonString
+        } else {
+            recurrenceRuleJSON = nil
+        }
+
         let payload = SessionInsert(
             hostId: userId,
             sport: input.sport,
@@ -237,7 +264,8 @@ final class SessionRepository: SessionRepositoryProtocol {
             capacity: input.capacity,
             playerCount: 1,
             skillLevel: input.skillLevel,
-            notes: notesToStore
+            notes: notesToStore,
+            recurrenceRule: recurrenceRuleJSON
         )
 
         let created: PickupSession = try await client
@@ -256,6 +284,9 @@ final class SessionRepository: SessionRepositoryProtocol {
         )
         try await client.from("session_participants").insert(hostRow).execute()
 
+        if let withWeather = try? await attachWeatherSnapshotIfNeeded(to: created) {
+            return withWeather
+        }
         return created
     }
 
@@ -329,6 +360,59 @@ final class SessionRepository: SessionRepositoryProtocol {
             }
         }
         try await client.rpc("leave_session", params: LeaveParams(pSessionId: id)).execute()
+    }
+
+    func fetchRoster(sessionId: UUID) async throws -> SessionRoster {
+        try await client
+            .rpc("get_session_roster", params: GetSessionRosterParams(pSessionId: sessionId))
+            .execute()
+            .value
+    }
+
+    /// Fetches forecast via Edge Function and patches `weather_snapshot` for outdoor sessions.
+    private func attachWeatherSnapshotIfNeeded(to session: PickupSession) async throws -> PickupSession {
+        guard session.isOutdoorForWeather, let coordinates = session.weatherCoordinates else {
+            return session
+        }
+
+        struct FetchWeatherBody: Encodable {
+            let lat: Double
+            let lng: Double
+            let startsAt: String
+
+            enum CodingKeys: String, CodingKey {
+                case lat, lng
+                case startsAt = "starts_at"
+            }
+        }
+
+        let snapshot: WeatherSnapshot = try await client.functions.invoke(
+            "fetch-weather",
+            options: FunctionInvokeOptions(
+                body: FetchWeatherBody(
+                    lat: coordinates.lat,
+                    lng: coordinates.lng,
+                    startsAt: session.startsAt.ISO8601Format()
+                )
+            )
+        )
+
+        struct WeatherPatch: Encodable {
+            let weatherSnapshot: WeatherSnapshot
+
+            enum CodingKeys: String, CodingKey {
+                case weatherSnapshot = "weather_snapshot"
+            }
+        }
+
+        return try await client
+            .from("sessions")
+            .update(WeatherPatch(weatherSnapshot: snapshot))
+            .eq("id", value: session.id.uuidString)
+            .select(sessionSelect)
+            .single()
+            .execute()
+            .value
     }
 }
 

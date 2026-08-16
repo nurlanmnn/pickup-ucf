@@ -1,0 +1,2 @@
+-- Shared SQL test helpers for PickUp UCF.
+-- Expanded in Phase A+ (test users, sessions, service-role patterns).

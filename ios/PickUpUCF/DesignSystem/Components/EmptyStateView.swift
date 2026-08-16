@@ -14,6 +14,8 @@ struct EmptyStateView: View {
             Image(systemName: symbol)
                 .font(.system(size: 48))
                 .foregroundStyle(AppColor.gold)
+                .symbolEffect(.bounce, value: symbol)
+                .accessibilityHidden(true)
             Text(title)
                 .font(AppFont.title())
                 .foregroundStyle(AppColor.textPrimary(colorScheme))

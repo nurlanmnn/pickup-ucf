@@ -34,7 +34,7 @@ struct CustomLocationPickerRow: View {
             NavigationStack {
                 MapLocationPickerView(selection: $selection)
             }
-            .presentationDetents([.large])
+            .appSheetChrome()
         }
     }
 }

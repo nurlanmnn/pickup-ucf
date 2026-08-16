@@ -8,31 +8,40 @@ struct ChangePasswordView: View {
     private enum Field: Hashable { case current, new, confirm }
 
     var body: some View {
-        Form {
-            InlineFeedbackSection(
-                error: viewModel.errorMessage,
-                success: viewModel.didSucceed ? "Password updated successfully." : nil
-            )
+        ScrollView {
+            VStack(spacing: Spacing.m) {
+                InlineFeedbackSection(
+                    error: viewModel.errorMessage,
+                    success: viewModel.didSucceed ? "Password updated successfully." : nil
+                )
 
-            Section {
-                SecureField("Current password", text: $viewModel.currentPassword)
-                    .textContentType(.password)
-                    .focused($focusedField, equals: .current)
-                SecureField("New password", text: $viewModel.newPassword)
-                    .textContentType(.newPassword)
-                    .focused($focusedField, equals: .new)
-                SecureField("Confirm new password", text: $viewModel.confirmPassword)
-                    .textContentType(.newPassword)
-                    .focused($focusedField, equals: .confirm)
-
-                if let hint = PasswordValidator.validationMessage(for: viewModel.newPassword) {
-                    Text(hint)
-                        .font(AppFont.caption())
-                        .foregroundStyle(AppColor.destructive)
+                FormCard {
+                    FormFieldRow {
+                        SecureField("Current password", text: $viewModel.currentPassword)
+                            .textContentType(.password)
+                            .focused($focusedField, equals: .current)
+                    }
+                    Divider().padding(.leading, Spacing.m)
+                    FormFieldRow {
+                        SecureField("New password", text: $viewModel.newPassword)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .new)
+                    }
+                    Divider().padding(.leading, Spacing.m)
+                    FormFieldRow {
+                        SecureField("Confirm new password", text: $viewModel.confirmPassword)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .confirm)
+                    }
+                    if let hint = PasswordValidator.validationMessage(for: viewModel.newPassword) {
+                        Text(hint)
+                            .font(AppFont.caption())
+                            .foregroundStyle(AppColor.destructive)
+                            .padding(.horizontal, Spacing.m)
+                            .padding(.bottom, Spacing.xs)
+                    }
                 }
-            }
 
-            Section {
                 PrimaryButton(
                     title: "Update password",
                     isLoading: viewModel.isLoading,
@@ -40,14 +49,14 @@ struct ChangePasswordView: View {
                 ) {
                     Task { await submit() }
                 }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
             }
+            .padding(Spacing.m)
         }
-        .navigationTitle("Change password")
-        .navigationBarTitleDisplayMode(.inline)
+        .appScreenBackground()
         .dismissKeyboardOnBackgroundTap()
         .scrollDismissesKeyboard(.interactively)
+        .navigationTitle("Change password")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(
                 canGoPrevious: focusedField != .current,

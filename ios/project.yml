@@ -12,6 +12,11 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     SWIFT_VERSION: "5.9"
     TARGETED_DEVICE_FAMILY: "1"
+    # Apple Silicon: avoid x86_64 simulator builds (breaks SPM package resolution in Xcode).
+    EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
+  configs:
+    Debug:
+      ONLY_ACTIVE_ARCH: YES
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
@@ -42,6 +47,12 @@ targets:
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
+        # Push Notifications capability must also be enabled in Xcode:
+        # PickUpUCF target → Signing & Capabilities → + Capability → Push Notifications
+        UIBackgroundModes:
+          - remote-notification
+        NSCalendarsFullAccessUsageDescription: Add PickUp UCF games to your calendar so you do not miss them.
+        NSSupportsLiveActivities: true
     settings:
       base:
         PRODUCT_NAME: PickUpUCF
@@ -55,15 +66,64 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+      - target: PickUpUCFWidget
+        embed: true
+      - sdk: ActivityKit.framework
+  PickUpUCFWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCFWidget
+      - path: PickUpUCF/LiveActivity/GameLiveActivityAttributes.swift
+    info:
+      path: PickUpUCFWidget/Info.plist
+      properties:
+        CFBundleDisplayName: PickUp UCF Widget
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_NAME: PickUpUCFWidget
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup.widget
+        GENERATE_INFOPLIST_FILE: false
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        SKIP_INSTALL: YES
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: ActivityKit.framework
+  PickUpUCFTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCFTests
+    dependencies:
+      - target: PickUpUCF
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
 schemes:
   PickUpUCF:
     build:
       targets:
         PickUpUCF: all
+        PickUpUCFWidget: all
     run:
       config: Debug
     test:
       config: Debug
+      targets:
+        - PickUpUCFTests
     profile:
       config: Release
     analyze:

@@ -5,6 +5,9 @@ protocol ProfileRepositoryProtocol {
     func ensureProfileForCurrentUser() async throws
     func ensureProfile(userId: UUID, displayName: String) async throws
     func fetchCurrentProfile() async throws -> Profile
+    func fetchProfile(userId: UUID) async throws -> Profile
+    func completeOnboarding(sports: [SportType]) async throws
+    func updatePreferredSports(_ sports: [SportType]) async throws
     func updateUsername(_ username: String) async throws
     func deleteAccount() async throws
 }
@@ -39,11 +42,48 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         let userId = try await client.auth.session.user.id
         return try await client
             .from("profiles")
-            .select("id, display_name, username")
+            .select(
+                "id, display_name, username, games_played, show_up_streak, preferred_sports, onboarding_completed_at"
+            )
             .eq("id", value: userId.uuidString)
             .single()
             .execute()
             .value
+    }
+
+    func fetchProfile(userId: UUID) async throws -> Profile {
+        try await client
+            .from("profiles")
+            .select(
+                "id, display_name, username, games_played, show_up_streak, preferred_sports"
+            )
+            .eq("id", value: userId.uuidString)
+            .single()
+            .execute()
+            .value
+    }
+
+    func completeOnboarding(sports: [SportType]) async throws {
+        try await client
+            .rpc(
+                "complete_onboarding",
+                params: CompleteOnboardingParams(pPreferredSports: sports)
+            )
+            .execute()
+    }
+
+    func updatePreferredSports(_ sports: [SportType]) async throws {
+        guard !sports.isEmpty else {
+            throw ProfileRepositoryError.preferredSportsRequired
+        }
+
+        let userId = try await client.auth.session.user.id
+        let update = ProfilePreferredSportsUpdate(preferredSports: sports)
+        try await client
+            .from("profiles")
+            .update(update)
+            .eq("id", value: userId.uuidString)
+            .execute()
     }
 
     func updateUsername(_ username: String) async throws {
@@ -74,13 +114,32 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     }
 }
 
+struct ProfilePreferredSportsUpdate: Encodable {
+    let preferredSports: [SportType]
+
+    enum CodingKeys: String, CodingKey {
+        case preferredSports = "preferred_sports"
+    }
+}
+
+struct CompleteOnboardingParams: Encodable {
+    let pPreferredSports: [SportType]
+
+    enum CodingKeys: String, CodingKey {
+        case pPreferredSports = "p_preferred_sports"
+    }
+}
+
 enum ProfileRepositoryError: LocalizedError {
     case missingDisplayName
+    case preferredSportsRequired
 
     var errorDescription: String? {
         switch self {
         case .missingDisplayName:
             return "Display name is required for your profile."
+        case .preferredSportsRequired:
+            return "Select at least one sport."
         }
     }
 }

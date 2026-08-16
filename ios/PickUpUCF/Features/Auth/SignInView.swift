@@ -2,38 +2,37 @@ import SwiftUI
 
 struct SignInView: View {
     @Environment(AppState.self) private var appState
-    @Environment(\.colorScheme) private var colorScheme
     @State private var viewModel = SignInViewModel()
     @FocusState private var focusedField: Field?
 
-    private enum Field: Hashable {
-        case email, password
-    }
+    private enum Field: Hashable { case email, password }
 
     var body: some View {
-        Form {
-            Section {
-                TextField("UCF email", text: $viewModel.email)
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .focused($focusedField, equals: .email)
-                    .submitLabel(.next)
-                    .onSubmit { focusedField = .password }
+        ScrollView {
+            VStack(spacing: Spacing.m) {
+                InlineFeedbackSection(error: viewModel.errorMessage)
 
-                SecureField("Password", text: $viewModel.password)
-                    .textContentType(.password)
-                    .focused($focusedField, equals: .password)
-                    .submitLabel(.go)
-                    .onSubmit {
-                        Task { await viewModel.signIn(appState: appState) }
+                FormCard(footer: "Use your @knights.ucf.edu or @ucf.edu address.") {
+                    FormFieldRow {
+                        TextField("UCF email", text: $viewModel.email)
+                            .textContentType(.emailAddress)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .focused($focusedField, equals: .email)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .password }
                     }
-            }
+                    Divider().padding(.leading, Spacing.m)
+                    FormFieldRow {
+                        SecureField("Password", text: $viewModel.password)
+                            .textContentType(.password)
+                            .focused($focusedField, equals: .password)
+                            .submitLabel(.go)
+                            .onSubmit { Task { await viewModel.signIn(appState: appState) } }
+                    }
+                }
 
-            InlineFeedbackSection(error: viewModel.errorMessage)
-
-            Section {
                 PrimaryButton(
                     title: "Sign In",
                     isLoading: viewModel.isLoading,
@@ -41,17 +40,18 @@ struct SignInView: View {
                 ) {
                     Task { await viewModel.signIn(appState: appState) }
                 }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-            }
 
-            Section {
-                NavigationLink("Forgot password?") {
-                    ForgotPasswordView()
+                NavigationLink { ForgotPasswordView() } label: {
+                    Text("Forgot password?")
+                        .font(AppFont.caption(.semibold))
+                        .foregroundStyle(AppColor.gold)
                 }
             }
+            .padding(Spacing.m)
         }
+        .appScreenBackground()
         .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnBackgroundTap()
         .navigationTitle("Sign In")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -69,7 +69,6 @@ struct SignInView: View {
         )) {
             VerifyEmailView(email: viewModel.email)
         }
-        .background(AppColor.background(colorScheme))
     }
 }
 

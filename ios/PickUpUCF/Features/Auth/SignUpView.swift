@@ -5,69 +5,68 @@ struct SignUpView: View {
     @State private var showFieldHints = false
     @FocusState private var focusedField: Field?
 
-    private enum Field: Hashable {
-        case displayName, email, password, confirm
-    }
-
-    @Environment(\.colorScheme) private var colorScheme
+    private enum Field: Hashable { case displayName, email, password, confirm }
 
     var body: some View {
-        Form {
-            Section {
-                TextField("Display name", text: $viewModel.displayName)
-                    .textContentType(.name)
-                    .focused($focusedField, equals: .displayName)
-                    .submitLabel(.next)
-                    .onSubmit { focusedField = .email }
+        ScrollView {
+            VStack(spacing: Spacing.m) {
+                InlineFeedbackSection(error: viewModel.errorMessage)
 
-                if showFieldHints, let message = displayNameHint {
-                    fieldHint(message)
-                }
-
-                TextField("UCF email", text: $viewModel.email)
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .focused($focusedField, equals: .email)
-                    .submitLabel(.next)
-                    .onSubmit { focusedField = .password }
-
-                if showFieldHints, let message = emailHint {
-                    fieldHint(message)
-                }
-
-                SecureField("Password", text: $viewModel.password)
-                    .textContentType(.newPassword)
-                    .focused($focusedField, equals: .password)
-                    .submitLabel(.next)
-                    .onSubmit { focusedField = .confirm }
-
-                if showFieldHints, let message = passwordHint {
-                    fieldHint(message)
-                }
-
-                SecureField("Confirm password", text: $viewModel.confirmPassword)
-                    .textContentType(.newPassword)
-                    .focused($focusedField, equals: .confirm)
-                    .submitLabel(.done)
-                    .onSubmit {
-                        focusedField = nil
-                        Task { await submit() }
+                FormCard(footer: "Password must be at least 8 characters.") {
+                    FormFieldRow {
+                        TextField("Display name", text: $viewModel.displayName)
+                            .textContentType(.name)
+                            .focused($focusedField, equals: .displayName)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .email }
+                    }
+                    if showFieldHints, let hint = displayNameHint {
+                        fieldHint(hint)
                     }
 
-                if showFieldHints, let message = confirmHint {
-                    fieldHint(message)
+                    Divider().padding(.leading, Spacing.m)
+
+                    FormFieldRow {
+                        TextField("UCF email", text: $viewModel.email)
+                            .textContentType(.emailAddress)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .focused($focusedField, equals: .email)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .password }
+                    }
+                    if showFieldHints, let hint = emailHint {
+                        fieldHint(hint)
+                    }
+
+                    Divider().padding(.leading, Spacing.m)
+
+                    FormFieldRow {
+                        SecureField("Password", text: $viewModel.password)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .password)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .confirm }
+                    }
+                    if showFieldHints, let hint = passwordHint {
+                        fieldHint(hint)
+                    }
+
+                    Divider().padding(.leading, Spacing.m)
+
+                    FormFieldRow {
+                        SecureField("Confirm password", text: $viewModel.confirmPassword)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .confirm)
+                            .submitLabel(.done)
+                            .onSubmit { focusedField = nil; Task { await submit() } }
+                    }
+                    if showFieldHints, let hint = confirmHint {
+                        fieldHint(hint)
+                    }
                 }
-            } header: {
-                Text("Account")
-            } footer: {
-                Text("Use @knights.ucf.edu or @ucf.edu. Password must be at least 8 characters.")
-            }
 
-            InlineFeedbackSection(error: viewModel.errorMessage)
-
-            Section {
                 PrimaryButton(
                     title: "Create account",
                     isLoading: viewModel.isLoading,
@@ -75,11 +74,12 @@ struct SignUpView: View {
                 ) {
                     Task { await submit() }
                 }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
             }
+            .padding(Spacing.m)
         }
+        .appScreenBackground()
         .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnBackgroundTap()
         .navigationTitle("Sign Up")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -97,34 +97,24 @@ struct SignUpView: View {
         )) {
             VerifyEmailView(email: viewModel.email)
         }
-        .background(AppColor.background(colorScheme))
-    }
-
-    private var displayNameHint: String? {
-        viewModel.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? "Display name is required"
-            : nil
-    }
-
-    private var emailHint: String? {
-        EmailDomainValidator.validationMessage(for: viewModel.email)
-    }
-
-    private var passwordHint: String? {
-        PasswordValidator.validationMessage(for: viewModel.password)
-    }
-
-    private var confirmHint: String? {
-        PasswordValidator.confirmationMessage(
-            password: viewModel.password,
-            confirm: viewModel.confirmPassword
-        )
     }
 
     private func fieldHint(_ message: String) -> some View {
         Text(message)
             .font(AppFont.caption())
             .foregroundStyle(AppColor.destructive)
+            .padding(.horizontal, Spacing.m)
+            .padding(.bottom, Spacing.xs)
+    }
+
+    private var displayNameHint: String? {
+        viewModel.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "Display name is required" : nil
+    }
+    private var emailHint: String? { EmailDomainValidator.validationMessage(for: viewModel.email) }
+    private var passwordHint: String? { PasswordValidator.validationMessage(for: viewModel.password) }
+    private var confirmHint: String? {
+        PasswordValidator.confirmationMessage(password: viewModel.password, confirm: viewModel.confirmPassword)
     }
 
     @MainActor
@@ -154,7 +144,5 @@ struct SignUpView: View {
 }
 
 #Preview {
-    NavigationStack {
-        SignUpView()
-    }
+    NavigationStack { SignUpView() }
 }
