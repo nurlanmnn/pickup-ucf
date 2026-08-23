@@ -28,20 +28,6 @@ struct ProfileView: View {
 
     private var heroHeader: some View {
         ZStack(alignment: .bottom) {
-            // Warm gold gradient band
-            LinearGradient(
-                colors: [
-                    AppColor.gold.opacity(colorScheme == .dark ? 0.24 : 0.18),
-                    AppColor.gold.opacity(0.06),
-                    Color.clear
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 230)
-            .ignoresSafeArea(edges: .top)
-
             VStack(spacing: Spacing.s) {
                 avatarView
                     .padding(.top, Spacing.xl)

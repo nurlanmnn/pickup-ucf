@@ -11,29 +11,16 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    sportChips
-                        .padding(.horizontal, Spacing.m)
-                    filterBar
-
-                    if let joinError = viewModel.joinErrorMessage {
-                        ErrorBanner(message: joinError)
-                            .padding(.horizontal, Spacing.m)
-                    }
-
-                    content
-                        .padding(.horizontal, Spacing.m)
-                }
-                .padding(.vertical, Spacing.m)
+                discoverBody
+            }
+            .refreshable {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                await viewModel.fetchSessions(currentUserId: appState.session?.userId)
             }
             .appScreenBackground()
             .toolbarBackground(.hidden, for: .navigationBar)
             .navigationTitle("Discover")
             .searchable(text: $viewModel.searchText, prompt: "Search sessions")
-            .refreshable {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                await viewModel.fetchSessions(currentUserId: appState.session?.userId)
-            }
             .task(id: appState.session?.userId) {
                 viewModel.load(currentUserId: appState.session?.userId)
             }
@@ -59,6 +46,23 @@ struct DiscoverView: View {
                 appState.clearSessionDetailDeepLink()
             }
         }
+    }
+
+    private var discoverBody: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            sportChips
+                .padding(.horizontal, Spacing.m)
+            filterBar
+
+            if let joinError = viewModel.joinErrorMessage {
+                ErrorBanner(message: joinError)
+                    .padding(.horizontal, Spacing.m)
+            }
+
+            content
+                .padding(.horizontal, Spacing.m)
+        }
+        .padding(.vertical, Spacing.m)
     }
 
     @ViewBuilder

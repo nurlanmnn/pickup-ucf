@@ -546,8 +546,8 @@ struct SessionDetailView: View {
     @ViewBuilder
     private func chatCard(_ session: PickupSession) -> some View {
         if viewModel.canAccessChat, let userId = appState.session?.userId {
-            NavigationLink(isActive: $showChat) {
-                ChatView(sessionId: session.id, currentUserId: userId)
+            Button {
+                showChat = true
             } label: {
                 HStack(spacing: Spacing.m) {
                     Image(systemName: "bubble.left.and.bubble.right.fill")
@@ -577,6 +577,9 @@ struct SessionDetailView: View {
                 .appCardStyle(cornerRadius: 16)
             }
             .buttonStyle(.plain)
+            .navigationDestination(isPresented: $showChat) {
+                ChatView(sessionId: session.id, currentUserId: userId)
+            }
         } else if appState.isAuthenticated {
             HStack(spacing: Spacing.m) {
                 Image(systemName: "lock.fill")

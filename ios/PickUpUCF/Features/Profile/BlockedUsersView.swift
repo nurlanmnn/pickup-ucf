@@ -65,6 +65,7 @@ struct BlockedUsersView: View {
                         title: "No blocked users",
                         message: "People you block won't appear in Discover and you can't join their games."
                     )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
                         VStack(spacing: Spacing.m) {

@@ -109,6 +109,7 @@
 		97AB4E60782A3854CE1B7073 /* GameLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6BDEF4237B56B9BC7F6E726 /* GameLiveActivityAttributes.swift */; };
 		9B364341B2297A924B66E20A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6849B06D30B12DF30371DC /* RootView.swift */; };
 		9B62B1AA95C38FE416E5B6F5 /* DiscoverTimeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */; };
+		9D2F6B18E4A073C5B8D14E90 /* DiscoverMapZoomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8E1A92B7D0456F8E3A10C2 /* DiscoverMapZoomTests.swift */; };
 		9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */; };
 		A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
@@ -150,6 +151,7 @@
 		DAB745C7C3093E430EB7AC1C /* MySportsFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287C4C99F51315693066BC38 /* MySportsFilterTests.swift */; };
 		DBCC8ED8509B1843C74B970D /* SuccessBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF8DD010D39675CAAE2875 /* SuccessBanner.swift */; };
 		DDA8A6055855E1EC80359EAE /* VerifyEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 422468FE765F778FFA19D99B /* VerifyEmailView.swift */; };
+		DE45AE7FF7AE016702DA2947 /* AuthHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1503E7E8AF27404D42D8BFE /* AuthHeaderView.swift */; };
 		DFB59B361167FA7CB08A35D7 /* InlineFeedbackSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B7459442EC30F9F9F0B026 /* InlineFeedbackSection.swift */; };
 		E032EBB36603A79CAF5D8137 /* PasswordValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AE8C9278DFC937D2147901 /* PasswordValidator.swift */; };
 		E2A8F5416CC0B22A888D717C /* SkillPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA6AC9B4CFBCA863AF51059 /* SkillPill.swift */; };
@@ -219,7 +221,7 @@
 		242F6C5B140576E7FF5E9C2E /* SessionParticipant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionParticipant.swift; sourceTree = "<group>"; };
 		287C4C99F51315693066BC38 /* MySportsFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySportsFilterTests.swift; sourceTree = "<group>"; };
 		2BFF6D330274A9993FEC935D /* UsernameValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameValidator.swift; sourceTree = "<group>"; };
-		2CA8AE43E1632088B2201AAC /* PickUpUCF.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PickUpUCF.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CA8AE43E1632088B2201AAC /* PickUpUCF.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PickUpUCF.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FE0A66607DA15D552BE39B6 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		2FEA5C6C56E7CA3C4380EAEE /* SessionRosterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRosterTests.swift; sourceTree = "<group>"; };
 		3011EF9C5B2A999899B9118A /* GameLiveActivitySelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLiveActivitySelection.swift; sourceTree = "<group>"; };
@@ -232,7 +234,8 @@
 		44BE22D41072211B62E6CABA /* NotificationPreferencesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPreferencesRepository.swift; sourceTree = "<group>"; };
 		46639F1C4419568BEE244DE4 /* SessionShareLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareLinkTests.swift; sourceTree = "<group>"; };
 		46FED4FBE447F638AA69D5AE /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
-		48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */ = {isa = PBXFileReference; path = Config.xcconfig.example; sourceTree = "<group>"; };
+		48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Config.xcconfig.example; sourceTree = "<group>"; };
+		4C8E1A92B7D0456F8E3A10C2 /* DiscoverMapZoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverMapZoomTests.swift; sourceTree = "<group>"; };
 		4F5FD253D340B1DE5C911072 /* CampusCoordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusCoordinates.swift; sourceTree = "<group>"; };
 		5209F76A09A9DB9F3595EC3B /* HostProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostProfileView.swift; sourceTree = "<group>"; };
 		5944DBA87E5CDE1F32730B1B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -288,7 +291,7 @@
 		9F21B57FD815D6D1FBCB999F /* SignInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInViewModel.swift; sourceTree = "<group>"; };
 		A0F3F402FEF950E41469F85C /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		A2916498357F8AAE26CA8B2C /* SessionDateFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDateFormatterTests.swift; sourceTree = "<group>"; };
-		A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PickUpUCFTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PickUpUCFTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3AE8C9278DFC937D2147901 /* PasswordValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordValidator.swift; sourceTree = "<group>"; };
 		A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationService.swift; sourceTree = "<group>"; };
 		A408CA646390784B9A3DD8B7 /* GameLiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLiveActivityManager.swift; sourceTree = "<group>"; };
@@ -296,8 +299,9 @@
 		AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickUpUCFApp.swift; sourceTree = "<group>"; };
 		AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRepository.swift; sourceTree = "<group>"; };
 		AC9F618E2A2DB3F105C80AAC /* TabBarItemBounce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarItemBounce.swift; sourceTree = "<group>"; };
-		AE9C534A6A70166FEAB9A938 /* PickUpUCFWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PickUpUCFWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE9C534A6A70166FEAB9A938 /* PickUpUCFWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PickUpUCFWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0B3B7BB32179124147A7E8C /* GameLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLiveActivityWidget.swift; sourceTree = "<group>"; };
+		B1503E7E8AF27404D42D8BFE /* AuthHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHeaderView.swift; sourceTree = "<group>"; };
 		B62E8779F4471C7B04CC3240 /* AppErrorMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppErrorMapperTests.swift; sourceTree = "<group>"; };
 		B9DB577456BB3A11721D3025 /* GameCardButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCardButtonStyle.swift; sourceTree = "<group>"; };
 		BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModelTests.swift; sourceTree = "<group>"; };
@@ -535,6 +539,7 @@
 				C4F2C2B22639B97D5A46716A /* CreateSessionStepValidationTests.swift */,
 				70EB985C2CDCB4DC5800231E /* DeviceTokenRepositoryTests.swift */,
 				21F9D123DE966788BAC4A5E8 /* DiscoverFilterTests.swift */,
+				4C8E1A92B7D0456F8E3A10C2 /* DiscoverMapZoomTests.swift */,
 				0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */,
 				DDD98CE295EC6087AD1C7ACE /* EmptyStateCTATests.swift */,
 				FFCD4DCC6D7117C57EF950C7 /* GameLiveActivitySelectionTests.swift */,
@@ -571,6 +576,7 @@
 		8368AD8E6DE34833E123594D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				B1503E7E8AF27404D42D8BFE /* AuthHeaderView.swift */,
 				8764062AA98B376D2606DF01 /* CapacityIndicator.swift */,
 				39E0BDA01A4374F3B41CF233 /* CollapsibleSectionHeader.swift */,
 				3D5B55FAA4BAE487C14D33EE /* CreateFlowProgressBar.swift */,
@@ -785,14 +791,6 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_33EF0CB8-19F8-472D-89EE-A58A6A75DA40" /* ios */ = {
-			isa = PBXGroup;
-			children = (
-				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
-			);
-			path = ios;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -860,7 +858,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					60A522ED59512D6AAA70817B = {
 						DevelopmentTeam = "";
@@ -915,6 +913,7 @@
 				BC2AF7D74E416D99689F8177 /* AppTheme.swift in Sources */,
 				CB2953FFC00998A4DCD1D9E3 /* AttendanceRepository.swift in Sources */,
 				EDF2ED66A840CFB60818DEF9 /* AttendanceSheet.swift in Sources */,
+				DE45AE7FF7AE016702DA2947 /* AuthHeaderView.swift in Sources */,
 				56355233DF9F844699DE82C4 /* AuthRepository.swift in Sources */,
 				E39DD70AE3DEC88A300D7DD6 /* AuthenticatedSessionCoordinator.swift in Sources */,
 				2AEF95D24EBD2445FAF4FC3E /* BlockRepository.swift in Sources */,
@@ -1050,6 +1049,7 @@
 				F05611CDAEA525A4EBC0523F /* CreateSessionStepValidationTests.swift in Sources */,
 				404366866A50EF6AB6EEF7A9 /* DeviceTokenRepositoryTests.swift in Sources */,
 				34BC530435959DBD8F476DDA /* DiscoverFilterTests.swift in Sources */,
+				9D2F6B18E4A073C5B8D14E90 /* DiscoverMapZoomTests.swift in Sources */,
 				A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */,
 				33710D43B60641BE29768CD1 /* EmptyStateCTATests.swift in Sources */,
 				0E9E0618B88A9A96ADE4050B /* GameLiveActivitySelectionTests.swift in Sources */,
@@ -1169,7 +1169,10 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCF/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup;
 				PRODUCT_NAME = PickUpUCF;
 				SDKROOT = iphoneos;
@@ -1189,7 +1192,10 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCF/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup;
 				PRODUCT_NAME = PickUpUCF;
 				SDKROOT = iphoneos;
@@ -1256,6 +1262,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1270,6 +1277,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -1314,6 +1322,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1335,6 +1344,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;

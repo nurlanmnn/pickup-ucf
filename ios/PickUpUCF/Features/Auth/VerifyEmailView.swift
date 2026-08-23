@@ -15,43 +15,71 @@ struct VerifyEmailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.l) {
-                Image(systemName: "envelope.badge")
-                    .font(.system(size: 56))
-                    .foregroundStyle(AppColor.gold)
+                // Gold envelope hero
+                envelopeHero
 
-                Text("Check your email")
-                    .font(AppFont.title())
+                // Body text
+                VStack(spacing: Spacing.s) {
+                    Text("Check your email")
+                        .font(AppFont.display(.bold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
 
-                Text("We sent a 6-digit code to **\(viewModel.email)**. Enter it below to verify your account.")
-                    .font(AppFont.body())
-                    .foregroundStyle(AppColor.textSecondary(colorScheme))
-                    .multilineTextAlignment(.center)
+                    Text("We sent a 6-digit code to")
+                        .font(AppFont.body())
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
 
-                Text("Codes expire after \(AppConfig.emailOTPExpiryDescription).")
-                    .font(AppFont.caption())
-                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    Text(viewModel.email)
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
 
+                    Text("Codes expire after \(AppConfig.emailOTPExpiryDescription).")
+                        .font(AppFont.caption())
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        .padding(.top, 2)
+                }
+                .multilineTextAlignment(.center)
+
+                // Feedback
                 if let errorMessage = viewModel.errorMessage {
                     ErrorBanner(message: errorMessage)
                 }
-
                 if let successMessage = viewModel.successMessage {
                     SuccessBanner(message: successMessage)
                 }
 
-                TextField("000000", text: $viewModel.otpCode)
-                    .keyboardType(.numberPad)
-                    .textContentType(.oneTimeCode)
-                    .multilineTextAlignment(.center)
-                    .font(.system(.title, design: .rounded).monospacedDigit().weight(.semibold))
-                    .padding(Spacing.m)
-                    .background(AppColor.elevatedSurface(colorScheme))
-                    .appCardStyle(cornerRadius: 14)
-                    .focused($isOTPFocused)
-                    .onChange(of: viewModel.otpCode) { _, newValue in
-                        viewModel.otpCode = viewModel.normalizeOTP(newValue)
-                    }
-                    .accessibilityLabel("Verification code")
+                // OTP field — prominent card
+                VStack(spacing: Spacing.s) {
+                    Text("Enter code")
+                        .font(AppFont.caption(.semibold))
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        .textCase(.uppercase)
+                        .tracking(0.6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    TextField("000000", text: $viewModel.otpCode)
+                        .keyboardType(.numberPad)
+                        .textContentType(.oneTimeCode)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 34, design: .rounded).monospacedDigit().weight(.bold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        .tracking(12)
+                        .padding(.vertical, Spacing.m)
+                        .frame(maxWidth: .infinity)
+                        .background(AppColor.elevatedSurface(colorScheme))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(
+                                    isOTPFocused ? AppColor.gold.opacity(0.60) : Color.clear,
+                                    lineWidth: 1.5
+                                )
+                        }
+                        .appCardStyle(cornerRadius: 16)
+                        .focused($isOTPFocused)
+                        .onChange(of: viewModel.otpCode) { _, newValue in
+                            viewModel.otpCode = viewModel.normalizeOTP(newValue)
+                        }
+                        .accessibilityLabel("Verification code")
+                }
 
                 PrimaryButton(
                     title: "Verify",
@@ -67,12 +95,13 @@ struct VerifyEmailView: View {
                 .disabled(!viewModel.canResend)
                 .opacity(viewModel.canResend ? 1 : 0.5)
             }
-            .padding(Spacing.l)
+            .padding(Spacing.m)
         }
         .appScreenBackground()
+        .toolbarBackground(.hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnBackgroundTap()
-        .navigationTitle("Verify email")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(onDone: { isOTPFocused = false })
@@ -83,6 +112,43 @@ struct VerifyEmailView: View {
         .onReceive(timer) { _ in
             viewModel.tickResendCooldown()
         }
+    }
+
+    private var envelopeHero: some View {
+        ZStack {
+            // Soft gold glow halo
+            Circle()
+                .fill(AppColor.gold.opacity(0.12))
+                .frame(width: 116, height: 116)
+
+            // Gold gradient circle
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [AppColor.gold, AppColor.goldDark],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 88, height: 88)
+
+            Image(systemName: "envelope.fill")
+                .font(.system(size: 38, weight: .medium))
+                .foregroundStyle(Color.black.opacity(0.65))
+        }
+        .overlay(
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        colors: [AppColor.gold, AppColor.gold.opacity(0.3)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 2.5
+                )
+                .frame(width: 94, height: 94)
+        )
+        .padding(.top, Spacing.m)
     }
 
     @MainActor

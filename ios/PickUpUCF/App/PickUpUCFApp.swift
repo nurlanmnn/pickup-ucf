@@ -66,6 +66,7 @@ final class AppState {
     var preferredColorScheme: ColorScheme?
     var bannerMessage: String?
     var bannerIsError = true
+    private var bannerDismissTask: Task<Void, Never>?
     /// Increment so Profile (and similar) can reload after account edits.
     private(set) var profileRefreshNonce = 0
     /// Increment so Discover / My Games reload after creating or editing sessions.
@@ -150,13 +151,25 @@ final class AppState {
         bannerIsError = true
     }
 
-    func showSuccess(_ message: String) {
+    func showSuccess(_ message: String, autoDismissAfter seconds: Double = 3) {
         bannerMessage = message
         bannerIsError = false
+        scheduleBannerDismiss(after: seconds)
     }
 
     func clearBanner() {
+        bannerDismissTask?.cancel()
+        bannerDismissTask = nil
         bannerMessage = nil
+    }
+
+    private func scheduleBannerDismiss(after seconds: Double) {
+        bannerDismissTask?.cancel()
+        bannerDismissTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled else { return }
+            bannerMessage = nil
+        }
     }
 }
 

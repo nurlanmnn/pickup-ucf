@@ -10,6 +10,8 @@ struct SignUpView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.m) {
+                AuthHeaderView(title: "Create Account")
+
                 InlineFeedbackSection(error: viewModel.errorMessage)
 
                 FormCard(footer: "Password must be at least 8 characters.") {
@@ -78,9 +80,10 @@ struct SignUpView: View {
             .padding(Spacing.m)
         }
         .appScreenBackground()
+        .toolbarBackground(.hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnBackgroundTap()
-        .navigationTitle("Sign Up")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(

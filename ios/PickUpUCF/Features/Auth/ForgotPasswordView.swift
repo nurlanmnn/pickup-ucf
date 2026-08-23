@@ -13,6 +13,11 @@ struct ForgotPasswordView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.m) {
+                AuthHeaderView(
+                    title: "Reset Password",
+                    subtitle: "Enter your UCF email and we'll send a reset link."
+                )
+
                 InlineFeedbackSection(error: errorMessage)
 
                 if didSend {
@@ -46,9 +51,10 @@ struct ForgotPasswordView: View {
             .padding(Spacing.m)
         }
         .appScreenBackground()
+        .toolbarBackground(.hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnBackgroundTap()
-        .navigationTitle("Forgot password")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(onDone: { isEmailFocused = false })

@@ -10,6 +10,8 @@ struct SignInView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.m) {
+                AuthHeaderView(title: "Sign In")
+
                 InlineFeedbackSection(error: viewModel.errorMessage)
 
                 FormCard(footer: "Use your @knights.ucf.edu or @ucf.edu address.") {
@@ -50,9 +52,10 @@ struct SignInView: View {
             .padding(Spacing.m)
         }
         .appScreenBackground()
+        .toolbarBackground(.hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnBackgroundTap()
-        .navigationTitle("Sign In")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             FormKeyboardToolbar(
