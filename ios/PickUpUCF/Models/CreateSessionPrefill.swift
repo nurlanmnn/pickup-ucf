@@ -77,7 +77,7 @@ struct CreateSessionPrefill: Equatable {
     ) -> Date {
         let proposed = calendar.date(byAdding: .day, value: 7, to: sourceStartsAt) ?? sourceStartsAt
         let minimum = now.addingTimeInterval(60)
-        let maximum = calendar.date(byAdding: .hour, value: 48, to: now) ?? now
+        let maximum = calendar.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: now) ?? now
         return min(max(proposed, minimum), maximum)
     }
 }

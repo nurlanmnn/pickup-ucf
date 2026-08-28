@@ -23,8 +23,8 @@ struct CreateSessionSportTimeStep: View {
 
     private var startsAtAllowedRange: ClosedRange<Date> {
         let start = Date()
-        let end = Calendar.current.date(byAdding: .hour, value: 48, to: start)
-            ?? start.addingTimeInterval(48 * 3600)
+        let end = Calendar.current.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: start)
+            ?? start.addingTimeInterval(Double(AppConfig.sessionScheduleWindowHours) * 3600)
         return start...end
     }
 

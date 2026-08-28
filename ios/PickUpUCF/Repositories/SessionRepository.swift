@@ -431,7 +431,7 @@ enum SessionRepositoryError: LocalizedError {
         case .customLocationPinRequired:
             return "Search on the map and choose where you're playing."
         case .scheduleTooFarAhead:
-            return "Sessions can only be scheduled up to 48 hours ahead."
+            return "Sessions can only be scheduled up to 7 days ahead."
         case .scheduleInPast:
             return "Start time must be in the future."
         case .capacityBelowSignups:

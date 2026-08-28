@@ -62,7 +62,7 @@ final class CreateSessionPrefillTests: XCTestCase {
             now: now,
             calendar: calendar
         )
-        let maxAllowed = calendar.date(byAdding: .hour, value: 48, to: now)!
+        let maxAllowed = calendar.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: now)!
         XCTAssertEqual(clamped, maxAllowed)
     }
 }

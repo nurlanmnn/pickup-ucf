@@ -174,23 +174,7 @@ final class EditSessionViewModel {
         commitDurationFromText()
         commitCapacityFromText()
 
-        if capacity < minimumCapacity {
-            errorMessage = SessionRepositoryError.capacityBelowSignups.localizedDescription
-            return nil
-        }
-
-        if let scheduleError = validateSchedule() {
-            errorMessage = scheduleError
-            return nil
-        }
-        if selectedVenueId == nil && customLocationSelection == nil {
-            errorMessage = SessionRepositoryError.customLocationPinRequired.localizedDescription
-            return nil
-        }
-        if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errorMessage = SessionRepositoryError.customSportNameRequired.localizedDescription
-            return nil
-        }
+        guard canSubmit else { return nil }
 
         isLoading = true
         defer { isLoading = false }
@@ -269,7 +253,7 @@ final class EditSessionViewModel {
         if startsAt <= .now {
             return SessionRepositoryError.scheduleInPast.localizedDescription
         }
-        let windowEnd = Calendar.current.date(byAdding: .hour, value: 48, to: .now) ?? .now
+        let windowEnd = Calendar.current.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: .now) ?? .now
         if startsAt > windowEnd {
             return SessionRepositoryError.scheduleTooFarAhead.localizedDescription
         }

@@ -59,6 +59,10 @@ struct CreateSessionView: View {
                         performScroll(to: anchor, proxy: proxy)
                     }
                 }
+                .onChange(of: viewModel.showsCustomLocationField) { _, shows in
+                    guard shows else { return }
+                    scrollToAnchor = .customLocationMap
+                }
             }
 
             bottomBar(vm: vm)

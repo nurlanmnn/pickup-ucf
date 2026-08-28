@@ -36,11 +36,7 @@ struct ForgotPasswordView: View {
                             .onSubmit { Task { await sendReset() } }
                     }
                     if showValidationHints, let hint = EmailDomainValidator.validationMessage(for: email) {
-                        Text(hint)
-                            .font(AppFont.caption())
-                            .foregroundStyle(AppColor.destructive)
-                            .padding(.horizontal, Spacing.m)
-                            .padding(.bottom, Spacing.xs)
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
                 }
 
@@ -66,8 +62,7 @@ struct ForgotPasswordView: View {
         errorMessage = nil
         showValidationHints = true
         isEmailFocused = false
-        if let err = EmailDomainValidator.validationMessage(for: email) {
-            errorMessage = err
+        if EmailDomainValidator.validationMessage(for: email) != nil {
             return
         }
         isLoading = true

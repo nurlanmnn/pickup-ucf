@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Standard form feedback: show validation/API errors and optional success copy.
+/// Form-level API/server errors and optional success copy.
+/// Field validation belongs next to the field (`FieldErrorLabel`), not here.
 struct InlineFeedbackSection: View {
     var error: String?
     var success: String?

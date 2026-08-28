@@ -31,8 +31,7 @@ final class EditUsernameViewModel {
         errorMessage = nil
         successMessage = nil
 
-        if let validationError = UsernameValidator.validationMessage(for: username) {
-            errorMessage = validationError
+        if UsernameValidator.validationMessage(for: username) != nil {
             return false
         }
 

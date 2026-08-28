@@ -26,15 +26,7 @@ final class ChangePasswordViewModel {
     func updatePassword(email: String) async {
         errorMessage = nil
         didSucceed = false
-
-        if let passwordError = PasswordValidator.validationMessage(for: newPassword) {
-            errorMessage = passwordError
-            return
-        }
-        if let confirmError = PasswordValidator.confirmationMessage(password: newPassword, confirm: confirmPassword) {
-            errorMessage = confirmError
-            return
-        }
+        guard canSubmit else { return }
 
         isLoading = true
         defer { isLoading = false }

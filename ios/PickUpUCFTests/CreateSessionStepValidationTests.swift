@@ -60,7 +60,7 @@ final class CreateSessionStepValidationTests: XCTestCase {
         XCTAssertGreaterThan(twoHours, now)
 
         let tomorrowNine = CreateSessionViewModel.tomorrowAtNineAM(from: now, calendar: calendar)
-        let maxAllowed = calendar.date(byAdding: .hour, value: 48, to: now)!
+        let maxAllowed = calendar.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: now)!
         XCTAssertLessThanOrEqual(tomorrowNine, maxAllowed)
     }
 

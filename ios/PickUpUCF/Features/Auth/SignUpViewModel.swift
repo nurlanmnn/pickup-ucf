@@ -27,24 +27,7 @@ final class SignUpViewModel {
     @MainActor
     func signUp() async {
         errorMessage = nil
-
-        let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedName.isEmpty {
-            errorMessage = "Display name is required"
-            return
-        }
-        if let emailError = EmailDomainValidator.validationMessage(for: email) {
-            errorMessage = emailError
-            return
-        }
-        if let passwordError = PasswordValidator.validationMessage(for: password) {
-            errorMessage = passwordError
-            return
-        }
-        if let confirmError = PasswordValidator.confirmationMessage(password: password, confirm: confirmPassword) {
-            errorMessage = confirmError
-            return
-        }
+        guard canSubmit else { return }
 
         isLoading = true
         defer { isLoading = false }

@@ -9,4 +9,10 @@ struct FieldErrorLabel: View {
             .foregroundStyle(AppColor.destructive)
             .accessibilityLabel("Error: \(message)")
     }
+
+    /// Inset to match `FormFieldRow` padding inside a `FormCard`.
+    func formCardInset() -> some View {
+        padding(.horizontal, Spacing.m)
+            .padding(.bottom, Spacing.xs)
+    }
 }

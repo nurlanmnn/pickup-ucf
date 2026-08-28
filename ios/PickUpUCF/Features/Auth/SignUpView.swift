@@ -14,7 +14,7 @@ struct SignUpView: View {
 
                 InlineFeedbackSection(error: viewModel.errorMessage)
 
-                FormCard(footer: "Password must be at least 8 characters.") {
+                FormCard(footer: passwordFooter) {
                     FormFieldRow {
                         TextField("Display name", text: $viewModel.displayName)
                             .textContentType(.name)
@@ -23,7 +23,7 @@ struct SignUpView: View {
                             .onSubmit { focusedField = .email }
                     }
                     if showFieldHints, let hint = displayNameHint {
-                        fieldHint(hint)
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
 
                     Divider().padding(.leading, Spacing.m)
@@ -39,7 +39,7 @@ struct SignUpView: View {
                             .onSubmit { focusedField = .password }
                     }
                     if showFieldHints, let hint = emailHint {
-                        fieldHint(hint)
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
 
                     Divider().padding(.leading, Spacing.m)
@@ -52,7 +52,7 @@ struct SignUpView: View {
                             .onSubmit { focusedField = .confirm }
                     }
                     if showFieldHints, let hint = passwordHint {
-                        fieldHint(hint)
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
 
                     Divider().padding(.leading, Spacing.m)
@@ -65,7 +65,7 @@ struct SignUpView: View {
                             .onSubmit { focusedField = nil; Task { await submit() } }
                     }
                     if showFieldHints, let hint = confirmHint {
-                        fieldHint(hint)
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
                 }
 
@@ -102,12 +102,8 @@ struct SignUpView: View {
         }
     }
 
-    private func fieldHint(_ message: String) -> some View {
-        Text(message)
-            .font(AppFont.caption())
-            .foregroundStyle(AppColor.destructive)
-            .padding(.horizontal, Spacing.m)
-            .padding(.bottom, Spacing.xs)
+    private var passwordFooter: String? {
+        showFieldHints && passwordHint != nil ? nil : "Password must be at least 8 characters."
     }
 
     private var displayNameHint: String? {

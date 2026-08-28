@@ -4,6 +4,7 @@ enum CreateSessionScrollAnchor: String, Hashable {
     case sport
     case schedule
     case location
+    case customLocationMap
 }
 
 enum CreateSessionStep: Int, CaseIterable, Identifiable {

@@ -4,6 +4,9 @@ enum AppConfig {
     /// Keep in sync with Supabase Auth → Email → OTP expiration (300 seconds).
     static let emailOTPExpirySeconds = 300
 
+    /// How far ahead a session can be scheduled (in hours).
+    static let sessionScheduleWindowHours = 168  // 7 days
+
     static var emailOTPExpiryDescription: String {
         let minutes = emailOTPExpirySeconds / 60
         return minutes == 1 ? "1 minute" : "\(minutes) minutes"

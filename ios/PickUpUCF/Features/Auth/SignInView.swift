@@ -3,6 +3,7 @@ import SwiftUI
 struct SignInView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = SignInViewModel()
+    @State private var showFieldHints = false
     @FocusState private var focusedField: Field?
 
     private enum Field: Hashable { case email, password }
@@ -14,7 +15,7 @@ struct SignInView: View {
 
                 InlineFeedbackSection(error: viewModel.errorMessage)
 
-                FormCard(footer: "Use your @knights.ucf.edu or @ucf.edu address.") {
+                FormCard(footer: emailFooter) {
                     FormFieldRow {
                         TextField("UCF email", text: $viewModel.email)
                             .textContentType(.emailAddress)
@@ -25,13 +26,19 @@ struct SignInView: View {
                             .submitLabel(.next)
                             .onSubmit { focusedField = .password }
                     }
+                    if showFieldHints, let hint = EmailDomainValidator.validationMessage(for: viewModel.email) {
+                        FieldErrorLabel(message: hint).formCardInset()
+                    }
                     Divider().padding(.leading, Spacing.m)
                     FormFieldRow {
                         SecureField("Password", text: $viewModel.password)
                             .textContentType(.password)
                             .focused($focusedField, equals: .password)
                             .submitLabel(.go)
-                            .onSubmit { Task { await viewModel.signIn(appState: appState) } }
+                            .onSubmit { Task { await submit() } }
+                    }
+                    if showFieldHints, viewModel.password.isEmpty {
+                        FieldErrorLabel(message: "Password is required").formCardInset()
                     }
                 }
 
@@ -40,7 +47,7 @@ struct SignInView: View {
                     isLoading: viewModel.isLoading,
                     isEnabled: !viewModel.isLoading
                 ) {
-                    Task { await viewModel.signIn(appState: appState) }
+                    Task { await submit() }
                 }
 
                 NavigationLink { ForgotPasswordView() } label: {
@@ -72,6 +79,19 @@ struct SignInView: View {
         )) {
             VerifyEmailView(email: viewModel.email)
         }
+    }
+
+    private var emailFooter: String? {
+        showFieldHints && EmailDomainValidator.validationMessage(for: viewModel.email) != nil
+            ? nil
+            : "Use your @knights.ucf.edu or @ucf.edu address."
+    }
+
+    @MainActor
+    private func submit() async {
+        showFieldHints = true
+        focusedField = nil
+        await viewModel.signIn(appState: appState)
     }
 }
 

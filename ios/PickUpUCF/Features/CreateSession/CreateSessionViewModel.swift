@@ -339,22 +339,7 @@ final class CreateSessionViewModel {
         commitDurationFromText()
         commitCapacityFromText()
 
-        let issues = validationIssues()
-        if !issues.isEmpty {
-            errorMessage = issues.count == 1
-                ? issues[0]
-                : "Please complete the following:\n" + issues.map { "• \($0)" }.joined(separator: "\n")
-            UINotificationFeedbackGenerator().notificationOccurred(.error)
-            return nil
-        }
-
-        if selectedVenueId == nil && customLocationSelection == nil {
-            errorMessage = SessionRepositoryError.customLocationPinRequired.localizedDescription
-            UINotificationFeedbackGenerator().notificationOccurred(.error)
-            return nil
-        }
-        if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            errorMessage = SessionRepositoryError.customSportNameRequired.localizedDescription
+        if !validationIssues().isEmpty {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
             return nil
         }
@@ -423,7 +408,7 @@ final class CreateSessionViewModel {
 
     static func clampedStartsAt(from date: Date, now: Date, calendar: Calendar) -> Date {
         let minimum = now.addingTimeInterval(60)
-        let maximum = calendar.date(byAdding: .hour, value: 48, to: now) ?? now
+        let maximum = calendar.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: now) ?? now
         return min(max(date, minimum), maximum)
     }
 
@@ -447,7 +432,7 @@ final class CreateSessionViewModel {
         if startsAt <= .now {
             return SessionRepositoryError.scheduleInPast.localizedDescription
         }
-        let windowEnd = Calendar.current.date(byAdding: .hour, value: 48, to: .now) ?? .now
+        let windowEnd = Calendar.current.date(byAdding: .hour, value: AppConfig.sessionScheduleWindowHours, to: .now) ?? .now
         if startsAt > windowEnd {
             return SessionRepositoryError.scheduleTooFarAhead.localizedDescription
         }

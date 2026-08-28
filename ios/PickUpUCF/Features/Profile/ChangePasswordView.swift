@@ -3,6 +3,7 @@ import SwiftUI
 struct ChangePasswordView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = ChangePasswordViewModel()
+    @State private var showFieldHints = false
     @FocusState private var focusedField: Field?
 
     private enum Field: Hashable { case current, new, confirm }
@@ -21,11 +22,17 @@ struct ChangePasswordView: View {
                             .textContentType(.password)
                             .focused($focusedField, equals: .current)
                     }
+                    if showFieldHints, viewModel.currentPassword.isEmpty {
+                        FieldErrorLabel(message: "Current password is required").formCardInset()
+                    }
                     Divider().padding(.leading, Spacing.m)
                     FormFieldRow {
                         SecureField("New password", text: $viewModel.newPassword)
                             .textContentType(.newPassword)
                             .focused($focusedField, equals: .new)
+                    }
+                    if showFieldHints, let hint = PasswordValidator.validationMessage(for: viewModel.newPassword) {
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
                     Divider().padding(.leading, Spacing.m)
                     FormFieldRow {
@@ -33,12 +40,11 @@ struct ChangePasswordView: View {
                             .textContentType(.newPassword)
                             .focused($focusedField, equals: .confirm)
                     }
-                    if let hint = PasswordValidator.validationMessage(for: viewModel.newPassword) {
-                        Text(hint)
-                            .font(AppFont.caption())
-                            .foregroundStyle(AppColor.destructive)
-                            .padding(.horizontal, Spacing.m)
-                            .padding(.bottom, Spacing.xs)
+                    if showFieldHints, let hint = PasswordValidator.confirmationMessage(
+                        password: viewModel.newPassword,
+                        confirm: viewModel.confirmPassword
+                    ) {
+                        FieldErrorLabel(message: hint).formCardInset()
                     }
                 }
 
@@ -75,6 +81,7 @@ struct ChangePasswordView: View {
             return
         }
         focusedField = nil
+        showFieldHints = true
         await viewModel.updatePassword(email: email)
     }
 

@@ -29,11 +29,7 @@ final class SignInViewModel {
     func signIn(appState: AppState) async {
         errorMessage = nil
         needsEmailVerification = false
-
-        if let emailError = EmailDomainValidator.validationMessage(for: email) {
-            errorMessage = emailError
-            return
-        }
+        guard canSubmit else { return }
 
         isLoading = true
         defer { isLoading = false }

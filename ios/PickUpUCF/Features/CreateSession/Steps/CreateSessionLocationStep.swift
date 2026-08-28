@@ -42,6 +42,7 @@ struct CreateSessionLocationStep: View {
                     .frame(height: 360)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
+                .id(CreateSessionScrollAnchor.customLocationMap)
             } else if let venueId = viewModel.selectedVenueId,
                       let venue = viewModel.venues.first(where: { $0.id == venueId }) {
                 selectedVenueSummary(venue)

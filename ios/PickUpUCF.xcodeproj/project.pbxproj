@@ -110,6 +110,7 @@
 		9B364341B2297A924B66E20A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6849B06D30B12DF30371DC /* RootView.swift */; };
 		9B62B1AA95C38FE416E5B6F5 /* DiscoverTimeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */; };
 		9D2F6B18E4A073C5B8D14E90 /* DiscoverMapZoomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8E1A92B7D0456F8E3A10C2 /* DiscoverMapZoomTests.swift */; };
+		4F8A2C1E9D6B4A70B3E5C917 /* FormValidationFeedbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D4E8A2B9F6035D1A7C4E8 /* FormValidationFeedbackTests.swift */; };
 		9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */; };
 		A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
@@ -313,6 +314,7 @@
 		C308462F40BE323DAE136D94 /* VerifyEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyEmailViewModel.swift; sourceTree = "<group>"; };
 		C45AB7447F8A2EB3FAB2814C /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		C473979ACD862ECDE952298B /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		7C1D4E8A2B9F6035D1A7C4E8 /* FormValidationFeedbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormValidationFeedbackTests.swift; sourceTree = "<group>"; };
 		C4F2C2B22639B97D5A46716A /* CreateSessionStepValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionStepValidationTests.swift; sourceTree = "<group>"; };
 		C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C75CED8901BA2E4A48CEADEE /* KeyboardDismissModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardDismissModifier.swift; sourceTree = "<group>"; };
@@ -542,6 +544,7 @@
 				4C8E1A92B7D0456F8E3A10C2 /* DiscoverMapZoomTests.swift */,
 				0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */,
 				DDD98CE295EC6087AD1C7ACE /* EmptyStateCTATests.swift */,
+				7C1D4E8A2B9F6035D1A7C4E8 /* FormValidationFeedbackTests.swift */,
 				FFCD4DCC6D7117C57EF950C7 /* GameLiveActivitySelectionTests.swift */,
 				287C4C99F51315693066BC38 /* MySportsFilterTests.swift */,
 				336569D4B245D5DB651AF88A /* NotificationPreferencesTests.swift */,
@@ -1052,6 +1055,7 @@
 				9D2F6B18E4A073C5B8D14E90 /* DiscoverMapZoomTests.swift in Sources */,
 				A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */,
 				33710D43B60641BE29768CD1 /* EmptyStateCTATests.swift in Sources */,
+				4F8A2C1E9D6B4A70B3E5C917 /* FormValidationFeedbackTests.swift in Sources */,
 				0E9E0618B88A9A96ADE4050B /* GameLiveActivitySelectionTests.swift in Sources */,
 				DAB745C7C3093E430EB7AC1C /* MySportsFilterTests.swift in Sources */,
 				E4298C1A219AE166C53E63BB /* NotificationPreferencesTests.swift in Sources */,
