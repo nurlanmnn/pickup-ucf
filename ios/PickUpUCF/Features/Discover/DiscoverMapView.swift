@@ -1,3 +1,4 @@
+import CoreLocation
 import MapKit
 import SwiftUI
 import UIKit
@@ -38,6 +39,109 @@ enum DiscoverMapZoom {
     }
 }
 
+// MARK: - Location controller
+// Requests "when in use" permission only on the first button tap, then pans to
+// the user's location. Holds a weak reference to MKMapView to avoid retaining it.
+
+@Observable
+final class DiscoverMapLocationController: NSObject, CLLocationManagerDelegate {
+    private let locationManager = CLLocationManager()
+    private(set) var authorizationStatus: CLAuthorizationStatus
+    private(set) var isLocating = false
+    weak var mapView: MKMapView?
+
+    override init() {
+        authorizationStatus = CLLocationManager().authorizationStatus
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    var isDenied: Bool {
+        authorizationStatus == .denied || authorizationStatus == .restricted
+    }
+
+    /// True while the map is showing the user's location (tap again to return to campus).
+    private(set) var isCenteredOnUser = false
+
+    func handleButtonTap() {
+        if isCenteredOnUser {
+            centerOnCampus()
+        } else {
+            centerOnUserLocation()
+        }
+    }
+
+    func centerOnCampus() {
+        isCenteredOnUser = false
+        mapView?.setRegion(DiscoverMapZoom.defaultRegion, animated: true)
+    }
+
+    private func centerOnUserLocation() {
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            isLocating = true
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse, .authorizedAlways:
+            panToUserLocation()
+        case .denied, .restricted:
+            break
+        @unknown default:
+            break
+        }
+    }
+
+    private func panToUserLocation() {
+        guard let location = locationManager.location else {
+            isLocating = true
+            locationManager.requestLocation()
+            return
+        }
+        animateToLocation(location)
+    }
+
+    private func animateToLocation(_ location: CLLocation) {
+        isLocating = false
+        isCenteredOnUser = true
+        mapView?.showsUserLocation = true
+        let region = MKCoordinateRegion(center: location.coordinate, span: DiscoverMapZoom.defaultSpan)
+        mapView?.setRegion(region, animated: true)
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationStatus = manager.authorizationStatus
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            mapView?.showsUserLocation = true
+            if isLocating { panToUserLocation() }
+        case .denied, .restricted:
+            isLocating = false
+        default:
+            break
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        animateToLocation(location)
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        isLocating = false
+    }
+
+    /// Called by the map delegate on every region change.
+    /// Non-animated changes are user-initiated (pan/pinch or zoom button), so we
+    /// un-track the user's location. Animated changes come from our own setRegion
+    /// calls and should be ignored — the state was already set correctly before
+    /// the setRegion call.
+    func mapRegionChanged(animated: Bool) {
+        if !animated {
+            isCenteredOnUser = false
+        }
+    }
+}
+
 // MARK: - Zoom controller
 // Holds a direct weak reference to the MKMapView so button taps call
 // setRegion(animated:false) directly — no SwiftUI state round-trip, no race.
@@ -52,14 +156,21 @@ final class DiscoverMapZoomController {
         guard let mapView else { return }
         let next = DiscoverMapZoom.zoomed(mapView.region, factor: DiscoverMapZoom.inFactor)
         mapView.setRegion(next, animated: false)
-        updateState(span: next.span)
+        let span = next.span
+        updateState(span: span)
+        // MKMapView fires regionDidChangeAnimated a second time asynchronously after
+        // setRegion(animated:false). Queue a correction on the main queue so it
+        // always runs after that stale callback, ensuring the right button state wins.
+        DispatchQueue.main.async { [weak self] in self?.updateState(span: span) }
     }
 
     func zoomOut() {
         guard let mapView else { return }
         let next = DiscoverMapZoom.zoomed(mapView.region, factor: DiscoverMapZoom.outFactor)
         mapView.setRegion(next, animated: false)
-        updateState(span: next.span)
+        let span = next.span
+        updateState(span: span)
+        DispatchQueue.main.async { [weak self] in self?.updateState(span: span) }
     }
 
     func regionChanged(_ region: MKCoordinateRegion) {
@@ -134,6 +245,7 @@ private struct DiscoverMapRepresentable: UIViewRepresentable {
     let annotations: [SessionMapAnnotation]
     let onSelectSession: (UUID) -> Void
     let zoomController: DiscoverMapZoomController
+    let locationController: DiscoverMapLocationController
 
     func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
 
@@ -146,6 +258,7 @@ private struct DiscoverMapRepresentable: UIViewRepresentable {
         mapView.register(MKAnnotationView.self, forAnnotationViewWithReuseIdentifier: "session-pin")
         mapView.setRegion(DiscoverMapZoom.defaultRegion, animated: false)
         zoomController.mapView = mapView
+        locationController.mapView = mapView
         context.coordinator.syncAnnotations(on: mapView, with: annotations)
         return mapView
     }
@@ -153,6 +266,7 @@ private struct DiscoverMapRepresentable: UIViewRepresentable {
     func updateUIView(_ mapView: MKMapView, context: Context) {
         context.coordinator.parent = self
         zoomController.mapView = mapView
+        locationController.mapView = mapView
         context.coordinator.syncAnnotations(on: mapView, with: annotations)
     }
 
@@ -197,6 +311,7 @@ private struct DiscoverMapRepresentable: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             parent.zoomController.regionChanged(mapView.region)
+            parent.locationController.mapRegionChanged(animated: animated)
         }
     }
 }
@@ -209,6 +324,7 @@ struct DiscoverMapView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var zoom = DiscoverMapZoomController()
+    @State private var location = DiscoverMapLocationController()
 
     private var annotations: [SessionMapAnnotation] {
         sessions.compactMap(SessionMapAnnotation.init)
@@ -218,7 +334,8 @@ struct DiscoverMapView: View {
         DiscoverMapRepresentable(
             annotations: annotations,
             onSelectSession: onSelectSession,
-            zoomController: zoom
+            zoomController: zoom,
+            locationController: location
         )
         .accessibilityLabel("Discover sessions map")
         .overlay(alignment: .top) {
@@ -236,6 +353,12 @@ struct DiscoverMapView: View {
             zoomControls
                 .padding(Spacing.s)
         }
+        .overlay(alignment: .bottomTrailing) {
+            if !location.isDenied {
+                myLocationButton
+                    .padding(Spacing.s)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
@@ -250,6 +373,32 @@ struct DiscoverMapView: View {
             }
         }
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private var myLocationButton: some View {
+        Button {
+            location.handleButtonTap()
+        } label: {
+            Group {
+                if location.isLocating {
+                    ProgressView()
+                        .tint(AppColor.textPrimary(colorScheme))
+                        .scaleEffect(0.75)
+                } else {
+                    Image(systemName: location.isCenteredOnUser ? "location.fill" : "location")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(
+                            location.isCenteredOnUser
+                                ? AppColor.gold
+                                : AppColor.textPrimary(colorScheme)
+                        )
+                }
+            }
+            .frame(width: 36, height: 36)
+        }
+        .buttonStyle(.plain)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityLabel(location.isCenteredOnUser ? "Return to campus" : "Center on my location")
     }
 
     private func zoomButton(

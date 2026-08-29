@@ -52,6 +52,7 @@ targets:
         UIBackgroundModes:
           - remote-notification
         NSCalendarsFullAccessUsageDescription: Add PickUp UCF games to your calendar so you do not miss them.
+        NSLocationWhenInUseUsageDescription: Show your position on the campus map so you can find nearby courts and fields.
         NSSupportsLiveActivities: true
     settings:
       base:

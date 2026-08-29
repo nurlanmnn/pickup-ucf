@@ -157,39 +157,23 @@ struct HostProfileView: View {
     // MARK: - Hero
 
     private func heroHeader(_ profile: Profile) -> some View {
-        ZStack(alignment: .bottom) {
-            // Gold gradient band — bleeds into the nav bar area
-            LinearGradient(
-                colors: [
-                    AppColor.gold.opacity(colorScheme == .dark ? 0.28 : 0.20),
-                    AppColor.gold.opacity(0.06),
-                    Color.clear,
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 240)
-            .ignoresSafeArea(edges: .top)
+        VStack(spacing: Spacing.s) {
+            avatarView
+                .padding(.top, Spacing.l)
 
-            VStack(spacing: Spacing.s) {
-                avatarView
-                    .padding(.top, Spacing.xl + Spacing.m)
+            VStack(spacing: 4) {
+                Text(profile.displayName)
+                    .font(AppFont.title(.bold))
+                    .foregroundStyle(AppColor.textPrimary(colorScheme))
 
-                VStack(spacing: 4) {
-                    Text(profile.displayName)
-                        .font(AppFont.title(.bold))
-                        .foregroundStyle(AppColor.textPrimary(colorScheme))
-
-                    if let username = profile.username, !username.isEmpty {
-                        Text("@\(username)")
-                            .font(AppFont.caption(.regular))
-                            .foregroundStyle(AppColor.textSecondary(colorScheme))
-                    }
+                if let username = profile.username, !username.isEmpty {
+                    Text("@\(username)")
+                        .font(AppFont.caption(.regular))
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
                 }
             }
-            .padding(.bottom, Spacing.l)
         }
+        .padding(.bottom, Spacing.l)
     }
 
     private var avatarView: some View {

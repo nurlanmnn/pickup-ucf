@@ -91,6 +91,22 @@ final class DiscoverViewModel {
         filteredSessions.filter { $0.startsAt > referenceDate }
     }
 
+    /// True when the feed likely truncated at the server cap and the user can still see games.
+    static func shouldShowSessionListCapHint(
+        loadedCount: Int,
+        visibleCount: Int,
+        searchText: String
+    ) -> Bool {
+        let hasSearch = !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return visibleCount > 0
+            && !hasSearch
+            && loadedCount >= AppPagination.discoverSessions
+    }
+
+    static var sessionListCapHint: String {
+        "Showing the next \(AppPagination.discoverSessions). Narrow sport, venue, or time to see more."
+    }
+
     func hostNudgeCTATitle() -> String {
         Self.hostNudgeCTATitle(filterMode: filterMode)
     }

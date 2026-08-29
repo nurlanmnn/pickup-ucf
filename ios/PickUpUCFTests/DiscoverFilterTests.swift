@@ -30,6 +30,63 @@ final class DiscoverFilterTests: XCTestCase {
         XCTAssertFalse(DiscoverTimeWindow.next48h.contains(outsideWindow, relativeTo: now, calendar: calendar))
     }
 
+    func testSessionListCapHintShowsWhenLoadedCountHitsCap() {
+        XCTAssertTrue(
+            DiscoverViewModel.shouldShowSessionListCapHint(
+                loadedCount: AppPagination.discoverSessions,
+                visibleCount: AppPagination.discoverSessions,
+                searchText: ""
+            )
+        )
+    }
+
+    func testSessionListCapHintHidesWhenUnderCap() {
+        XCTAssertFalse(
+            DiscoverViewModel.shouldShowSessionListCapHint(
+                loadedCount: AppPagination.discoverSessions - 1,
+                visibleCount: AppPagination.discoverSessions - 1,
+                searchText: ""
+            )
+        )
+    }
+
+    func testSessionListCapHintHidesWhenSearchIsActive() {
+        XCTAssertFalse(
+            DiscoverViewModel.shouldShowSessionListCapHint(
+                loadedCount: AppPagination.discoverSessions,
+                visibleCount: 3,
+                searchText: "cornhole"
+            )
+        )
+    }
+
+    func testSessionListCapHintTreatsWhitespaceOnlySearchAsEmpty() {
+        XCTAssertTrue(
+            DiscoverViewModel.shouldShowSessionListCapHint(
+                loadedCount: AppPagination.discoverSessions,
+                visibleCount: AppPagination.discoverSessions,
+                searchText: "   "
+            )
+        )
+    }
+
+    func testSessionListCapHintHidesWhenVisibleListIsEmpty() {
+        XCTAssertFalse(
+            DiscoverViewModel.shouldShowSessionListCapHint(
+                loadedCount: AppPagination.discoverSessions,
+                visibleCount: 0,
+                searchText: ""
+            )
+        )
+    }
+
+    func testSessionListCapHintCopyUsesTheCap() {
+        XCTAssertEqual(
+            DiscoverViewModel.sessionListCapHint,
+            "Showing the next \(AppPagination.discoverSessions). Narrow sport, venue, or time to see more."
+        )
+    }
+
     private func makeDate(year: Int, month: Int, day: Int, hour: Int) -> Date {
         let components = DateComponents(
             timeZone: calendar.timeZone,
