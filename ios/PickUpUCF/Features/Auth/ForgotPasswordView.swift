@@ -52,9 +52,10 @@ struct ForgotPasswordView: View {
         .dismissKeyboardOnBackgroundTap()
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(onDone: { isEmailFocused = false })
-        }
+        .formKeyboardAccessory(
+            isPresented: isEmailFocused,
+            onDone: { isEmailFocused = false }
+        )
     }
 
     @MainActor

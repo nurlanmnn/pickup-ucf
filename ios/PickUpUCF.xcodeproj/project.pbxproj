@@ -84,6 +84,7 @@
 		7095F1C98411BF3151328AE4 /* SessionShareLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */; };
 		7202C24BA906B380309326E4 /* KeyboardDismissModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75CED8901BA2E4A48CEADEE /* KeyboardDismissModifier.swift */; };
 		75A1B1A5547F9E76CF7A4709 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDD638A2E846A09877D74408 /* WidgetKit.framework */; };
+		763788104B50FF4A977A49FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03C1C082E8ACFBADC6C40DA4 /* Assets.xcassets */; };
 		7A582498F386222022E1BF27 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4B447A16D974D9AB5144F5E /* ActivityKit.framework */; };
 		7A6D0DCE6D8240074801BB12 /* UsernameValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BFF6D330274A9993FEC935D /* UsernameValidator.swift */; };
 		7C3A380853BF93690359C51F /* DiscoverViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04E5490F2ED62B2EBD79A24 /* DiscoverViewModel.swift */; };
@@ -206,6 +207,7 @@
 
 /* Begin PBXFileReference section */
 		02F173A691B4304565EB4F3F /* CreateSessionSportTimeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionSportTimeStep.swift; sourceTree = "<group>"; };
+		03C1C082E8ACFBADC6C40DA4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPreferredSportsViewModelTests.swift; sourceTree = "<group>"; };
 		11469B5CBFCFEE7B515C49F1 /* CreateSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionView.swift; sourceTree = "<group>"; };
 		1361D112819B3647AC788DA8 /* ErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorBanner.swift; sourceTree = "<group>"; };
@@ -273,6 +275,7 @@
 		8B71AB4257B8B7D0256A1058 /* CalendarExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarExportService.swift; sourceTree = "<group>"; };
 		8B72DA0E9AB058F0F8C9355F /* DeepLinkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkRouter.swift; sourceTree = "<group>"; };
 		8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedSessionCoordinator.swift; sourceTree = "<group>"; };
+		8C300CC849D169D6C30E57A6 /* PickUpUCF.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PickUpUCF.entitlements; sourceTree = "<group>"; };
 		8C56623A93BFBBCA3EC1655B /* AppScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppScreenBackground.swift; sourceTree = "<group>"; };
 		8DA2A5DF08255873C1EFFCAE /* FormKeyboardToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormKeyboardToolbar.swift; sourceTree = "<group>"; };
 		90AC00654710CD46F917DCFA /* EmailDomainValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailDomainValidator.swift; sourceTree = "<group>"; };
@@ -755,7 +758,9 @@
 		D0C313F876C35242852CB8DE /* PickUpUCF */ = {
 			isa = PBXGroup;
 			children = (
+				03C1C082E8ACFBADC6C40DA4 /* Assets.xcassets */,
 				A58C2BA025730660536F29F7 /* Info.plist */,
+				8C300CC849D169D6C30E57A6 /* PickUpUCF.entitlements */,
 				D279DA866D7613FE6AB26621 /* App */,
 				CA7DF6C826265A75418AE2E9 /* Core */,
 				0B42005307B6FD8926A80920 /* DesignSystem */,
@@ -846,6 +851,7 @@
 			buildConfigurationList = C43D974FB6356FFE2D86D77E /* Build configuration list for PBXNativeTarget "PickUpUCF" */;
 			buildPhases = (
 				007518BA986C6A21B7F9BE24 /* Sources */,
+				C311B0AB6F59030C7A63C10F /* Resources */,
 				52AA8A43673901663FA09B5B /* Frameworks */,
 				AC889089BA85A12A6313D66C /* Embed Foundation Extensions */,
 			);
@@ -872,15 +878,15 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					60A522ED59512D6AAA70817B = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = AS53KCG63V;
 						ProvisioningStyle = Automatic;
 					};
 					8538E3DE7279F378E6E8724C = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = AS53KCG63V;
 						ProvisioningStyle = Automatic;
 					};
 					A80EF440122C0DB25714CAA3 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = AS53KCG63V;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -908,6 +914,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C311B0AB6F59030C7A63C10F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				763788104B50FF4A977A49FB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		007518BA986C6A21B7F9BE24 /* Sources */ = {
@@ -1109,7 +1126,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCFWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1132,7 +1149,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1152,7 +1169,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCFWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1175,9 +1192,10 @@
 			baseConfigurationReference = DAB46240077BFF47D91FFC1E /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PickUpUCF/PickUpUCF.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCF/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1195,9 +1213,10 @@
 			baseConfigurationReference = DAB46240077BFF47D91FFC1E /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PickUpUCF/PickUpUCF.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PickUpUCF/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1215,7 +1234,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = AS53KCG63V;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

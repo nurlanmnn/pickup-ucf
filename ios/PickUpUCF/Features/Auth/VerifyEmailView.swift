@@ -103,9 +103,10 @@ struct VerifyEmailView: View {
         .dismissKeyboardOnBackgroundTap()
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(onDone: { isOTPFocused = false })
-        }
+        .formKeyboardAccessory(
+            isPresented: isOTPFocused,
+            onDone: { isOTPFocused = false }
+        )
         .onAppear {
             isOTPFocused = true
         }

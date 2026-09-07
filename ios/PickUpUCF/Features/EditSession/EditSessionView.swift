@@ -187,18 +187,19 @@ struct EditSessionView: View {
                     attemptDismiss()
                 }
             }
-            FormKeyboardToolbar(
-                canGoPrevious: canGoToPreviousField,
-                canGoNext: canGoToNextField,
-                onPrevious: focusPreviousField,
-                onNext: focusNextField,
-                onDone: {
-                    viewModel.commitDurationFromText()
-                    viewModel.commitCapacityFromText()
-                    focusedField = nil
-                }
-            )
         }
+        .formKeyboardAccessory(
+            isPresented: focusedField != nil,
+            canGoPrevious: canGoToPreviousField,
+            canGoNext: canGoToNextField,
+            onPrevious: focusPreviousField,
+            onNext: focusNextField,
+            onDone: {
+                viewModel.commitDurationFromText()
+                viewModel.commitCapacityFromText()
+                focusedField = nil
+            }
+        )
         .interactiveDismissDisabled(vm.isDirty)
         .confirmationDialog(
             "Discard changes?",

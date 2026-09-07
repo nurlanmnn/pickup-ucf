@@ -64,15 +64,14 @@ struct SignInView: View {
         .dismissKeyboardOnBackgroundTap()
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(
-                canGoPrevious: focusedField == .password,
-                canGoNext: focusedField == .email,
-                onPrevious: { focusedField = .email },
-                onNext: { focusedField = .password },
-                onDone: { focusedField = nil }
-            )
-        }
+        .formKeyboardAccessory(
+            isPresented: focusedField != nil,
+            canGoPrevious: focusedField == .password,
+            canGoNext: focusedField == .email,
+            onPrevious: { focusedField = .email },
+            onNext: { focusedField = .password },
+            onDone: { focusedField = nil }
+        )
         .navigationDestination(isPresented: Binding(
             get: { viewModel.needsEmailVerification },
             set: { viewModel.needsEmailVerification = $0 }

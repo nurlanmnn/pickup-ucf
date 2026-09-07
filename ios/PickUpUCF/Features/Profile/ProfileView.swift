@@ -16,10 +16,10 @@ struct ProfileView: View {
                     mainContent
                 }
             }
+            .appScreenBackground()
             .toolbar(.hidden, for: .navigationBar)
             .scrollContentBackground(.hidden)
         }
-        .appScreenBackground()
         .task(id: appState.session?.userId) { await loadProfile() }
         .onChange(of: appState.profileRefreshNonce) { _, _ in Task { await loadProfile() } }
     }
@@ -102,7 +102,7 @@ struct ProfileView: View {
         VStack(spacing: Spacing.m) {
             statTiles
             if let p = profile, !p.preferredSports.isEmpty {
-                sportChipsCard(p.preferredSports)
+                preferredSportsLink(p.preferredSports)
             }
             settingsEntryCard
         }
@@ -167,6 +167,18 @@ struct ProfileView: View {
     }
 
     // MARK: - Sport chips
+
+    private func preferredSportsLink(_ sports: [SportType]) -> some View {
+        NavigationLink {
+            EditPreferredSportsView()
+        } label: {
+            sportChipsCard(sports)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Edit preferred sports")
+        .accessibilityValue(sports.map(\.displayName).joined(separator: ", "))
+        .accessibilityHint("Add or remove preferred sports")
+    }
 
     private func sportChipsCard(_ sports: [SportType]) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {

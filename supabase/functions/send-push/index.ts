@@ -59,11 +59,36 @@ export async function sendToUserDevices(
   const sessionId = row.payload?.session_id;
   const url = sessionId ? `pickupucf://session/${sessionId}` : undefined;
   const openChat = row.payload?.open_chat === true || row.type === "chat_message";
+  const isSessionCancellation = row.type === "session_cancelled";
 
   let anySuccess = false;
   for (const { apns_token } of tokens) {
+    const endpoint = `${apnsBaseUrl()}/3/device/${apns_token}`;
+
+    if (isSessionCancellation && sessionId) {
+      const backgroundResponse = await fetchImpl(endpoint, {
+        method: "POST",
+        headers: {
+          authorization: `bearer ${jwt}`,
+          "apns-topic": Deno.env.get("APNS_BUNDLE_ID")!,
+          "apns-push-type": "background",
+          "apns-priority": "5",
+        },
+        body: JSON.stringify({
+          aps: { "content-available": 1 },
+          session_id: sessionId,
+          notification_type: row.type,
+        }),
+      });
+
+      if (backgroundResponse.status === 410) {
+        await supabase.from("device_tokens").delete().eq("apns_token", apns_token);
+        continue;
+      }
+    }
+
     const res = await fetchImpl(
-      `${apnsBaseUrl()}/3/device/${apns_token}`,
+      endpoint,
       {
         method: "POST",
         headers: {
@@ -73,8 +98,13 @@ export async function sendToUserDevices(
           "apns-priority": "10",
         },
         body: JSON.stringify({
-          aps: { alert: { title: row.title, body: row.body }, sound: "default" },
+          aps: {
+            alert: { title: row.title, body: row.body },
+            sound: "default",
+          },
           ...(url ? { url } : {}),
+          ...(sessionId ? { session_id: sessionId } : {}),
+          ...(row.type ? { notification_type: row.type } : {}),
           ...(openChat ? { open_chat: true } : {}),
         }),
       },

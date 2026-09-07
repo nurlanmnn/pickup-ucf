@@ -46,14 +46,11 @@ struct MapLocationPickerView: View {
                     .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    searchFocused = false
-                }
-                .fontWeight(.semibold)
-            }
         }
+        .formKeyboardAccessory(
+            isPresented: searchFocused,
+            onDone: { searchFocused = false }
+        )
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
             if let existing = selection {

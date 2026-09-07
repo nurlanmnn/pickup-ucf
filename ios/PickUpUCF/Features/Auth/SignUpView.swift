@@ -85,15 +85,14 @@ struct SignUpView: View {
         .dismissKeyboardOnBackgroundTap()
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(
-                canGoPrevious: focusedField != .displayName && focusedField != nil,
-                canGoNext: focusedField != .confirm,
-                onPrevious: { focusPrevious() },
-                onNext: { focusNext() },
-                onDone: { focusedField = nil }
-            )
-        }
+        .formKeyboardAccessory(
+            isPresented: focusedField != nil,
+            canGoPrevious: focusedField != .displayName && focusedField != nil,
+            canGoNext: focusedField != .confirm,
+            onPrevious: { focusPrevious() },
+            onNext: { focusNext() },
+            onDone: { focusedField = nil }
+        )
         .navigationDestination(isPresented: Binding(
             get: { viewModel.didSignUp },
             set: { viewModel.didSignUp = $0 }

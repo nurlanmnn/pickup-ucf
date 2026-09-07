@@ -46,9 +46,10 @@ struct EditUsernameView: View {
         .dismissKeyboardOnBackgroundTap()
         .navigationTitle("Username")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(onDone: { isFocused = false })
-        }
+        .formKeyboardAccessory(
+            isPresented: isFocused,
+            onDone: { isFocused = false }
+        )
         .task { await viewModel.loadExistingUsername() }
     }
 

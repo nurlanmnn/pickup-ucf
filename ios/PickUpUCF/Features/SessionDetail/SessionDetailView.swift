@@ -86,6 +86,7 @@ struct SessionDetailView: View {
                 userId: appState.session?.userId
             )
             await viewModel.load()
+            removeCancelledCalendarExportIfNeeded()
             if appState.consumeSessionDetailOpenChat(for: sessionId), viewModel.canAccessChat {
                 showChat = true
             }
@@ -98,8 +99,14 @@ struct SessionDetailView: View {
         .onDisappear {
             Task { await viewModel.stopSessionRealtime() }
         }
+        .onChange(of: viewModel.session.value?.status) { _, status in
+            if status == .cancelled {
+                removeCancelledCalendarExportIfNeeded()
+            }
+        }
         .refreshable {
             await viewModel.load()
+            removeCancelledCalendarExportIfNeeded()
         }
         .sheet(isPresented: $showEditSheet) {
             if let session = viewModel.session.value {
@@ -144,6 +151,7 @@ struct SessionDetailView: View {
             Button("Cancel session", role: .destructive) {
                 Task {
                     if await viewModel.cancelHostedSession() {
+                        removeCancelledCalendarExportIfNeeded()
                         appState.touchSessionFeedRefresh()
                         dismiss()
                     }
@@ -733,6 +741,14 @@ struct SessionDetailView: View {
         if isAddingToCalendar { return "Adding…" }
         if isSessionInCalendar { return "In Calendar" }
         return "Add to Calendar"
+    }
+
+    @MainActor
+    private func removeCancelledCalendarExportIfNeeded() {
+        guard viewModel.session.value?.status == .cancelled else { return }
+        if (try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)) == true {
+            isSessionInCalendar = false
+        }
     }
 
     @MainActor

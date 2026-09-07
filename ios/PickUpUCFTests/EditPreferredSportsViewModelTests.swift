@@ -27,6 +27,26 @@ final class EditPreferredSportsViewModelTests: XCTestCase {
     }
 }
 
+final class ProfilePreferredSportsNavigationTests: XCTestCase {
+    func testPreferredSportsCardLinksDirectlyToSportsEditor() throws {
+        let testFile = URL(fileURLWithPath: #filePath)
+        let profileViewURL = testFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("PickUpUCF")
+            .appendingPathComponent("Features")
+            .appendingPathComponent("Profile")
+            .appendingPathComponent("ProfileView.swift")
+        let source = try String(contentsOf: profileViewURL, encoding: .utf8)
+        let preferredSportsLink = #"NavigationLink\s*\{\s*EditPreferredSportsView\(\)\s*\}\s*label:\s*\{\s*sportChipsCard\(sports\)"#
+
+        XCTAssertNotNil(
+            source.range(of: preferredSportsLink, options: .regularExpression),
+            "The preferred sports card should navigate directly to EditPreferredSportsView."
+        )
+    }
+}
+
 private final class StubEditSportsRepository: ProfileRepositoryProtocol {
     func ensureProfileForCurrentUser() async throws {}
 

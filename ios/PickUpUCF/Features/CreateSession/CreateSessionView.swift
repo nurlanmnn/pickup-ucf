@@ -76,8 +76,19 @@ struct CreateSessionView: View {
                     attemptDismiss()
                 }
             }
-            keyboardToolbar
         }
+        .formKeyboardAccessory(
+            isPresented: focusedField != nil,
+            canGoPrevious: canGoToPreviousField,
+            canGoNext: canGoToNextField,
+            onPrevious: focusPreviousField,
+            onNext: focusNextField,
+            onDone: {
+                viewModel.commitDurationFromText()
+                viewModel.commitCapacityFromText()
+                focusedField = nil
+            }
+        )
         .interactiveDismissDisabled(vm.isDirty && !vm.didCreate)
         .confirmationDialog(
             "Discard this game?",
@@ -158,21 +169,6 @@ struct CreateSessionView: View {
         }
         .padding(Spacing.l)
         .background(.ultraThinMaterial)
-    }
-
-    @ToolbarContentBuilder
-    private var keyboardToolbar: some ToolbarContent {
-        FormKeyboardToolbar(
-            canGoPrevious: canGoToPreviousField,
-            canGoNext: canGoToNextField,
-            onPrevious: focusPreviousField,
-            onNext: focusNextField,
-            onDone: {
-                viewModel.commitDurationFromText()
-                viewModel.commitCapacityFromText()
-                focusedField = nil
-            }
-        )
     }
 
     private var successOverlay: some View {

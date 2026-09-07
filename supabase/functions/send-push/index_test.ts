@@ -203,6 +203,46 @@ Deno.test("sendToUserDevices includes open_chat for chat_message notifications",
   assertStringIncludes(body, '"open_chat":true');
 });
 
+Deno.test("sendToUserDevices includes calendar cleanup metadata for cancellation notifications", async () => {
+  setTestEnv({ APNS_ENV: "sandbox" });
+
+  const row: OutboxRow = {
+    id: "outbox-cancelled",
+    user_id: "user-cancelled",
+    title: "Game cancelled",
+    body: "The game was cancelled by the host",
+    type: "session_cancelled",
+    payload: { session_id: "session-cancelled" },
+  };
+
+  const { supabase } = createMockSupabase({
+    tokensByUser: { "user-cancelled": [{ apns_token: "cancelled-token" }] },
+  });
+
+  const requests: RequestInit[] = [];
+  const fetchImpl = (_input: string | URL | Request, init?: RequestInit) => {
+    requests.push(init ?? {});
+    return Promise.resolve(new Response(null, { status: 200 }));
+  };
+
+  const ok = await sendToUserDevices(supabase as never, row, {
+    fetchImpl,
+    getJwt: () => Promise.resolve("mock-jwt"),
+  });
+
+  const backgroundPayload = JSON.parse(String(requests[0].body));
+  const alertPayload = JSON.parse(String(requests[1].body));
+  assertEquals(ok, true);
+  assertEquals(requests.length, 2);
+  assertEquals((requests[0].headers as Record<string, string>)["apns-push-type"], "background");
+  assertEquals((requests[0].headers as Record<string, string>)["apns-priority"], "5");
+  assertEquals(backgroundPayload.aps, { "content-available": 1 });
+  assertEquals(backgroundPayload.notification_type, "session_cancelled");
+  assertEquals(backgroundPayload.session_id, "session-cancelled");
+  assertEquals((requests[1].headers as Record<string, string>)["apns-push-type"], "alert");
+  assertEquals(alertPayload.notification_type, "session_cancelled");
+});
+
 Deno.test("sendToUserDevices deletes stale tokens on APNs 410", async () => {
   setTestEnv({ APNS_ENV: "production" });
 

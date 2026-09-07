@@ -54,16 +54,21 @@ targets:
         NSCalendarsFullAccessUsageDescription: Add PickUp UCF games to your calendar so you do not miss them.
         NSLocationWhenInUseUsageDescription: Show your position on the campus map so you can find nearby courts and fields.
         NSSupportsLiveActivities: true
+    entitlements:
+      path: PickUpUCF/PickUpUCF.entitlements
+      properties:
+        aps-environment: development
     settings:
       base:
         PRODUCT_NAME: PickUpUCF
         PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: false
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: AS53KCG63V
     dependencies:
       - package: Supabase
         product: Supabase
@@ -91,7 +96,7 @@ targets:
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: AS53KCG63V
         SKIP_INSTALL: YES
     dependencies:
       - sdk: WidgetKit.framework
@@ -112,7 +117,7 @@ targets:
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: AS53KCG63V
 schemes:
   PickUpUCF:
     build:

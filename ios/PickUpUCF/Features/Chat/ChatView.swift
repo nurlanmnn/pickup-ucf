@@ -22,9 +22,10 @@ struct ChatView: View {
         .appScreenBackground()
         .navigationTitle("Chat")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(onDone: { composerFocused = false })
-        }
+        .formKeyboardAccessory(
+            isPresented: composerFocused,
+            onDone: { composerFocused = false }
+        )
         .dismissKeyboardOnBackgroundTap()
         .task {
             await viewModel.load()

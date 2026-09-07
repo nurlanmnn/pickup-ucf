@@ -62,8 +62,11 @@ struct ReportSheet: View {
                 Button("Cancel") { dismiss() }
                     .disabled(isSubmitting)
             }
-            FormKeyboardToolbar(onDone: { reasonFocused = false })
         }
+        .formKeyboardAccessory(
+            isPresented: reasonFocused,
+            onDone: { reasonFocused = false }
+        )
     }
 
     private var submitBar: some View {

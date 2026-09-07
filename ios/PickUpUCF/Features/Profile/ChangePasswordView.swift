@@ -63,15 +63,14 @@ struct ChangePasswordView: View {
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Change password")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            FormKeyboardToolbar(
-                canGoPrevious: focusedField != .current,
-                canGoNext: focusedField != .confirm,
-                onPrevious: { focusPrevious() },
-                onNext: { focusNext() },
-                onDone: { focusedField = nil }
-            )
-        }
+        .formKeyboardAccessory(
+            isPresented: focusedField != nil,
+            canGoPrevious: focusedField != .current,
+            canGoNext: focusedField != .confirm,
+            onPrevious: { focusPrevious() },
+            onNext: { focusNext() },
+            onDone: { focusedField = nil }
+        )
     }
 
     @MainActor

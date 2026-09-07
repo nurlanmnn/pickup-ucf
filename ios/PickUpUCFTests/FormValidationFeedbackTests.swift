@@ -94,6 +94,47 @@ final class FormValidationFeedbackTests: XCTestCase {
     }
 }
 
+/// Keyboard controls must reserve layout space above the software keyboard. A
+/// `.keyboard` toolbar floats over bottom-aligned composers and action bars on
+/// newer iOS versions, which makes both sets of controls overlap.
+final class KeyboardAccessoryLayoutTests: XCTestCase {
+    func testKeyboardControlsUseSafeAreaInsetInsteadOfKeyboardToolbarPlacement() throws {
+        let testFile = URL(fileURLWithPath: #filePath)
+        let sourceDirectory = testFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("PickUpUCF")
+
+        let sourceFiles = try XCTUnwrap(
+            FileManager.default.enumerator(
+                at: sourceDirectory,
+                includingPropertiesForKeys: nil
+            )?.allObjects as? [URL]
+        )
+        let keyboardToolbarOffenders = try sourceFiles
+            .filter { $0.pathExtension == "swift" }
+            .filter { try String(contentsOf: $0, encoding: .utf8).contains("placement: .keyboard") }
+            .map(\.lastPathComponent)
+
+        XCTAssertTrue(
+            keyboardToolbarOffenders.isEmpty,
+            "System keyboard toolbars can overlap bottom content: \(keyboardToolbarOffenders)"
+        )
+
+        let accessorySource = try String(
+            contentsOf: sourceDirectory
+                .appendingPathComponent("DesignSystem")
+                .appendingPathComponent("Keyboard")
+                .appendingPathComponent("FormKeyboardToolbar.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(
+            accessorySource.contains(".safeAreaInset(edge: .bottom"),
+            "The shared keyboard accessory must reserve space above the keyboard."
+        )
+    }
+}
+
 private struct StubLocalizedError: LocalizedError {
     let errorDescription: String?
     init(_ message: String) { errorDescription = message }
