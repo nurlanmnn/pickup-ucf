@@ -47,6 +47,66 @@ final class GameLiveActivitySelectionTests: XCTestCase {
         XCTAssertEqual(endDate, startsAt.addingTimeInterval(15 * 60))
     }
 
+    func testActivityContentBecomesStaleWhenSessionStarts() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let session = makeSession(startsAt: startsAt)
+
+        XCTAssertEqual(
+            GameLiveActivitySelection.contentStaleDate(for: session),
+            startsAt
+        )
+    }
+
+    func testPresentationIsLiveAtExactStartTime() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+
+        XCTAssertTrue(
+            GameLiveActivityPresentation.isLive(
+                startsAt: startsAt,
+                isStale: false,
+                now: startsAt
+            )
+        )
+    }
+
+    func testPresentationIsNotLiveBeforeStartTime() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+
+        XCTAssertFalse(
+            GameLiveActivityPresentation.isLive(
+                startsAt: startsAt,
+                isStale: false,
+                now: startsAt.addingTimeInterval(-1)
+            )
+        )
+    }
+
+    func testCountdownIntervalRunsFromNowToFutureStartTime() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let beforeStart = startsAt.addingTimeInterval(-90)
+
+        XCTAssertEqual(
+            GameLiveActivityPresentation.countdownInterval(
+                startsAt: startsAt,
+                now: beforeStart
+            ),
+            beforeStart...startsAt
+        )
+    }
+
+    func testCountdownIntervalStopsAtZeroAfterStartTime() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let afterStart = startsAt.addingTimeInterval(90)
+
+        XCTAssertEqual(
+            GameLiveActivityPresentation.countdownInterval(
+                startsAt: startsAt,
+                now: afterStart
+            ),
+            startsAt...startsAt
+        )
+    }
+
     private func makeSession(startsAt: Date) -> PickupSession {
         PickupSession(
             id: UUID(),

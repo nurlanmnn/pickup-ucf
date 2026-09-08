@@ -19,7 +19,10 @@ struct GameLiveActivityWidget: Widget {
                     GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 28)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.startsAt, style: .timer)
+                    GameLiveActivityTimerText(
+                        startsAt: context.state.startsAt,
+                        isStale: context.isStale
+                    )
                         .monospacedDigit()
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(LiveActivityTheme.gold)
@@ -37,7 +40,12 @@ struct GameLiveActivityWidget: Widget {
                             .font(.caption)
                             .lineLimit(1)
                         Spacer(minLength: 0)
-                        Text(context.state.startsAt > Date.now ? "Starts in" : "Live")
+                        Text(
+                            GameLiveActivityPresentation.isLive(
+                                startsAt: context.state.startsAt,
+                                isStale: context.isStale
+                            ) ? "Live" : "Starts in"
+                        )
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(LiveActivityTheme.gold)
                     }
@@ -46,7 +54,10 @@ struct GameLiveActivityWidget: Widget {
             } compactLeading: {
                 GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 16)
             } compactTrailing: {
-                Text(context.state.startsAt, style: .timer)
+                GameLiveActivityTimerText(
+                    startsAt: context.state.startsAt,
+                    isStale: context.isStale
+                )
                     .monospacedDigit()
                     .foregroundStyle(LiveActivityTheme.gold)
                     .frame(maxWidth: 48)
@@ -54,6 +65,32 @@ struct GameLiveActivityWidget: Widget {
                 GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 14)
             }
             .keylineTint(LiveActivityTheme.gold)
+        }
+    }
+}
+
+private struct GameLiveActivityTimerText: View {
+    let startsAt: Date
+    let isStale: Bool
+
+    @ViewBuilder
+    var body: some View {
+        let now = Date.now
+        if GameLiveActivityPresentation.isLive(
+            startsAt: startsAt,
+            isStale: isStale,
+            now: now
+        ) {
+            Text("LIVE")
+        } else {
+            Text(
+                timerInterval: GameLiveActivityPresentation.countdownInterval(
+                    startsAt: startsAt,
+                    now: now
+                ),
+                pauseTime: startsAt,
+                countsDown: true
+            )
         }
     }
 }
@@ -74,7 +111,10 @@ private struct GameLiveActivityLockScreenView: View {
     let context: ActivityViewContext<GameLiveActivityAttributes>
 
     private var hasStarted: Bool {
-        context.state.startsAt <= Date.now
+        GameLiveActivityPresentation.isLive(
+            startsAt: context.state.startsAt,
+            isStale: context.isStale
+        )
     }
 
     var body: some View {
@@ -103,12 +143,15 @@ private struct GameLiveActivityLockScreenView: View {
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(context.state.startsAt, style: .timer)
+                GameLiveActivityTimerText(
+                    startsAt: context.state.startsAt,
+                    isStale: context.isStale
+                )
                     .font(.title3.monospacedDigit().weight(.bold))
                     .foregroundStyle(LiveActivityTheme.gold)
                     .multilineTextAlignment(.trailing)
                     .minimumScaleFactor(0.8)
-                Text(hasStarted ? "Live" : "Starts in")
+                Text(hasStarted ? "In progress" : "Starts in")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white.opacity(0.65))
             }

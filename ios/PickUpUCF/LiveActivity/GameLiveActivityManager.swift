@@ -28,10 +28,9 @@ enum GameLiveActivityManager {
                current.attributes.sessionId == session.id.uuidString,
                current.activityState != .ended,
                current.activityState != .dismissed {
-                let endDate = GameLiveActivitySelection.activityEndDate(for: session)
                 let content = ActivityContent(
                     state: GameLiveActivityAttributes.ContentState(startsAt: session.startsAt),
-                    staleDate: endDate
+                    staleDate: GameLiveActivitySelection.contentStaleDate(for: session)
                 )
                 await current.update(content)
                 return
@@ -58,10 +57,9 @@ enum GameLiveActivityManager {
             sessionId: session.id.uuidString,
             sportSystemImage: session.sport.systemImage
         )
-        let endDate = GameLiveActivitySelection.activityEndDate(for: session)
         let content = ActivityContent(
             state: GameLiveActivityAttributes.ContentState(startsAt: session.startsAt),
-            staleDate: endDate
+            staleDate: GameLiveActivitySelection.contentStaleDate(for: session)
         )
 
         do {

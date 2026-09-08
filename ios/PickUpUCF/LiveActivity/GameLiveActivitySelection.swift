@@ -19,4 +19,8 @@ enum GameLiveActivitySelection {
     static func activityEndDate(for session: PickupSession) -> Date {
         session.startsAt.addingTimeInterval(postStartGrace)
     }
+
+    static func contentStaleDate(for session: PickupSession) -> Date {
+        session.startsAt
+    }
 }
