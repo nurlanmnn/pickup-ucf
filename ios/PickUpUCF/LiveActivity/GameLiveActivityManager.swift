@@ -33,6 +33,9 @@ enum GameLiveActivityManager {
                     staleDate: GameLiveActivitySelection.contentStaleDate(for: session)
                 )
                 await current.update(content)
+                if let token = current.pushToken {
+                    await registerPushToken(token, sessionId: session.id)
+                }
                 return
             }
 
@@ -63,14 +66,38 @@ enum GameLiveActivityManager {
         )
 
         do {
-            _ = try Activity.request(
+            let activity = try Activity.request(
                 attributes: attributes,
                 content: content,
-                pushType: nil
+                pushType: .token
             )
+            observePushTokens(for: activity, sessionId: session.id)
         } catch {
             // Live Activities are optional; ignore request failures in v1.
         }
+    }
+
+    @available(iOS 16.2, *)
+    private static func observePushTokens(
+        for activity: Activity<GameLiveActivityAttributes>,
+        sessionId: UUID
+    ) {
+        Task {
+            if let token = activity.pushToken {
+                await registerPushToken(token, sessionId: sessionId)
+            }
+
+            for await token in activity.pushTokenUpdates {
+                await registerPushToken(token, sessionId: sessionId)
+            }
+        }
+    }
+
+    private static func registerPushToken(_ token: Data, sessionId: UUID) async {
+        try? await LiveActivityTokenRepository().register(
+            sessionId: sessionId,
+            token: token.hexEncodedString
+        )
     }
 
     @available(iOS 16.2, *)
@@ -78,6 +105,12 @@ enum GameLiveActivityManager {
         for activity in Activity<GameLiveActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
+    }
+}
+
+private extension Data {
+    var hexEncodedString: String {
+        map { String(format: "%02x", $0) }.joined()
     }
 }
 

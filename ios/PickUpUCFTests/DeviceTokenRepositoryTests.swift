@@ -12,4 +12,18 @@ final class DeviceTokenRepositoryTests: XCTestCase {
         XCTAssertEqual(json["user_id"], userId.uuidString)
         XCTAssertEqual(json["apns_token"], "abc123")
     }
+
+    func testLiveActivityRegistrationParamsEncodeRPCKeys() throws {
+        let sessionId = UUID(uuidString: "B1C2D3E4-F5A6-7890-BCDE-F1234567890A")!
+        let params = LiveActivityTokenRegistrationParams(
+            sessionId: sessionId,
+            apnsToken: "def456"
+        )
+
+        let data = try JSONEncoder().encode(params)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
+
+        XCTAssertEqual(json["p_session_id"], sessionId.uuidString)
+        XCTAssertEqual(json["p_apns_token"], "def456")
+    }
 }

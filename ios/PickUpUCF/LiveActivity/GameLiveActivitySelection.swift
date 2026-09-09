@@ -2,7 +2,6 @@ import Foundation
 
 enum GameLiveActivitySelection {
     static let preStartWindow: TimeInterval = 24 * 3600
-    static let postStartGrace: TimeInterval = 15 * 60
 
     static func isEligible(session: PickupSession, now: Date) -> Bool {
         guard now < activityEndDate(for: session) else { return false }
@@ -17,7 +16,7 @@ enum GameLiveActivitySelection {
     }
 
     static func activityEndDate(for session: PickupSession) -> Date {
-        session.startsAt.addingTimeInterval(postStartGrace)
+        session.endsAt
     }
 
     static func contentStaleDate(for session: PickupSession) -> Date {

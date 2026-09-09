@@ -11,6 +11,16 @@ struct DeviceTokenUpsertRow: Encodable {
     }
 }
 
+struct LiveActivityTokenRegistrationParams: Encodable {
+    let sessionId: UUID
+    let apnsToken: String
+
+    enum CodingKeys: String, CodingKey {
+        case sessionId = "p_session_id"
+        case apnsToken = "p_apns_token"
+    }
+}
+
 protocol DeviceTokenRepositoryProtocol {
     func upsert(token: String) async throws
     func delete(token: String) async throws
@@ -35,5 +45,27 @@ final class DeviceTokenRepository: DeviceTokenRepositoryProtocol {
             .delete()
             .eq("apns_token", value: token)
             .execute()
+    }
+}
+
+protocol LiveActivityTokenRepositoryProtocol {
+    func register(sessionId: UUID, token: String) async throws
+}
+
+final class LiveActivityTokenRepository: LiveActivityTokenRepositoryProtocol {
+    private let client: SupabaseClient
+
+    init(client: SupabaseClient = SupabaseManager.shared) {
+        self.client = client
+    }
+
+    func register(sessionId: UUID, token: String) async throws {
+        try await client.rpc(
+            "register_live_activity_token",
+            params: LiveActivityTokenRegistrationParams(
+                sessionId: sessionId,
+                apnsToken: token
+            )
+        ).execute()
     }
 }

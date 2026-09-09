@@ -16,12 +16,21 @@ final class GameLiveActivitySelectionTests: XCTestCase {
         XCTAssertFalse(GameLiveActivitySelection.isEligible(session: session, now: now))
     }
 
-    func testIneligibleSessionAfterGracePeriodEnds() {
+    func testSessionRemainsEligibleWhileGameIsInProgress() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let startsAt = now.addingTimeInterval(-20 * 60)
         let session = makeSession(startsAt: startsAt)
 
-        XCTAssertFalse(GameLiveActivitySelection.isEligible(session: session, now: now))
+        XCTAssertTrue(GameLiveActivitySelection.isEligible(session: session, now: now))
+    }
+
+    func testIneligibleSessionAtGameEnd() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let session = makeSession(startsAt: startsAt)
+
+        XCTAssertFalse(
+            GameLiveActivitySelection.isEligible(session: session, now: session.endsAt)
+        )
     }
 
     func testNextSessionPicksEarliestEligibleGame() {
@@ -38,13 +47,13 @@ final class GameLiveActivitySelectionTests: XCTestCase {
         XCTAssertEqual(next?.id, sooner.id)
     }
 
-    func testActivityEndDateIsFifteenMinutesAfterStart() {
+    func testActivityEndDateUsesSessionEndTime() {
         let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
         let session = makeSession(startsAt: startsAt)
 
         let endDate = GameLiveActivitySelection.activityEndDate(for: session)
 
-        XCTAssertEqual(endDate, startsAt.addingTimeInterval(15 * 60))
+        XCTAssertEqual(endDate, session.endsAt)
     }
 
     func testActivityContentBecomesStaleWhenSessionStarts() {

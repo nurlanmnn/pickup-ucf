@@ -3,8 +3,9 @@ import {
   apnsBaseUrl,
   handler,
   isAuthorized,
-  sendToUserDevices,
+  type LiveActivityRow,
   type OutboxRow,
+  sendToUserDevices,
 } from "./index.ts";
 
 const CRON_SECRET = "test-cron-secret";
@@ -38,6 +39,7 @@ type QueryResult<T> = { data: T | null; error: null | { message: string } };
 function createMockSupabase(options: {
   pending?: OutboxRow[];
   tokensByUser?: Record<string, { apns_token: string }[]>;
+  liveActivities?: LiveActivityRow[];
   fetchError?: { message: string };
   onDeleteToken?: (token: string) => void;
   onMarkSent?: (id: string) => void;
@@ -54,7 +56,10 @@ function createMockSupabase(options: {
               order: () => ({
                 limit: (): Promise<QueryResult<OutboxRow[]>> => {
                   if (options.fetchError) {
-                    return Promise.resolve({ data: null, error: options.fetchError });
+                    return Promise.resolve({
+                      data: null,
+                      error: options.fetchError,
+                    });
                   }
                   return Promise.resolve({
                     data: options.pending ?? [],
@@ -93,6 +98,30 @@ function createMockSupabase(options: {
         };
       }
 
+      if (table === "live_activity_tokens") {
+        return {
+          select: () => ({
+            is: () => ({
+              lte: () => ({
+                order: () => ({
+                  limit: () =>
+                    Promise.resolve({
+                      data: options.liveActivities ?? [],
+                      error: null,
+                    }),
+                }),
+              }),
+            }),
+          }),
+          update: () => ({
+            eq: () => Promise.resolve({ data: null, error: null }),
+          }),
+          delete: () => ({
+            eq: () => Promise.resolve({ data: null, error: null }),
+          }),
+        };
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     },
   };
@@ -120,12 +149,12 @@ Deno.test("handler returns 401 without valid CRON_SECRET", async () => {
   assertEquals(res.status, 401);
 });
 
-Deno.test("handler returns sent:0 when outbox is empty", async () => {
+Deno.test("handler returns zero counts when all queues are empty", async () => {
   setTestEnv();
   const { supabase } = createMockSupabase({ pending: [] });
   const res = await handler(authRequest(), { supabase: supabase as never });
   assertEquals(res.status, 200);
-  assertEquals(await res.json(), { sent: 0 });
+  assertEquals(await res.json(), { sent: 0, liveActivitiesEnded: 0 });
 });
 
 Deno.test("handler marks outbox row sent after successful APNs delivery", async () => {
@@ -145,7 +174,10 @@ Deno.test("handler marks outbox row sent after successful APNs delivery", async 
   });
 
   const fetchCalls: { url: string; body: string }[] = [];
-  const fetchImpl = async (input: string | URL | Request, init?: RequestInit) => {
+  const fetchImpl = async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ) => {
     fetchCalls.push({
       url: String(input),
       body: String(init?.body ?? ""),
@@ -160,7 +192,7 @@ Deno.test("handler marks outbox row sent after successful APNs delivery", async 
   });
 
   assertEquals(res.status, 200);
-  assertEquals(await res.json(), { sent: 1 });
+  assertEquals(await res.json(), { sent: 1, liveActivitiesEnded: 0 });
   assertEquals(markedSent, ["outbox-1"]);
   assertEquals(fetchCalls.length, 1);
   assertEquals(
@@ -169,6 +201,28 @@ Deno.test("handler marks outbox row sent after successful APNs delivery", async 
   );
   assertStringIncludes(fetchCalls[0].body, "Session starting soon");
   assertStringIncludes(fetchCalls[0].body, "pickupucf://session/session-1");
+});
+
+Deno.test("handler ends due Live Activities when the notification outbox is empty", async () => {
+  setTestEnv({ APNS_ENV: "sandbox" });
+  const { supabase } = createMockSupabase({
+    pending: [],
+    liveActivities: [{
+      apns_token: "live-token",
+      starts_at: "2023-11-14T22:13:20.000Z",
+      ends_at: "2023-11-14T23:43:20.000Z",
+    }],
+  });
+
+  const res = await handler(authRequest(), {
+    supabase: supabase as never,
+    now: () => new Date("2023-11-14T23:44:00.000Z"),
+    fetchImpl: () => Promise.resolve(new Response(null, { status: 200 })),
+    getJwt: () => Promise.resolve("mock-jwt"),
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(await res.json(), { sent: 0, liveActivitiesEnded: 1 });
 });
 
 Deno.test("sendToUserDevices includes open_chat for chat_message notifications", async () => {
@@ -188,7 +242,10 @@ Deno.test("sendToUserDevices includes open_chat for chat_message notifications",
   });
 
   let body = "";
-  const fetchImpl = async (_input: string | URL | Request, init?: RequestInit) => {
+  const fetchImpl = async (
+    _input: string | URL | Request,
+    init?: RequestInit,
+  ) => {
     body = String(init?.body ?? "");
     return new Response(null, { status: 200 });
   };
@@ -234,12 +291,21 @@ Deno.test("sendToUserDevices includes calendar cleanup metadata for cancellation
   const alertPayload = JSON.parse(String(requests[1].body));
   assertEquals(ok, true);
   assertEquals(requests.length, 2);
-  assertEquals((requests[0].headers as Record<string, string>)["apns-push-type"], "background");
-  assertEquals((requests[0].headers as Record<string, string>)["apns-priority"], "5");
+  assertEquals(
+    (requests[0].headers as Record<string, string>)["apns-push-type"],
+    "background",
+  );
+  assertEquals(
+    (requests[0].headers as Record<string, string>)["apns-priority"],
+    "5",
+  );
   assertEquals(backgroundPayload.aps, { "content-available": 1 });
   assertEquals(backgroundPayload.notification_type, "session_cancelled");
   assertEquals(backgroundPayload.session_id, "session-cancelled");
-  assertEquals((requests[1].headers as Record<string, string>)["apns-push-type"], "alert");
+  assertEquals(
+    (requests[1].headers as Record<string, string>)["apns-push-type"],
+    "alert",
+  );
   assertEquals(alertPayload.notification_type, "session_cancelled");
 });
 

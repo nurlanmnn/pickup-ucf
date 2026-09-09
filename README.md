@@ -112,9 +112,10 @@ supabase functions deploy send-push
 
 **Sandbox vs production APNs:** `send-push` uses `https://api.sandbox.push.apple.com` when `APNS_ENV=sandbox`, and `https://api.push.apple.com` when `APNS_ENV=production`. Debug builds on a device use sandbox tokens; match `APNS_ENV` to the build you are testing.
 
-#### Schedule outbox delivery
+#### Schedule push delivery
 
-The `send-push` function drains `notification_outbox` rows where `sent_at IS NULL`.
+The `send-push` function drains unsent `notification_outbox` rows and sends due
+ActivityKit end events from `live_activity_tokens`.
 
 In Supabase Dashboard → **Edge Functions → send-push → Cron**, schedule **every 1 minute** with header:
 
