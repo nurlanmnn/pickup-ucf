@@ -12,6 +12,7 @@
 - [x] Run an unsigned Release build and static analyzer.
 - [x] Update TF-02 checklist items with concrete evidence.
 - [x] Confirm the main App Store Connect record exists for `edu.ucf.pickup` (Apple ID `68107128702`); no widget record was created.
+- [x] Confirm production Supabase, Brevo, Open-Meteo, and APNs processing is functionality-only, with no undisclosed advertising, data-broker, tracking, analytics, or crash-reporting use.
 - [ ] Generate/review the final archive privacy report in Xcode Organizer (user-owned, after TF-03 through TF-05).
 - [ ] Confirm/publish matching App Store Connect App Privacy answers (user-owned).
 

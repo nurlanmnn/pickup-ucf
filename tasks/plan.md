@@ -13,7 +13,7 @@ Complete TF-02 for the PickUp UCF iOS app without starting later TestFlight work
 - The widget and its shared `GameLiveActivityAttributes.swift` source do not use any required-reason API or transmit/retain data.
 - Resolved packages are Supabase Swift 2.46.0, swift-crypto 4.5.0, swift-asn1 1.7.0, swift-http-types 1.5.1, swift-clocks 1.0.6, swift-concurrency-extras 1.3.2, and xctest-dynamic-overlay 1.9.0.
 - Source inspection found no dependency use of required-reason categories except Supabase Storage reading a file's size through `attributesOfItem`; file size is not one of Apple's file-timestamp required-reason accesses. Swift Crypto supplies its own empty/no-tracking privacy manifests, and its product manifest is present in the built app bundles.
-- Repository-owned backend integrations transmit data to Supabase, Brevo, Open-Meteo, and APNs for app features. Whether production provider configuration, retention, or off-repository processing introduces any advertising, data-broker, analytics, or tracking use must be confirmed by the account owner before publishing App Store Connect answers.
+- Repository-owned backend integrations transmit data to Supabase, Brevo, Open-Meteo, and APNs for app features. On 2026-09-10, the user confirmed these production processors are used only for app functionality, with no advertising, data-broker sharing, cross-company tracking, or undisclosed analytics/crash-reporting integration.
 - The user confirmed the main App Store Connect record on 2026-09-10: PickUp UCF, bundle ID `edu.ucf.pickup`, SKU `pickup-ucf-ios`, Apple ID `68107128702`, status Prepare for Submission. No widget app record was created.
 
 ## Architecture Decisions
@@ -80,10 +80,9 @@ The exact destination may be adjusted to an installed simulator runtime. Built p
 
 ## Manual Verification and Evidence Required
 
-1. Confirm that the production Supabase, Brevo, Open-Meteo, and APNs processing is limited to the app functionality described here, with no advertising, data-broker sharing, or cross-company tracking, and disclose any off-repository analytics/crash-reporting integration.
-2. After TF-03 through TF-05 and the final distribution archive, generate the archive privacy report in Xcode Organizer.
-3. Confirm the report shows no tracking and contains only the data types and required-reason APIs documented here.
-4. In App Store Connect, answer App Privacy for the main app only and report back the generated report summary plus the published data-type/purpose/linking/tracking answers.
+1. After TF-03 through TF-05 and the final distribution archive, generate the archive privacy report in Xcode Organizer.
+2. Confirm the report shows no tracking and contains only the data types and required-reason APIs documented here.
+3. In App Store Connect, answer App Privacy for the main app only and report back the generated report summary plus the published data-type/purpose/linking/tracking answers.
 
 ## Dependencies
 
