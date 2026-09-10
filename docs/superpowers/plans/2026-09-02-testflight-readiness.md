@@ -108,14 +108,16 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 
 **Tasks:**
 
-- [ ] Inventory app and extension use of Apple required-reason APIs.
-- [ ] Add `PrivacyInfo.xcprivacy` to the main app target.
-- [ ] Declare `NSPrivacyAccessedAPICategoryUserDefaults` with an Apple-approved reason matching the actual usage.
-- [ ] Add a separate manifest to the widget target if its own code requires one.
-- [ ] Declare tracking and collected-data fields accurately; do not copy dependency declarations blindly.
+- [x] Inventory app and extension use of Apple required-reason APIs.
+- [x] Add `PrivacyInfo.xcprivacy` to the main app target.
+- [x] Declare `NSPrivacyAccessedAPICategoryUserDefaults` with an Apple-approved reason matching the actual usage.
+- [x] Add a separate manifest to the widget target if its own code requires one. (Inventory confirmed it does not.)
+- [x] Declare tracking and collected-data fields accurately; do not copy dependency declarations blindly.
 - [ ] Verify the manifest is included in the archived app bundle.
 - [ ] Generate and review Xcode’s privacy report for the archive.
 - [ ] Ensure App Store Connect privacy answers match the manifest and real production behavior.
+
+**Evidence (2026-09-10):** Added `ios/PickUpUCF/PrivacyInfo.xcprivacy` to the main app resources only. First-party and resolved-package inspection found only app `UserDefaults` required-reason use; its app-only defaults domain matches Apple reason `CA92.1`. The widget has no required-reason API use, independent collection/tracking, or third-party dependency, so it has no separate manifest. The manifest declares tracking false, no tracking domains, and nine linked/non-tracking categories based on repository behavior: name, email address, fitness, precise custom game coordinates, emails/text messages, other user content, user ID, device ID, and product interaction. Fitness and the user ID used to retrieve preferred sports are used for app functionality and product personalization; the remaining categories are used for app functionality. `xcodegen generate` placed the file only in the app resources phase. Source, Debug, and unsigned Release app manifests match byte-for-byte and pass `plutil`; both built widget bundles correctly contain no manifest. Debug simulator tests passed (123/123), as did the unsigned Release device build and Release static analyzer. The user confirmed the main App Store Connect record exists for bundle ID `edu.ucf.pickup` (Apple ID `68107128702`, Prepare for Submission); no widget record was created. Archive placement, Xcode's archive privacy report, production-provider confirmation, and App Store Connect privacy answers remain unverified/user-owned.
 
 **Done when:** The signed archive contains valid privacy manifests, Xcode’s privacy report has been reviewed, and App Store Connect privacy answers are consistent with the app.
 

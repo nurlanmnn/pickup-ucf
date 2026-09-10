@@ -138,6 +138,7 @@
 		C605A1C44044FE69F42321CC /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C242C46DB84D5A8B1444BE46 /* Spacing.swift */; };
 		C63B599B94CC5525CC4B073E /* GameLiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A408CA646390784B9A3DD8B7 /* GameLiveActivityManager.swift */; };
 		C86F1FA208731DE75ECE9982 /* DiscoverMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6613ABAFC5B76F048D31CB27 /* DiscoverMapView.swift */; };
+		C9CBC7B64D69202DFBC0AC89 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A66A733A35E6F99AA7E3969A /* PrivacyInfo.xcprivacy */; };
 		CB2953FFC00998A4DCD1D9E3 /* AttendanceRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB4D6B17AB8CECC942AEC2C /* AttendanceRepository.swift */; };
 		CB81066F2BB529A686C56C1A /* BlockedUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6296C1331592FD98797241 /* BlockedUser.swift */; };
 		D13AA5379AD0E2799731D389 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FED4FBE447F638AA69D5AE /* AppConfig.swift */; };
@@ -300,6 +301,7 @@
 		A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationService.swift; sourceTree = "<group>"; };
 		A408CA646390784B9A3DD8B7 /* GameLiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLiveActivityManager.swift; sourceTree = "<group>"; };
 		A58C2BA025730660536F29F7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A66A733A35E6F99AA7E3969A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickUpUCFApp.swift; sourceTree = "<group>"; };
 		AA8FF6BEF842A31AFCC6A411 /* ChatRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRepository.swift; sourceTree = "<group>"; };
 		AC9F618E2A2DB3F105C80AAC /* TabBarItemBounce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarItemBounce.swift; sourceTree = "<group>"; };
@@ -761,6 +763,7 @@
 				03C1C082E8ACFBADC6C40DA4 /* Assets.xcassets */,
 				A58C2BA025730660536F29F7 /* Info.plist */,
 				8C300CC849D169D6C30E57A6 /* PickUpUCF.entitlements */,
+				A66A733A35E6F99AA7E3969A /* PrivacyInfo.xcprivacy */,
 				D279DA866D7613FE6AB26621 /* App */,
 				CA7DF6C826265A75418AE2E9 /* Core */,
 				0B42005307B6FD8926A80920 /* DesignSystem */,
@@ -799,7 +802,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_C23740DF-1FD7-41F7-9CDF-A9FECDA6B72A" /* ios */ = {
+		"TEMP_ACFDE3FA-C2EC-42AC-BFDD-9EE55551D767" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -921,6 +924,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				763788104B50FF4A977A49FB /* Assets.xcassets in Resources */,
+				C9CBC7B64D69202DFBC0AC89 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
