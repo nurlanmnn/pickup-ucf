@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct PickUpUCFApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @State private var appState = AppState()
 
     var body: some Scene {
@@ -25,6 +26,13 @@ struct PickUpUCFApp: App {
                     }
                     if let session = await AuthRepository().currentSession() {
                         await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
+                    }
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    guard newPhase == .active, appState.isAuthenticated else { return }
+                    Task {
+                        await PushNotificationService.shared
+                            .refreshRegistrationAfterAuthorizationChange()
                     }
                 }
         }

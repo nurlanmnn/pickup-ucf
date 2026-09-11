@@ -1,112 +1,125 @@
-# Implementation Plan: TF-02 Privacy Manifest and Required-Reason APIs
+# Implementation Plan: TF-03 APNs Token Ownership and Account Cleanup
 
 ## Overview
 
-Complete TF-02 for the PickUp UCF iOS app without starting later TestFlight workstreams. Inventory first-party and resolved Swift Package API/data use, add the minimum accurate privacy manifest resources, prove target membership through generated-project and built-bundle inspection, and leave archive privacy-report and App Store Connect disclosure confirmation explicitly user-owned.
+Complete TF-03 without starting TF-04 or broadening into unrelated BETA-09 cleanup. Enforce one current owner per standard APNs token, move ownership changes behind authenticated atomic database functions, retain the last token locally for cleanup/reassignment, and verify database, iOS, and sender behavior. Production deployment and physical-device APNs testing remain user-owned.
+
+## Preserved Prior Work
+
+- TF-02 privacy-manifest work remains complete in commit `6934d39`; the user's processor-scope confirmation was committed separately as `649ab6c` while TF-03 was in progress.
+- The readiness checklist preserves the user-confirmed functionality-only use of Supabase, Brevo, Open-Meteo, and APNs.
+- TF-02 archive privacy-report review and App Store Connect privacy answers remain open and user-owned after TF-03 through TF-05.
 
 ## Verified Baseline
 
-- Repository was clean on `main` at the start of this workstream (`git status --short --branch`, 2026-09-10).
-- No source-controlled app or widget `PrivacyInfo.xcprivacy` existed before TF-02.
-- The app directly uses `UserDefaults` for create-session defaults, Discover filter mode, and app-created calendar event identifiers.
-- Those values remain inside the app's standard defaults domain; Apple required-reason code `CA92.1` accurately covers this use.
-- The widget and its shared `GameLiveActivityAttributes.swift` source do not use any required-reason API or transmit/retain data.
-- Resolved packages are Supabase Swift 2.46.0, swift-crypto 4.5.0, swift-asn1 1.7.0, swift-http-types 1.5.1, swift-clocks 1.0.6, swift-concurrency-extras 1.3.2, and xctest-dynamic-overlay 1.9.0.
-- Source inspection found no dependency use of required-reason categories except Supabase Storage reading a file's size through `attributesOfItem`; file size is not one of Apple's file-timestamp required-reason accesses. Swift Crypto supplies its own empty/no-tracking privacy manifests, and its product manifest is present in the built app bundles.
-- Repository-owned backend integrations transmit data to Supabase, Brevo, Open-Meteo, and APNs for app features. On 2026-09-10, the user confirmed these production processors are used only for app functionality, with no advertising, data-broker sharing, cross-company tracking, or undisclosed analytics/crash-reporting integration.
-- The user confirmed the main App Store Connect record on 2026-09-10: PickUp UCF, bundle ID `edu.ucf.pickup`, SKU `pickup-ucf-ios`, Apple ID `68107128702`, status Prepare for Submission. No widget app record was created.
+- Work began with the expected uncommitted TF-02 documentation updates. During TF-03, that user-owned state was externally committed as `649ab6c` and advanced both `main` and `origin/main`; TF-03 changes remain uncommitted on top.
+- `device_tokens` uses primary key `(user_id, apns_token)`; the same token can therefore belong to multiple users.
+- Authenticated users can mutate their own rows directly through `device_tokens_all`; no atomic transfer RPC exists.
+- iOS directly upserts `(current user, token)`; its delete method is not called during sign-out or deletion.
+- `PushNotificationService` discards the token and errors after registration, preventing reliable retry/cleanup.
+- Authenticated bootstrap requests notification authorization and remote registration. No explicit stored-token retry exists.
+- Supabase Swift removes its persisted session before the remote logout call, but the profile UI clears `AppState.session` only after a successful return.
+- Account deletion relies on FK cascade only after `delete_own_account` succeeds and performs no pre-delete token cleanup.
+- `send-push` queries tokens by outbox `user_id` and sends full alert bodies, including chat previews; it already deletes tokens on APNs 410.
+- Live Activity tokens already have global uniqueness, authenticated validated registration, strict grants, and cascade cleanup. Their server push contains timing state only, but active local activities should end on account transitions.
+
+## Threat Model and Invariants
+
+- Protect private notification content and correct account/device association across APNs callbacks, authenticated RPC calls, service-role delivery, retries, and account transitions.
+- A normalized standard APNs token has at most one row and one current owner.
+- Registration derives ownership only from `auth.uid()` and atomically inserts or transfers the token.
+- Unregistration deletes only when token and current owner match; delayed user-A cleanup cannot delete a token transferred to user B.
+- Sign-out clears local auth/UI state even if cleanup/logout networking fails. The retained token allows a later authenticated registration to repair ownership.
+- An offline sign-out cannot be reported instantly to the backend. Local APNs unregistration, local Live Activity teardown, retained retry state, and next-login atomic transfer are the safe fallback; physical-device behavior remains unverified.
 
 ## Architecture Decisions
 
-- Add `ios/PickUpUCF/PrivacyInfo.xcprivacy` under the app target's XcodeGen source tree so Xcode copies it to the application bundle root.
-- Declare `NSPrivacyAccessedAPICategoryUserDefaults` with reason `CA92.1`; do not add unrelated approved reasons.
-- Do not add a widget manifest while the extension has no required-reason API use, tracking, independent collection, or third-party dependency.
-- Set tracking to false and provide no tracking domains because the repository contains no advertising, cross-app tracking, data-broker sharing, or tracking SDK.
-- Declare first-party data retained by Supabase conservatively as linked to the user and not used for tracking: name, email address, device ID, precise custom game coordinates, chat messages, other user content, and product interaction for app functionality; fitness/activity data and the user ID used to retrieve it for app functionality and product personalization because preferred sports customize Discover.
-- Treat on-device-only current-location display, `UserDefaults`, calendar contents, and Apple-managed framework behavior as not collected by PickUp UCF.
+- Add a migration after `20260909000000_live_activity_end_pushes.sql`.
+- Normalize historical tokens, remove unusable rows, deterministically keep the most recently updated owner for duplicates, replace the composite primary key with `PRIMARY KEY (apns_token)`, and index `user_id`.
+- Add validated `SECURITY DEFINER` RPCs `register_device_token(text)` and `unregister_device_token(text)` with a fixed search path, explicit revocations, and authenticated-only execution.
+- Drop broad client table mutation access. The service role retains sender reads and APNs-410 deletion.
+- Store the last standard token in app-only `UserDefaults` before registration and retain it across sign-out so the next authenticated account can immediately repair/transfer ownership; token rotation overwrites it. Never log it.
+- Add idempotent stored-token registration and account-transition cleanup to the push service.
+- Route sign-out/deletion through a testable coordinator that cleans up first and handles local state deterministically.
+- Keep notification payload copy unchanged; tests/documentation will establish that chat previews are sensitive and safe only with correct ownership.
 
-## Task List
+## Phase 1: Database Boundary
 
-### Phase 1: Inventory and manifest design
+- [x] Add SQL tests for duplicate ownership, transfer, retry idempotency, validation, anonymous denial, direct-write denial, owner-scoped unregister, and delayed-unregister safety.
+- [x] Add the migration with deterministic cleanup, global uniqueness, least-privilege grants, and authenticated RPCs.
+- [x] Run focused and complete SQL/RLS suites against a local reset.
 
-- [x] Inventory direct app and widget use of all Apple required-reason API categories.
-- [x] Inventory relevant resolved dependency usage and existing dependency manifests.
-- [x] Map first-party production data flows to Apple's privacy-manifest data categories and purposes.
+**Files:** `supabase/migrations/<timestamp>_secure_device_token_ownership.sql`, `supabase/tests/phase_f_device_token_ownership.sql`, `supabase/tests/run_all.sql`.
 
-### Phase 2: Add and validate resources
+## Phase 2: iOS Lifecycle
 
-- [x] Add a syntactically valid app privacy manifest with the verified declarations.
-- [x] Regenerate `PickUpUCF.xcodeproj` and confirm the manifest belongs only to the main app resources phase.
-- [x] Build the app and inspect the app and embedded widget bundle roots for the expected manifest layout.
-- [x] Validate every built privacy manifest with `plutil` and inspect the built declarations.
+- [x] Add failing Swift tests for persistence, retry/reassignment, cleanup success/failure, no-token cleanup, sign-out, deletion, and user-A/user-B switching.
+- [x] Replace direct table writes with RPCs and add app-only token storage.
+- [x] Persist before registration, retry after authenticated bootstrap, and retain failed cleanup state.
+- [x] Unregister before sign-out/deletion; clear sign-out UI/auth state even on cleanup/logout failure.
+- [x] Preserve deletion failure semantics and clear state after confirmed deletion.
+- [x] End local Live Activities and unregister local remote notifications during account transitions.
+- [x] Regenerate the project if files are added and run focused Swift tests.
 
-### Checkpoint: Agent-verifiable TF-02 work
+**Files:** device-token repository/service, authenticated/account-transition coordinators, profile sign-out/deletion views, Live Activity manager, and focused tests.
 
-- [x] Run the iOS unit suite after the resource change.
-- [x] Run an unsigned Release device build and confirm the manifest remains present.
-- [x] Run the Release static analyzer.
-- [x] Update the readiness checklist only for items supported by the inventory and built artifacts.
+## Phase 3: Sender and Full Verification
 
-### Phase 3: User-owned release verification
+- [x] Preserve/test APNs 410 cleanup and current-user token selection for sensitive chat previews.
+- [x] Run the full Deno Edge Function suite.
+- [x] Run the full iOS Debug simulator suite, unsigned Release device build, and Release analyzer.
+- [x] Review tests first, then the implementation for correctness, simplicity, authorization, race safety, migration safety, token redaction, and scope.
+- [x] Update TF-03 checklist boxes only where concrete evidence supports completion.
 
-- [ ] Generate a privacy report from the final distribution archive in Xcode Organizer and review it against this plan.
-- [ ] Confirm/publish matching App Store Connect App Privacy answers for the exact production behavior.
+## Verification Results
 
-## Verification Evidence (2026-09-10)
+- Focused TF-03 Swift tests: passed after test-first failures, including the callback/sign-out race regression.
+- Full iOS Debug simulator suite: 137 passed, 0 failed on iPhone 17 Pro / iOS 26.3.1 simulator.
+- Full Deno Edge Function suite: 24 passed, 0 failed.
+- Unsigned generic-device Release build: passed after correcting main-actor warnings; clean rerun passed.
+- Release static analyzer: passed with no reported findings.
+- SQL/RLS suite: passed on 2026-09-11 after a clean local `supabase db reset`; all phase A-F assertions completed and `phase_f_device_token_ownership: ownership lifecycle OK` was emitted.
+- Git whitespace validation: `git diff --check` passed after the final documentation updates.
 
-- `xcodegen generate` succeeded and generated exactly one app-target resources entry for `PrivacyInfo.xcprivacy`; the widget target has no entry.
-- `plutil -lint` passed for the source manifest, Debug app manifest, Release app manifest, and embedded Swift Crypto manifest.
-- The source manifest matched the Debug and unsigned Release app-bundle copies byte-for-byte.
-- Debug simulator tests on iPhone 17 Pro (iOS 26.3) passed: 123 tests, 0 failures (`** TEST SUCCEEDED **`).
-- The unsigned generic iOS Release build passed (`** BUILD SUCCEEDED **`).
-- The unsigned generic iOS Release static-analysis run passed (`** ANALYZE SUCCEEDED **`).
-- The app manifest was present at `DerivedData/Build/Products/Debug-iphonesimulator/PickUpUCF.app/PrivacyInfo.xcprivacy` and `DerivedData/Build/Products/Release-iphoneos/PickUpUCF.app/PrivacyInfo.xcprivacy`.
-- No `PrivacyInfo.xcprivacy` was present in either built widget extension, matching the verified absence of widget required-reason API use, collection, tracking, or third-party dependencies.
-- The built app declaration contains `NSPrivacyAccessedAPICategoryUserDefaults` / `CA92.1`, tracking false, no tracking domains, and the nine collected-data categories recorded under Architecture Decisions.
-
-## Reproduction Commands
+## Verification Commands
 
 ```sh
+cd supabase
+supabase db reset
+psql "<local DATABASE_URL>" -f tests/run_all.sql
+
+cd supabase/functions/send-push
+deno test --allow-env --allow-net
+
 cd ios
 xcodegen generate
-plutil -lint PickUpUCF/PrivacyInfo.xcprivacy
-xcodebuild -project PickUpUCF.xcodeproj -scheme PickUpUCF -configuration Debug -destination 'platform=iOS Simulator,id=2BFDB27E-F302-4FF8-9175-0BB43E0203C5' -derivedDataPath DerivedData -disableAutomaticPackageResolution test
+xcodebuild -project PickUpUCF.xcodeproj -scheme PickUpUCF -configuration Debug -destination 'platform=iOS Simulator,id=<installed-id>' -derivedDataPath DerivedData -disableAutomaticPackageResolution test
 xcodebuild -project PickUpUCF.xcodeproj -scheme PickUpUCF -configuration Release -destination 'generic/platform=iOS' -derivedDataPath DerivedData -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO build
 xcodebuild -project PickUpUCF.xcodeproj -scheme PickUpUCF -configuration Release -destination 'generic/platform=iOS' -derivedDataPath DerivedData -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO analyze
-find DerivedData -path '*PickUpUCF.app/PrivacyInfo.xcprivacy' -o -path '*PickUpUCF.app/PlugIns/PickUpUCFWidget.appex/PrivacyInfo.xcprivacy'
 ```
 
-The exact destination may be adjusted to an installed simulator runtime. Built products will be inspected directly rather than inferred from Xcode project membership.
+## Migration Safety and Rollback
 
-## Manual Verification and Evidence Required
+- Capture production row, invalid-token, and duplicate-normalized-token counts without returning token values before deployment.
+- The migration retains the latest `updated_at` owner; user-id ordering breaks ties. Invalid rows are deleted because APNs cannot deliver to them.
+- Installing uniqueness takes a table lock. Capture production size and deploy in a quiet window.
+- Do not deploy until a compatible app build is staged: older clients use direct table mutation, which the migration revokes.
+- Prefer a forward fix while retaining global uniqueness. Emergency rollback can restore owner-scoped direct writes and the composite key, but that reopens the security leak and requires disabling notification delivery until corrected.
 
-1. After TF-03 through TF-05 and the final distribution archive, generate the archive privacy report in Xcode Organizer.
-2. Confirm the report shows no tracking and contains only the data types and required-reason APIs documented here.
-3. In App Store Connect, answer App Privacy for the main app only and report back the generated report summary plus the published data-type/purpose/linking/tracking answers.
+## User-Owned and Unverified
 
-## Dependencies
+- [ ] Authorize/deploy the reviewed migration with the compatible build staged.
+- [ ] Provide sanitized preflight/post-deployment counts and grant/constraint evidence.
+- [ ] Complete the physical-device matrix for token rotation, account switching, offline cleanup, deletion, APNs 410, notification previews, and Live Activity teardown.
+- [ ] Report build/commit, migration version, device/iOS versions, account labels, timestamps, recipient result, and redacted evidence.
 
-- TF-01 source signing setup is present and signed Debug device builds have already succeeded.
-- Final archive/report verification remains sequenced after TF-03 through TF-05, per the readiness requirements.
-- The required main App Store Connect record exists; the archive privacy report and production-matched App Privacy answers remain open.
+## Risks
 
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| A dependency changes its API or manifest behavior | Privacy report may gain declarations | Re-run dependency inventory and archive privacy report after package updates |
-| Production behavior differs from repository code | Store disclosure becomes inaccurate | User confirms production services and App Store answers before checking the final item |
-| XcodeGen drops target membership | Manifest is absent from the bundle | Regenerate and inspect both project resources and built bundle roots |
-| Over-declaring widget behavior | Misleading extension manifest | Keep the widget manifest absent until its own code or dependencies require one |
-
-## Rollback
-
-Remove `ios/PickUpUCF/PrivacyInfo.xcprivacy`, regenerate `ios/PickUpUCF.xcodeproj`, and rebuild. No database, runtime behavior, credentials, signing assets, or external services are changed by this workstream.
-
-## Official Apple Sources
-
-- https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api
-- https://developer.apple.com/documentation/bundleresources/app-privacy-configuration/nsprivacyaccessedapitypes/nsprivacyaccessedapitype
-- https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk
-- https://developer.apple.com/documentation/bundleresources/describing-data-use-in-privacy-manifests
-- https://developer.apple.com/app-store/app-privacy-details/
+| Risk | Mitigation |
+| --- | --- |
+| Historical dedupe retains an older owner | Keep latest deterministically; compatible app immediately transfers on registration; require preflight and device switching test |
+| Older app cannot write after grant revocation | Stage compatible build before migration; do not deploy in this task |
+| Offline sign-out leaves server unaware | Retain retry state, unregister locally, end activities, and atomically transfer on next login |
+| Delayed A cleanup races B registration | Delete only when `user_id = auth.uid()` and token matches |
+| APNs token rotates | Persist/register every callback and retain Edge Function 410 cleanup |
+| Migration encounters dirty data/lock pressure | Preflight counts, quiet-window deployment, and prepared forward-fix/rollback SQL |

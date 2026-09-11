@@ -126,11 +126,17 @@ struct ProfileSettingsView: View {
             Button("Sign out", role: .destructive) {
                 Task {
                     errorMessage = nil
-                    do {
-                        try await repository.signOut()
-                        appState.session = nil
-                    } catch {
-                        errorMessage = AppErrorMapper.message(for: error)
+                    let outcome = await AccountTransitionCoordinator.signOut(
+                        appState: appState,
+                        unregisterToken: {
+                            try await PushNotificationService.shared.unregisterForAccountTransition()
+                        },
+                        signOut: { try await repository.signOut() }
+                    )
+                    if outcome == .completedWithWarning {
+                        appState.showError(
+                            "You’re signed out. Some server cleanup could not be confirmed."
+                        )
                     }
                 }
             }

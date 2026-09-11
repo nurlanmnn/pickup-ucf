@@ -41,6 +41,7 @@ function createMockSupabase(options: {
   tokensByUser?: Record<string, { apns_token: string }[]>;
   liveActivities?: LiveActivityRow[];
   fetchError?: { message: string };
+  onSelectTokens?: (userId: string) => void;
   onDeleteToken?: (token: string) => void;
   onMarkSent?: (id: string) => void;
 }) {
@@ -82,11 +83,13 @@ function createMockSupabase(options: {
       if (table === "device_tokens") {
         return {
           select: (_columns: string) => ({
-            eq: (_column: string, userId: string) =>
-              Promise.resolve({
+            eq: (_column: string, userId: string) => {
+              options.onSelectTokens?.(userId);
+              return Promise.resolve({
                 data: options.tokensByUser?.[userId] ?? [],
                 error: null,
-              }),
+              });
+            },
           }),
           delete: () => ({
             eq: (_column: string, token: string) => {
@@ -258,6 +261,41 @@ Deno.test("sendToUserDevices includes open_chat for chat_message notifications",
   assertEquals(ok, true);
   assertStringIncludes(body, "pickupucf://session/session-chat");
   assertStringIncludes(body, '"open_chat":true');
+});
+
+Deno.test("chat previews are sent only to the outbox user's current tokens", async () => {
+  setTestEnv({ APNS_ENV: "sandbox" });
+  const selectedUsers: string[] = [];
+  const row: OutboxRow = {
+    id: "outbox-account-switch",
+    user_id: "user-b",
+    title: "New message",
+    body: "Teammate: private preview",
+    type: "chat_message",
+    payload: { session_id: "session-private" },
+  };
+  const { supabase } = createMockSupabase({
+    tokensByUser: {
+      "user-a": [{ apns_token: "old-owner-token" }],
+      "user-b": [{ apns_token: "current-owner-token" }],
+    },
+    onSelectTokens: (userId) => selectedUsers.push(userId),
+  });
+  const requests: { url: string; body: string }[] = [];
+
+  const delivered = await sendToUserDevices(supabase as never, row, {
+    getJwt: () => Promise.resolve("mock-jwt"),
+    fetchImpl: (input, init) => {
+      requests.push({ url: String(input), body: String(init?.body ?? "") });
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+
+  assertEquals(delivered, true);
+  assertEquals(selectedUsers, ["user-b"]);
+  assertEquals(requests.length, 1);
+  assertStringIncludes(requests[0].url, "current-owner-token");
+  assertStringIncludes(requests[0].body, "private preview");
 });
 
 Deno.test("sendToUserDevices includes calendar cleanup metadata for cancellation notifications", async () => {

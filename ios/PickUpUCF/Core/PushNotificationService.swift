@@ -1,13 +1,53 @@
 import UIKit
 import UserNotifications
 
+protocol DeviceTokenStoring: AnyObject {
+    var token: String? { get set }
+}
+
+final class UserDefaultsDeviceTokenStore: DeviceTokenStoring {
+    private static let tokenKey = "pushNotifications.lastAPNSToken"
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    var token: String? {
+        get { defaults.string(forKey: Self.tokenKey) }
+        set { defaults.set(newValue, forKey: Self.tokenKey) }
+    }
+}
+
 @MainActor
 final class PushNotificationService: NSObject {
     static let shared = PushNotificationService()
     private let tokenRepository: DeviceTokenRepositoryProtocol
+    private let tokenStore: DeviceTokenStoring
+    private let registerForRemoteNotifications: @MainActor () -> Void
+    private let unregisterForRemoteNotifications: @MainActor () -> Void
+    private let endLiveActivities: @MainActor () async -> Void
+    private var acceptsTokenRegistration = false
+    private var pendingRegistration: Task<Void, Never>?
 
-    init(tokenRepository: DeviceTokenRepositoryProtocol = DeviceTokenRepository()) {
+    init(
+        tokenRepository: DeviceTokenRepositoryProtocol = DeviceTokenRepository(),
+        tokenStore: DeviceTokenStoring = UserDefaultsDeviceTokenStore(),
+        registerForRemoteNotifications: @escaping @MainActor () -> Void = {
+            UIApplication.shared.registerForRemoteNotifications()
+        },
+        unregisterForRemoteNotifications: @escaping @MainActor () -> Void = {
+            UIApplication.shared.unregisterForRemoteNotifications()
+        },
+        endLiveActivities: @escaping @MainActor () async -> Void = {
+            await GameLiveActivityCoordinator.endAllForAccountTransition()
+        }
+    ) {
         self.tokenRepository = tokenRepository
+        self.tokenStore = tokenStore
+        self.registerForRemoteNotifications = registerForRemoteNotifications
+        self.unregisterForRemoteNotifications = unregisterForRemoteNotifications
+        self.endLiveActivities = endLiveActivities
     }
 
     func requestAuthorizationAndRegister() async {
@@ -15,7 +55,7 @@ final class PushNotificationService: NSObject {
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             guard granted else { return }
-            UIApplication.shared.registerForRemoteNotifications()
+            registerForRemoteNotifications()
         } catch {
             // Non-fatal; user can enable later in Settings
         }
@@ -23,6 +63,51 @@ final class PushNotificationService: NSObject {
 
     func handleDeviceToken(_ deviceToken: Data) async {
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
-        try? await tokenRepository.upsert(token: token)
+        let previousToken = tokenStore.token
+        tokenStore.token = token
+        guard acceptsTokenRegistration else { return }
+        await enqueueRegistration {
+            if let previousToken, previousToken != token {
+                try? await self.tokenRepository.unregister(token: previousToken)
+            }
+            try? await self.tokenRepository.register(token: token)
+        }
+    }
+
+    func registerStoredTokenIfAvailable() async {
+        acceptsTokenRegistration = true
+        guard let token = tokenStore.token else { return }
+        await enqueueRegistration {
+            try? await self.tokenRepository.register(token: token)
+        }
+    }
+
+    func unregisterForAccountTransition() async throws {
+        acceptsTokenRegistration = false
+        let token = tokenStore.token
+        await endLiveActivities()
+        unregisterForRemoteNotifications()
+        await pendingRegistration?.value
+        guard let token else { return }
+        try await tokenRepository.unregister(token: token)
+    }
+
+    func restoreAfterFailedAccountDeletion() async {
+        await refreshRegistrationAfterAuthorizationChange()
+    }
+
+    func refreshRegistrationAfterAuthorizationChange() async {
+        await registerStoredTokenIfAvailable()
+        registerForRemoteNotifications()
+    }
+
+    private func enqueueRegistration(_ operation: @escaping () async -> Void) async {
+        let previousRegistration = pendingRegistration
+        let registration = Task { @MainActor in
+            await previousRegistration?.value
+            await operation()
+        }
+        pendingRegistration = registration
+        await registration.value
     }
 }

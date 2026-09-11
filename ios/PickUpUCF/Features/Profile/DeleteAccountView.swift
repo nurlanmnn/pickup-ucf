@@ -81,9 +81,22 @@ struct DeleteAccountView: View {
         isDeleting = true
         defer { isDeleting = false }
         do {
-            try await profileRepository.deleteAccount()
-            try await authRepository.signOut()
-            appState.session = nil
+            let outcome = try await AccountTransitionCoordinator.deleteAccount(
+                appState: appState,
+                unregisterToken: {
+                    try await PushNotificationService.shared.unregisterForAccountTransition()
+                },
+                deleteAccount: { try await profileRepository.deleteAccount() },
+                signOut: { try await authRepository.signOut() },
+                restoreNotifications: {
+                    await PushNotificationService.shared.restoreAfterFailedAccountDeletion()
+                }
+            )
+            if outcome == .completedWithWarning {
+                appState.showError(
+                    "Your account was deleted, but some device cleanup could not be confirmed."
+                )
+            }
         } catch {
             errorMessage = AppErrorMapper.message(for: error)
         }

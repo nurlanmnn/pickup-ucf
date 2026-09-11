@@ -8,3 +8,4 @@
 \ir phase_d_tier1.sql
 \ir phase_d_tier2.sql
 \ir phase_e_live_activities.sql
+\ir phase_f_device_token_ownership.sql

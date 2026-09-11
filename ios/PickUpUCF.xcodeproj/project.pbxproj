@@ -113,6 +113,7 @@
 		9B364341B2297A924B66E20A /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6849B06D30B12DF30371DC /* RootView.swift */; };
 		9B62B1AA95C38FE416E5B6F5 /* DiscoverTimeWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A6F8D090E7AA6007EFC0A6 /* DiscoverTimeWindow.swift */; };
 		9E83EB64D263E78E735DD6FA /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAB603834903FC6F22E7B99F /* OnboardingViewModelTests.swift */; };
+		9F2F3932AFE20E40EE5D9A0D /* AccountTransitionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDA0A0364F6A10FDCFDEEAF /* AccountTransitionCoordinator.swift */; };
 		A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
 		ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */; };
@@ -233,6 +234,7 @@
 		3509DA3160CF7BCDD9FD66F1 /* EditUsernameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditUsernameViewModel.swift; sourceTree = "<group>"; };
 		3523B06F8873C00F770B66FD /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		39E0BDA01A4374F3B41CF233 /* CollapsibleSectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsibleSectionHeader.swift; sourceTree = "<group>"; };
+		3CDA0A0364F6A10FDCFDEEAF /* AccountTransitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTransitionCoordinator.swift; sourceTree = "<group>"; };
 		3D5B55FAA4BAE487C14D33EE /* CreateFlowProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFlowProgressBar.swift; sourceTree = "<group>"; };
 		422468FE765F778FFA19D99B /* VerifyEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyEmailView.swift; sourceTree = "<group>"; };
 		44BE22D41072211B62E6CABA /* NotificationPreferencesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPreferencesRepository.swift; sourceTree = "<group>"; };
@@ -711,6 +713,7 @@
 		CA7DF6C826265A75418AE2E9 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				3CDA0A0364F6A10FDCFDEEAF /* AccountTransitionCoordinator.swift */,
 				46FED4FBE447F638AA69D5AE /* AppConfig.swift */,
 				C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */,
 				D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */,
@@ -935,6 +938,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F2F3932AFE20E40EE5D9A0D /* AccountTransitionCoordinator.swift in Sources */,
 				3330E32B3843D5A07F40A1CA /* AppCardStyle.swift in Sources */,
 				D13AA5379AD0E2799731D389 /* AppConfig.swift in Sources */,
 				F700B8A9852BCB68B01DF592 /* AppDelegate.swift in Sources */,

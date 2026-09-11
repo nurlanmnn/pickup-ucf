@@ -1,13 +1,11 @@
 import Foundation
 import Supabase
 
-struct DeviceTokenUpsertRow: Encodable {
-    let userId: UUID
+struct DeviceTokenParams: Encodable {
     let apnsToken: String
 
     enum CodingKeys: String, CodingKey {
-        case userId = "user_id"
-        case apnsToken = "apns_token"
+        case apnsToken = "p_apns_token"
     }
 }
 
@@ -22,8 +20,8 @@ struct LiveActivityTokenRegistrationParams: Encodable {
 }
 
 protocol DeviceTokenRepositoryProtocol {
-    func upsert(token: String) async throws
-    func delete(token: String) async throws
+    func register(token: String) async throws
+    func unregister(token: String) async throws
 }
 
 final class DeviceTokenRepository: DeviceTokenRepositoryProtocol {
@@ -33,18 +31,18 @@ final class DeviceTokenRepository: DeviceTokenRepositoryProtocol {
         self.client = client
     }
 
-    func upsert(token: String) async throws {
-        let userId = try await client.auth.session.user.id
-        try await client.from("device_tokens")
-            .upsert(DeviceTokenUpsertRow(userId: userId, apnsToken: token))
-            .execute()
+    func register(token: String) async throws {
+        try await client.rpc(
+            "register_device_token",
+            params: DeviceTokenParams(apnsToken: token)
+        ).execute()
     }
 
-    func delete(token: String) async throws {
-        try await client.from("device_tokens")
-            .delete()
-            .eq("apns_token", value: token)
-            .execute()
+    func unregister(token: String) async throws {
+        try await client.rpc(
+            "unregister_device_token",
+            params: DeviceTokenParams(apnsToken: token)
+        ).execute()
     }
 }
 

@@ -101,7 +101,7 @@ enum GameLiveActivityManager {
     }
 
     @available(iOS 16.2, *)
-    private static func endAll() async {
+    fileprivate static func endAll() async {
         for activity in Activity<GameLiveActivityAttributes>.activities {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
@@ -132,6 +132,12 @@ enum GameLiveActivityCoordinator {
             Task {
                 await GameLiveActivityManager.end(forSessionId: sessionId)
             }
+        }
+    }
+
+    static func endAllForAccountTransition() async {
+        if #available(iOS 16.2, *) {
+            await GameLiveActivityManager.endAll()
         }
     }
 }

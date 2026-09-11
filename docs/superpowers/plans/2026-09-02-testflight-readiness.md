@@ -61,7 +61,7 @@
 - [ ] Signed archive and App Store Connect validation.
 - [ ] Physical-device push notification and Live Activity behavior.
 - [ ] Production Supabase migrations, secrets, cron jobs, email hook, and APNs configuration.
-- [ ] SQL/RLS integration suite; the local Docker/Supabase environment was unavailable during the audit.
+- [x] SQL/RLS integration suite passed against a clean local Supabase reset on 2026-09-11.
 - [ ] Authenticated UI flows at runtime; audit credentials were not available.
 - [ ] External TestFlight metadata and Beta App Review submission.
 
@@ -125,26 +125,29 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 
 **Why this blocks release:** `device_tokens` currently allows the same APNs token to remain associated with more than one user because its key is `(user_id, apns_token)`. Sign-out and account deletion do not unregister the device token. On a shared phone, user A could continue receiving notifications—including chat previews—after user B signs in.
 
-**Evidence:**
+**Evidence (2026-09-10, SQL verification 2026-09-11):** Added `20260910120000_secure_device_token_ownership.sql`, which normalizes and deduplicates legacy values, makes `apns_token` the primary key, revokes client table writes, gives the service role only sender-required read/delete access, and exposes authenticated `SECURITY DEFINER` register/unregister functions. Registration derives the owner from `auth.uid()` and atomically transfers a token; unregistration is owner-scoped so a delayed user-A cleanup cannot remove user B's transferred row. The iOS client now persists the last token without logging it, serializes callback/transition operations, retries ownership at authenticated bootstrap and when returning from an iOS authorization change, unregisters before sign-out/deletion, disables local remote notifications, and synchronously ends local Live Activities. Sign-out always clears local UI/auth state with a token-free warning on incomplete server cleanup; failed account deletion restores notification registration and keeps the session. Sender coverage confirms chat previews select only the outbox user's current token, while existing APNs 410 cleanup remains covered. All 137 iOS tests and all 24 Deno Edge Function tests pass; the unsigned Release device build and Release analyzer also pass. A clean local `supabase db reset` applied every migration, including TF-03, and the complete SQL/RLS suite passed with `phase_f_device_token_ownership: ownership lifecycle OK`. Production deployment and physical-device APNs/account-switch testing remain user-owned.
 
-- `supabase/migrations/20260517120000_initial_schema.sql`
+**Implementation files:**
+
+- `supabase/migrations/20260910120000_secure_device_token_ownership.sql`
+- `supabase/tests/phase_f_device_token_ownership.sql`
+- `ios/PickUpUCF/Core/PushNotificationService.swift`
+- `ios/PickUpUCF/Core/AccountTransitionCoordinator.swift`
 - `ios/PickUpUCF/Repositories/DeviceTokenRepository.swift`
-- `ios/PickUpUCF/Repositories/AuthRepository.swift`
-- `ios/PickUpUCF/Core/AppDelegate.swift`
-- `supabase/functions/send-push/index.ts`
+- `supabase/functions/send-push/index_test.ts`
 
 **Tasks:**
 
-- [ ] Make each APNs token have one current account owner at the database level.
-- [ ] Prefer an authenticated RPC that atomically reassigns the token to `auth.uid()` instead of a client-side delete/insert sequence.
-- [ ] Revoke broad execution rights on the RPC and grant only the roles that need it.
-- [ ] Store the most recently registered token locally so it can be removed during account transitions.
-- [ ] Unregister the token before sign-out and before account deletion.
-- [ ] Define safe behavior when unregistering fails: local auth state must still be cleared, and the failure must be recoverable/observable without exposing the token.
-- [ ] Re-register/reassign the token after login, token rotation, app reinstall, and authorization changes.
-- [ ] Preserve server cleanup for APNs responses indicating an invalid or unregistered token.
-- [ ] Add migration tests proving one token cannot remain attached to two users.
-- [ ] Add regression coverage for: user A signs in → token registers → A signs out → user B signs in on the same device → only B receives notifications.
+- [x] Make each APNs token have one current account owner at the database level.
+- [x] Prefer an authenticated RPC that atomically reassigns the token to `auth.uid()` instead of a client-side delete/insert sequence.
+- [x] Revoke broad execution rights on the RPC and grant only the roles that need it.
+- [x] Store the most recently registered token locally so it can be removed during account transitions.
+- [x] Unregister the token before sign-out and before account deletion.
+- [x] Define safe behavior when unregistering fails: local auth state must still be cleared, and the failure must be recoverable/observable without exposing the token.
+- [x] Re-register/reassign the token after login, token rotation, app reinstall, and authorization changes.
+- [x] Preserve server cleanup for APNs responses indicating an invalid or unregistered token.
+- [x] Add migration tests proving one token cannot remain attached to two users.
+- [x] Add regression coverage for: user A signs in → token registers → A signs out → user B signs in on the same device → only B receives notifications.
 - [ ] Confirm notification payload previews do not expose sensitive chat content to a stale account/device mapping.
 
 **Done when:** Database constraints and end-to-end tests prove that an APNs token has exactly one current owner and account transitions cannot deliver one user’s notifications to another user.
