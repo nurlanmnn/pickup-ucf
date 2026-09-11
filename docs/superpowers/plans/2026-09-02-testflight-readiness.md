@@ -160,12 +160,14 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 
 **Tasks:**
 
-- [ ] Reorder or redesign mapping so known auth, database, networking, validation, and domain errors are handled before a generic `LocalizedError` fallback.
-- [ ] Ensure unexpected server details, SQL text, internal identifiers, and implementation messages never appear in the UI.
-- [ ] Preserve actionable copy for common states such as duplicate accounts, invalid credentials, expired links, connectivity loss, conflicts, and capacity limits.
-- [ ] Add tests using real `AuthError`/`PostgrestError` values where constructible, or accurate test doubles that conform to `LocalizedError`.
-- [ ] Add a safe generic fallback and retain detailed diagnostics only in privacy-safe internal logging.
-- [ ] Audit all views/view models that show repository errors to ensure they use the mapper consistently.
+- [x] Reorder or redesign mapping so known auth, database, networking, validation, and domain errors are handled before a generic `LocalizedError` fallback.
+- [x] Ensure unexpected server details, SQL text, internal identifiers, and implementation messages never appear in the UI.
+- [x] Preserve actionable copy for common states such as duplicate accounts, invalid credentials, expired links, connectivity loss, conflicts, and capacity limits.
+- [x] Add tests using real `AuthError`/`PostgrestError` values where constructible, or accurate test doubles that conform to `LocalizedError`.
+- [x] Add a safe generic fallback and retain detailed diagnostics only in privacy-safe internal logging.
+- [x] Audit all views/view models that show repository errors to ensure they use the mapper consistently.
+
+**Evidence (2026-09-11):** `AppErrorMapper` now inspects bounded, cycle-protected underlying-error chains and handles cancellation, `URLError`, structured Supabase `AuthError` codes, structured `PostgrestError`/SQLSTATE codes, and concrete app-authored domain errors before narrow compatibility text classification. Compatibility checks return fixed allowlisted copy only; arbitrary `LocalizedError` descriptions and unknown auth/database messages fall back to `Something went wrong. Please try again.` Developer-facing configuration and migration instructions were replaced with user-appropriate service-unavailable copy. Regression tests use real constructible `AuthError` and `PostgrestError` values plus accurate localized and wrapped-error doubles, inject SQL/token/identifier/stack-trace-like details, and cover authentication, verification/reset expiry, networking, cancellation, conflicts, capacity/waitlist, authorization, validation, and every app-authored domain-error family. A static presentation audit confirmed repository failures shown in global banners, load states, action errors, and inline API feedback already converge on the mapper; direct messages are deliberate field validation or fixed account-transition guidance. No raw-error or sensitive-value logging was added. Focused tests pass; the complete iOS Debug simulator suite passed 149/149 on iPhone 17 Pro / iOS 26.3.1; the unsigned generic-device Release build and Release analyzer passed; `git diff --check` passed. Authenticated runtime UI verification remains unverified because no safe test credentials were available.
 
 **Done when:** Known failures produce specific, friendly recovery messages; unknown failures produce safe generic copy; raw backend errors are covered by regression tests and do not reach users.
 

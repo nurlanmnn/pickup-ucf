@@ -17,7 +17,7 @@ final class FormValidationFeedbackTests: XCTestCase {
     @MainActor
     func testSignUpRepositoryFailureSetsBanner() async {
         let repository = RecordingAuthRepository()
-        repository.signUpError = StubLocalizedError("An account with this email already exists. Try signing in.")
+        repository.signUpError = StubLocalizedError("User already registered")
         let viewModel = SignUpViewModel(repository: repository)
         viewModel.displayName = "Knight"
         viewModel.email = "knight@knights.ucf.edu"
