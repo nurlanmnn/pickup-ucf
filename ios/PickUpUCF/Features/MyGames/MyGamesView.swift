@@ -3,6 +3,7 @@ import SwiftUI
 struct MyGamesView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppState.self) private var appState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: MyGamesViewModel?
     @State private var navigationPath = NavigationPath()
 
@@ -112,7 +113,7 @@ struct MyGamesView: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             // Tappable elevated card for the history entry point
             Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.75)) {
                     vm.isPastSectionExpanded.toggle()
                 }
                 if vm.isPastSectionExpanded {
@@ -142,7 +143,7 @@ struct MyGamesView: View {
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
                         .rotationEffect(.degrees(vm.isPastSectionExpanded ? 90 : 0))
-                        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: vm.isPastSectionExpanded)
+                        .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.75), value: vm.isPastSectionExpanded)
                 }
                 .padding(Spacing.m)
                 .background(AppColor.elevatedSurface(colorScheme))
@@ -192,6 +193,7 @@ struct MyGamesView: View {
                 .foregroundStyle(AppColor.textSecondary(colorScheme))
                 .textCase(.uppercase)
                 .tracking(0.6)
+                .fixedSize(horizontal: true, vertical: false)
 
             if let value {
                 Text(value)

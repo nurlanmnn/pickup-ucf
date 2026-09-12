@@ -60,12 +60,13 @@ struct BlockedUsersView: View {
                 }
             case .loaded(let users):
                 if users.isEmpty {
-                    EmptyStateView(
-                        symbol: "hand.raised",
-                        title: "No blocked users",
-                        message: "People you block won't appear in Discover and you can't join their games."
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ScrollView {
+                        EmptyStateView(
+                            symbol: "hand.raised",
+                            title: "No blocked users",
+                            message: "People you block won't appear in Discover and you can't join their games."
+                        )
+                    }
                 } else {
                     ScrollView {
                         VStack(spacing: Spacing.m) {

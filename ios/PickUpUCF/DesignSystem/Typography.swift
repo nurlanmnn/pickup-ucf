@@ -3,7 +3,7 @@ import SwiftUI
 enum AppFont {
     /// 34pt rounded bold — screen hero titles (splash screens, empty states, step headers).
     static func display(_ weight: Font.Weight = .bold) -> Font {
-        .system(size: 34, weight: weight, design: .rounded)
+        .system(.largeTitle, design: .rounded, weight: weight)
     }
 
     /// Maps to `.largeTitle` — nav bar large title, welcome headline.

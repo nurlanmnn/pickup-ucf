@@ -5,6 +5,7 @@ struct ChatView: View {
     let currentUserId: UUID
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: ChatViewModel
     @FocusState private var composerFocused: Bool
 
@@ -57,12 +58,13 @@ struct ChatView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .loaded(let items):
             if items.isEmpty {
-                EmptyStateView(
-                    symbol: "bubble.left.and.bubble.right",
-                    title: "No messages yet",
-                    message: "Say hi and coordinate meetup details with your group."
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ScrollView {
+                    EmptyStateView(
+                        symbol: "bubble.left.and.bubble.right",
+                        title: "No messages yet",
+                        message: "Say hi and coordinate meetup details with your group."
+                    )
+                }
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -81,7 +83,7 @@ struct ChatView: View {
                     .scrollDismissesKeyboard(.interactively)
                     .onChange(of: items.count) { _, _ in
                         if let last = items.last {
-                            withAnimation(.easeOut(duration: 0.2)) {
+                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
                                 proxy.scrollTo(last.id, anchor: .bottom)
                             }
                         }
@@ -119,6 +121,10 @@ struct ChatView: View {
                         .font(.system(size: 32))
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.black, canSend ? AppColor.gold : AppColor.gold.opacity(0.35))
+                        .frame(
+                            minWidth: AccessibilityLayout.minimumTouchTarget,
+                            minHeight: AccessibilityLayout.minimumTouchTarget
+                        )
                 }
                 .buttonStyle(.plain)
                 .disabled(!canSend || viewModel.isSending)

@@ -3,6 +3,7 @@ import UIKit
 
 struct MainTabView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectedTab = 0
     @State private var previousNonCreateTab = 0
     @State private var showCreate = false
@@ -29,7 +30,6 @@ struct MainTabView: View {
                         Text("Create")
                     } icon: {
                         Image(systemName: "plus.circle.fill")
-                            .symbolEffect(.bounce, value: createBounceToken)
                     }
                 }
                 .tag(2)
@@ -53,7 +53,9 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { _, newValue in
             if newValue == 2 {
                 createBounceToken += 1
-                TabBarItemBounce.bounceItem(at: 2)
+                if !reduceMotion {
+                    TabBarItemBounce.bounceItem(at: 2)
+                }
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                 createPrefill = nil
                 showCreate = true

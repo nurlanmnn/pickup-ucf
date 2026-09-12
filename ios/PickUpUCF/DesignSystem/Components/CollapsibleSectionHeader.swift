@@ -7,6 +7,7 @@ struct CollapsibleSectionHeader: View {
     let isExpanded: Bool
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: Spacing.s) {
@@ -25,7 +26,7 @@ struct CollapsibleSectionHeader: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(AppColor.textSecondary(colorScheme))
                 .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isExpanded)
         }
         .contentShape(Rectangle())
         .accessibilityAddTraits(isExpanded ? .isSelected : [])

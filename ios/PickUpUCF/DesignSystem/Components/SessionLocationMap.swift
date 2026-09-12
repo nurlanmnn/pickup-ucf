@@ -5,6 +5,7 @@ struct SessionLocationMap: View {
     let session: PickupSession
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var coordinate: CLLocationCoordinate2D?
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var isExpanded = false
@@ -41,7 +42,7 @@ struct SessionLocationMap: View {
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                withAnimation(reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.82)) {
                                     isExpanded = true
                                 }
                             }
@@ -51,7 +52,7 @@ struct SessionLocationMap: View {
 
                 if coordinate != nil {
                     Button {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                        withAnimation(reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.82)) {
                             isExpanded.toggle()
                         }
                     } label: {
@@ -62,6 +63,10 @@ struct SessionLocationMap: View {
                             .foregroundStyle(AppColor.textPrimary(colorScheme))
                             .padding(Spacing.s)
                             .background(.ultraThinMaterial, in: Circle())
+                            .frame(
+                                minWidth: AccessibilityLayout.minimumTouchTarget,
+                                minHeight: AccessibilityLayout.minimumTouchTarget
+                            )
                     }
                     .buttonStyle(.plain)
                     .padding(Spacing.s)
@@ -76,6 +81,7 @@ struct SessionLocationMap: View {
                     Label("Open in Maps", systemImage: "map")
                         .font(AppFont.caption(.semibold))
                         .foregroundStyle(AppColor.gold)
+                        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                 }
                 .buttonStyle(.plain)
             }

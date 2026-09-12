@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NotificationSettingsView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel = NotificationSettingsViewModel()
 
     var body: some View {
@@ -110,21 +111,33 @@ struct NotificationSettingsView: View {
         isDisabled: Bool,
         onChange: @escaping (_ newValue: Bool) -> Void
     ) -> some View {
-        Toggle(isOn: Binding(get: { isOn }, set: { onChange($0) })) {
-            HStack(spacing: Spacing.m) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 30, height: 30)
-                    .background(iconColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        let binding = Binding(get: { isOn }, set: { onChange($0) })
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(AppFont.body())
-                    Text(description)
-                        .font(AppFont.caption())
-                        .foregroundStyle(.secondary)
+        return Group {
+            if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    notificationLabel(
+                        title: title,
+                        description: description,
+                        systemImage: systemImage,
+                        iconColor: iconColor
+                    )
+                    .accessibilityHidden(true)
+
+                    Toggle("", isOn: binding)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .accessibilityLabel(title)
+                        .accessibilityHint(description)
+                }
+            } else {
+                Toggle(isOn: binding) {
+                    notificationLabel(
+                        title: title,
+                        description: description,
+                        systemImage: systemImage,
+                        iconColor: iconColor
+                    )
                 }
             }
         }
@@ -132,6 +145,30 @@ struct NotificationSettingsView: View {
         .disabled(isDisabled)
         .padding(.vertical, Spacing.s + 2)
         .padding(.horizontal, Spacing.m)
+    }
+
+    private func notificationLabel(
+        title: String,
+        description: String,
+        systemImage: String,
+        iconColor: Color
+    ) -> some View {
+        HStack(alignment: .top, spacing: Spacing.m) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(iconColor)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AppFont.body())
+                Text(description)
+                    .font(AppFont.caption())
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
 

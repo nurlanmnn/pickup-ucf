@@ -14,34 +14,51 @@ struct StepperNumberFieldRow<Focus: Hashable>: View {
     var focusValue: Focus
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: .center, spacing: Spacing.m) {
-            Text(title)
-                .font(AppFont.body())
-                .foregroundStyle(AppColor.textPrimary(colorScheme))
-
-            Spacer(minLength: Spacing.s)
-
-            HStack(spacing: Spacing.s) {
-                TextField(
-                    "",
-                    text: digitsOnlyBinding($text),
-                    prompt: Text(prompt)
-                        .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.75))
-                )
-                .keyboardType(.numberPad)
-                .focused(focus, equals: focusValue)
-                .multilineTextAlignment(.trailing)
-                .frame(width: fieldWidth, alignment: .trailing)
-
-                Stepper("", value: $value, in: range, step: step)
-                    .labelsHidden()
+        Group {
+            if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    fieldLabel
+                    fieldControls
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            } else {
+                HStack(alignment: .center, spacing: Spacing.m) {
+                    fieldLabel
+                    Spacer(minLength: Spacing.s)
+                    fieldControls
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
-            .fixedSize(horizontal: true, vertical: false)
         }
         .onChange(of: value) { _, newValue in
             text = "\(newValue)"
+        }
+    }
+
+    private var fieldLabel: some View {
+        Text(title)
+            .font(AppFont.body())
+            .foregroundStyle(AppColor.textPrimary(colorScheme))
+    }
+
+    private var fieldControls: some View {
+        HStack(spacing: Spacing.s) {
+            TextField(
+                "",
+                text: digitsOnlyBinding($text),
+                prompt: Text(prompt)
+                    .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.75))
+            )
+            .keyboardType(.numberPad)
+            .focused(focus, equals: focusValue)
+            .multilineTextAlignment(.trailing)
+            .frame(minWidth: fieldWidth, alignment: .trailing)
+
+            Stepper("", value: $value, in: range, step: step)
+                .labelsHidden()
         }
     }
 

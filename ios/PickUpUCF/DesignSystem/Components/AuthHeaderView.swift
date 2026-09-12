@@ -39,6 +39,7 @@ struct AuthHeaderView: View {
                     }
                     .clipShape(Capsule())
             }
+            .accessibilityHidden(true)
 
             VStack(spacing: 6) {
                 Text(title)

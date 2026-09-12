@@ -11,6 +11,8 @@ struct QuickTimeChip: View {
         Button(action: action) {
             Text(label)
                 .font(AppFont.caption(.semibold))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(isSelected ? Color.black : AppColor.textPrimary(colorScheme))
                 .padding(.horizontal, Spacing.m)
                 .padding(.vertical, Spacing.s)
@@ -23,6 +25,7 @@ struct QuickTimeChip: View {
                         )
                 }
                 .clipShape(Capsule())
+                .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

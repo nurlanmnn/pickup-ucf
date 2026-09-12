@@ -70,11 +70,13 @@ struct AttendanceSheet: View {
             .padding(Spacing.m)
         case .loaded(let participants):
             if participants.isEmpty {
-                EmptyStateView(
-                    symbol: "person.2.slash",
-                    title: "No players to mark",
-                    message: "Nobody has joined this session yet."
-                )
+                ScrollView {
+                    EmptyStateView(
+                        symbol: "person.2.slash",
+                        title: "No players to mark",
+                        message: "Nobody has joined this session yet."
+                    )
+                }
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.m) {

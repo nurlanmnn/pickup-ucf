@@ -4,9 +4,14 @@ struct SportPickerGrid: View {
     let selectedSports: Set<SportType>
     let onToggle: (SportType) -> Void
 
-    private let sportColumns = [
-        GridItem(.adaptive(minimum: 104), spacing: Spacing.s),
-    ]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var sportColumns: [GridItem] {
+        if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+            return [GridItem(.flexible(), spacing: Spacing.s)]
+        }
+        return [GridItem(.adaptive(minimum: 104), spacing: Spacing.s)]
+    }
 
     var body: some View {
         LazyVGrid(columns: sportColumns, spacing: Spacing.s) {
@@ -39,10 +44,10 @@ struct SportPickerChip: View {
                     .font(AppFont.caption(.semibold))
                     .foregroundStyle(isSelected ? Color.black : AppColor.textPrimary(colorScheme))
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
+            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
             .padding(.vertical, Spacing.m)
             .padding(.horizontal, Spacing.s)
             .background(isSelected ? AppColor.gold : AppColor.surface(colorScheme))

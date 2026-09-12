@@ -394,7 +394,10 @@ struct DiscoverMapView: View {
                         )
                 }
             }
-            .frame(width: 36, height: 36)
+            .frame(
+                minWidth: AccessibilityLayout.minimumTouchTarget,
+                minHeight: AccessibilityLayout.minimumTouchTarget
+            )
         }
         .buttonStyle(.plain)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -411,7 +414,10 @@ struct DiscoverMapView: View {
             Image(systemName: systemImage)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(AppColor.textPrimary(colorScheme))
-                .frame(width: 36, height: 36)
+                .frame(
+                    minWidth: AccessibilityLayout.minimumTouchTarget,
+                    minHeight: AccessibilityLayout.minimumTouchTarget
+                )
                 .opacity(enabled ? 1 : 0.35)
         }
         .buttonStyle(.plain)

@@ -59,6 +59,7 @@ struct HostProfileView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: HostProfileViewModel
     @State private var showBlockConfirm = false
 
@@ -213,7 +214,7 @@ struct HostProfileView: View {
     // MARK: - Stat Tiles
 
     private func statTiles(_ profile: Profile) -> some View {
-        HStack(spacing: Spacing.s) {
+        LazyVGrid(columns: statColumns(for: profile), spacing: Spacing.s) {
             statTile(
                 value: "\(profile.gamesPlayed)",
                 label: "Games",
@@ -235,6 +236,12 @@ struct HostProfileView: View {
                 )
             }
         }
+    }
+
+    private func statColumns(for profile: Profile) -> [GridItem] {
+        let standardCount = profile.preferredSports.isEmpty ? 2 : 3
+        let count = AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) ? 1 : standardCount
+        return Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: count)
     }
 
     private func statTile(value: String, label: String, systemImage: String, color: Color) -> some View {

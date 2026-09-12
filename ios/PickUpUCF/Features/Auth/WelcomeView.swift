@@ -11,30 +11,39 @@ struct WelcomeView: View {
             ZStack {
                 welcomeBackground
 
-                VStack(spacing: 0) {
-                    Spacer(minLength: Spacing.xl)
+                GeometryReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            Spacer(minLength: Spacing.xl)
 
-                    brandHeader
+                            brandHeader
 
-                    Spacer(minLength: Spacing.xl)
+                            Spacer(minLength: Spacing.xl)
 
-                    VStack(spacing: Spacing.m) {
-                        PrimaryButton(title: "Sign Up") {
-                            showSignUp = true
+                            VStack(spacing: Spacing.m) {
+                                PrimaryButton(title: "Sign Up") {
+                                    showSignUp = true
+                                }
+                                .accessibilityIdentifier("welcome-sign-up")
+
+                                SecondaryButton(title: "Sign In", variant: .onDark) {
+                                    showSignIn = true
+                                }
+                                .accessibilityIdentifier("welcome-sign-in")
+
+                                Text("Use your @ucf.edu or @knights.ucf.edu email")
+                                    .font(AppFont.caption())
+                                    .foregroundStyle(.white.opacity(0.72))
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.top, Spacing.s)
+                            }
+                            .padding(.horizontal, Spacing.l)
+                            .padding(.bottom, Spacing.xl)
                         }
-
-                        SecondaryButton(title: "Sign In", variant: .onDark) {
-                            showSignIn = true
-                        }
-
-                        Text("Use your @ucf.edu or @knights.ucf.edu email")
-                            .font(AppFont.caption())
-                            .foregroundStyle(.white.opacity(0.55))
-                            .multilineTextAlignment(.center)
-                            .padding(.top, Spacing.s)
+                        .frame(minHeight: proxy.size.height)
                     }
-                    .padding(.horizontal, Spacing.l)
-                    .padding(.bottom, Spacing.xl)
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
             .preferredColorScheme(.dark)
@@ -91,11 +100,14 @@ struct WelcomeView: View {
                 Text("UCF pickup sports")
                     .font(AppFont.title(.semibold))
                     .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text("Find games, host sessions, and meet players on campus.")
                     .font(AppFont.body())
                     .foregroundStyle(.white.opacity(0.72))
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, Spacing.xl)
             }
         }
@@ -106,7 +118,7 @@ struct WelcomeView: View {
         HStack(spacing: Spacing.m) {
             ForEach(featuredSports) { sport in
                 Image(systemName: sport.systemImage)
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(AppColor.sportAccent(sport))
                     .frame(width: 48, height: 48)
                     .background(

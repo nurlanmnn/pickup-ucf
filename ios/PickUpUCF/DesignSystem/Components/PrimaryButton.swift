@@ -15,15 +15,20 @@ struct PrimaryButton: View {
                 }
                 Text(title)
                     .font(AppFont.headline(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, AccessibilityLayout.controlVerticalPadding)
+            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
             .foregroundStyle(.black)
             .background(isEnabled && !isLoading ? AppColor.gold : AppColor.gold.opacity(0.45))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .disabled(!isEnabled || isLoading)
         .accessibilityLabel(title)
+        .accessibilityIdentifier("primary-button-\(title)")
     }
 }
 

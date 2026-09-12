@@ -3,6 +3,8 @@ import SwiftUI
 struct CreateSessionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: CreateSessionViewModel
     @State private var currentStep: CreateSessionStep = .sportAndTime
     @State private var showDiscardDialog = false
@@ -144,10 +146,26 @@ struct CreateSessionView: View {
     }
 
     private func bottomBar(vm: CreateSessionViewModel) -> some View {
-        HStack(spacing: Spacing.m) {
+        Group {
+            if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+                VStack(spacing: Spacing.s) {
+                    bottomBarActions(vm: vm)
+                }
+            } else {
+                HStack(spacing: Spacing.m) {
+                    bottomBarActions(vm: vm)
+                }
+            }
+        }
+        .padding(Spacing.l)
+        .background(.ultraThinMaterial)
+    }
+
+    @ViewBuilder
+    private func bottomBarActions(vm: CreateSessionViewModel) -> some View {
             if currentStep != .sportAndTime {
                 SecondaryButton(title: "Back") {
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
                         goBack()
                     }
                 }
@@ -166,9 +184,6 @@ struct CreateSessionView: View {
                     advanceStep()
                 }
             }
-        }
-        .padding(Spacing.l)
-        .background(.ultraThinMaterial)
     }
 
     private var successOverlay: some View {
@@ -252,7 +267,7 @@ struct CreateSessionView: View {
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
             currentStep = next
         }
     }
@@ -262,7 +277,7 @@ struct CreateSessionView: View {
               let anchor = viewModel.firstInvalidScrollAnchor(for: step) else { return }
 
         if step != currentStep {
-            withAnimation(.easeInOut(duration: 0.25)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
                 currentStep = step
             }
         }
@@ -272,7 +287,7 @@ struct CreateSessionView: View {
     private func performScroll(to anchor: CreateSessionScrollAnchor, proxy: ScrollViewProxy) {
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 150_000_000)
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                 proxy.scrollTo(anchor, anchor: .top)
             }
             scrollToAnchor = nil

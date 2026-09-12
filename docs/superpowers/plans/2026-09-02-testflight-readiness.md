@@ -180,19 +180,28 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - `ios/PickUpUCF/DesignSystem/Components/PrimaryButton.swift`
 - `ios/PickUpUCF/DesignSystem/Components/SecondaryButton.swift`
 - `ios/PickUpUCF/Features/Auth/WelcomeView.swift`
+- `ios/PickUpUCF/DesignSystem/AccessibilityLayout.swift`
+- `ios/PickUpUCFTests/AccessibilityLayoutTests.swift`
+- `docs/testflight-evidence/tf-05/`
 
 **Tasks:**
 
-- [ ] Replace fixed button heights with a minimum height plus vertical padding that allows labels to grow.
-- [ ] Make the Welcome screen scroll or adapt with `ViewThatFits`/equivalent when content no longer fits.
-- [ ] Allow multiline labels where truncation would remove meaning.
-- [ ] Review fixed frames, hard-coded spacers, and combined accessibility elements across all major screens.
-- [ ] Verify touch targets remain at least 44×44 points.
+- [x] Replace fixed button heights with a minimum height plus vertical padding that allows labels to grow.
+- [x] Make the Welcome screen scroll or adapt with `ViewThatFits`/equivalent when content no longer fits.
+- [x] Allow multiline labels where truncation would remove meaning.
+- [x] Review fixed frames, hard-coded spacers, and combined accessibility elements across all major screens.
+- [x] Verify touch targets remain at least 44×44 points.
 - [ ] Test every screen at all Dynamic Type accessibility sizes on the smallest supported iPhone.
 - [ ] Test VoiceOver reading order, labels, hints, actions, focus behavior, and modal dismissal.
-- [ ] Test Increase Contrast, Reduce Motion, Bold Text, button shapes, light mode, and dark mode.
-- [ ] Add accessibility identifiers needed for repeatable UI checks.
-- [ ] Add focused tests for shared component sizing where practical and preserve screenshots/manual evidence for the release checklist.
+- [x] Test Increase Contrast, Reduce Motion, Bold Text, button shapes, light mode, and dark mode.
+- [x] Add accessibility identifiers needed for repeatable UI checks.
+- [x] Add focused tests for shared component sizing where practical and preserve screenshots/manual evidence for the release checklist.
+
+**Evidence (2026-09-12):** The Accessibility XXXL Welcome failure was reproduced on the smallest installed simulator, iPhone 16e / iOS 26.3.1. Before the fix, the headline/body/guidance truncated, the shared fixed-height button labels clipped, and overflow was unreachable. Shared buttons now use multiline labels, vertical padding, and a 44-point minimum; display typography uses a semantic text style; Welcome is viewport-aware and scrollable; and compact chips, map controls, session actions, and chat send controls meet the shared minimum target. Session cards, numeric stepper rows, create-session actions, profile statistics, and session-detail content adapt vertically at accessibility sizes. Decorative auth branding is hidden from assistive technologies, and nonessential shared/root/tab/discover/create/edit/chat motion respects Reduce Motion. Static audits covered onboarding, authentication, Discover, My Games, create/edit, session detail, attendance/reporting, chat, profile/host profile, settings, banners, sheets, alerts, loading/error/empty states, and modal dismissal paths. BETA-04's nested session-card navigation/action issue was recorded but deliberately not changed.
+
+Runtime evidence covers all 12 supported Dynamic Type categories on iPhone 16e / iOS 26.3.1, settled Large and Accessibility XXXL Welcome screenshots, reachable Accessibility XXXL Welcome actions, AX-tree order and actionable names on Welcome/Sign Up, Light/Dark auth rendering, Increase Contrast, Bold Text, Button Shapes, and Reduce Motion. An existing authenticated test session was then exercised at Accessibility XXXL across Discover list/map/filter states, My Games/history, every create-session step without submission, completed/cancelled session detail, empty chat without sending, profile/host profile, settings, notification rows without changing values, blocked users, account forms without submission, keyboard accessories, and navigation/sheet dismissal. Issues found in the authenticated pass were repaired in the create details stepper/actions, My Games section heading, notification rows, shared empty states, and session-detail hero/roster metadata. Authenticated Large checks confirmed the standard Discover, My Games, Create, and Profile layouts remain intact. Credentials were not entered or transmitted because the simulator already held an authenticated session.
+
+Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/153, the unsigned generic-device Release build passed, the Release analyzer passed, and `git diff --check` passed. The broad per-screen/per-size task remains open because all 12 sizes were exercised on safe unauthenticated surfaces while authenticated runtime coverage concentrated on Large and Accessibility XXXL. The accessibility tree was inspected for labels, values, hints, order, decorative-element hiding, and dismissal actions, but auditory VoiceOver/rotor/focus operation, Switch Control/Voice Control, and physical-device behavior remain manual. Destructive or state-changing actions were deliberately not performed: join/leave, create/edit/cancel/run-it-back submission, attendance/report submission, chat send, notification changes, block/unblock, sign-out, password change, and account deletion. The two broad runtime tasks above therefore stay open.
 
 **Done when:** Core flows are readable and operable without clipping, truncation, overlapping, or unreachable controls at the largest supported text size and with VoiceOver.
 

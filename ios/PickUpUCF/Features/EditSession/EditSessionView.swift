@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EditSessionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: EditSessionViewModel
     @State private var showDiscardDialog = false
     @State private var scrollToAnchor: EditSessionScrollAnchor?
@@ -284,7 +285,7 @@ struct EditSessionView: View {
     private func performScroll(to anchor: EditSessionScrollAnchor, proxy: ScrollViewProxy) {
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 150_000_000)
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                 proxy.scrollTo(anchor, anchor: .top)
             }
             scrollToAnchor = nil

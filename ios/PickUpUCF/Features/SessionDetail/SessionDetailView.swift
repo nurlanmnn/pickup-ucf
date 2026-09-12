@@ -7,6 +7,7 @@ struct SessionDetailView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: SessionDetailViewModel
     @State private var showEditSheet = false
     @State private var showAttendanceSheet = false
@@ -226,6 +227,7 @@ struct SessionDetailView: View {
                 .foregroundStyle(Color.white.opacity(0.12))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                 .padding(.trailing, Spacing.m)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
@@ -242,34 +244,54 @@ struct SessionDetailView: View {
                 Text(session.sportDisplayName)
                     .font(AppFont.display(.bold))
                     .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                HStack(alignment: .center, spacing: Spacing.s) {
-                    TimelineView(.periodic(from: .now, by: 60)) { ctx in
-                        Label(
-                            SessionDateFormatter.cardTimeLine(for: session.startsAt, relativeTo: ctx.date),
-                            systemImage: "clock"
-                        )
-                        .font(AppFont.caption(.semibold))
-                        .foregroundStyle(Color.white.opacity(0.85))
-                    }
-
-                    Spacer()
-
-                    CapacityIndicator(
-                        playerCount: session.playerCount,
-                        capacity: session.capacity,
-                        filledColor: .white,
-                        dotSize: 7,
-                        emptyColor: Color.white.opacity(0.25),
-                        labelColor: Color.white.opacity(0.85)
-                    )
-                }
+                heroMetadata(session)
             }
             .padding(Spacing.m)
         }
-        .frame(height: 148)
+        .frame(minHeight: 148)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .appCardStyle(cornerRadius: 20)
+    }
+
+    @ViewBuilder
+    private func heroMetadata(_ session: PickupSession) -> some View {
+        if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                heroTime(session)
+                heroCapacity(session)
+            }
+        } else {
+            HStack(alignment: .center, spacing: Spacing.s) {
+                heroTime(session)
+                Spacer()
+                heroCapacity(session)
+            }
+        }
+    }
+
+    private func heroTime(_ session: PickupSession) -> some View {
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            Label(
+                SessionDateFormatter.cardTimeLine(for: session.startsAt, relativeTo: context.date),
+                systemImage: "clock"
+            )
+            .font(AppFont.caption(.semibold))
+            .foregroundStyle(Color.white.opacity(0.85))
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func heroCapacity(_ session: PickupSession) -> some View {
+        CapacityIndicator(
+            playerCount: session.playerCount,
+            capacity: session.capacity,
+            filledColor: .white,
+            dotSize: 7,
+            emptyColor: Color.white.opacity(0.25),
+            labelColor: Color.white.opacity(0.85)
+        )
     }
 
     private func heroPill(_ label: String, color: Color) -> some View {
@@ -382,6 +404,7 @@ struct SessionDetailView: View {
                 .frame(width: 28, height: 28)
                 .background(color)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .accessibilityHidden(true)
 
             content()
         }
@@ -431,17 +454,7 @@ struct SessionDetailView: View {
             FormFieldHint(text: message)
         case .loaded(let roster):
             VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text("Players")
-                        .font(AppFont.headline(.bold))
-                        .foregroundStyle(AppColor.textPrimary(colorScheme))
-                    Spacer()
-                    CapacityIndicator(
-                        playerCount: session.playerCount,
-                        capacity: session.capacity,
-                        filledColor: AppColor.sportAccent(session.sport)
-                    )
-                }
+                rosterHeader(session)
                 .padding(Spacing.m)
 
                 if !roster.joined.isEmpty {
@@ -471,6 +484,36 @@ struct SessionDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private func rosterHeader(_ session: PickupSession) -> some View {
+        if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                rosterTitle
+                CapacityIndicator(
+                    playerCount: session.playerCount,
+                    capacity: session.capacity,
+                    filledColor: AppColor.sportAccent(session.sport)
+                )
+            }
+        } else {
+            HStack {
+                rosterTitle
+                Spacer()
+                CapacityIndicator(
+                    playerCount: session.playerCount,
+                    capacity: session.capacity,
+                    filledColor: AppColor.sportAccent(session.sport)
+                )
+            }
+        }
+    }
+
+    private var rosterTitle: some View {
+        Text("Players")
+            .font(AppFont.headline(.bold))
+            .foregroundStyle(AppColor.textPrimary(colorScheme))
+    }
+
     private func playerRow(_ member: SessionRosterMember) -> some View {
         HStack(spacing: 12) {
             ZStack {
@@ -486,6 +529,7 @@ struct SessionDetailView: View {
                     Circle().stroke(AppColor.gold, lineWidth: 2)
                 }
             }
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(member.handle)
@@ -504,6 +548,7 @@ struct SessionDetailView: View {
                 Image(systemName: "star.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(AppColor.gold)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.horizontal, Spacing.m)
@@ -535,6 +580,7 @@ struct SessionDetailView: View {
         HStack(spacing: Spacing.s) {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(AppColor.destructive)
+                .accessibilityHidden(true)
             Text("This session was cancelled.")
                 .font(AppFont.body(.semibold))
                 .foregroundStyle(AppColor.destructive)
@@ -690,8 +736,12 @@ struct SessionDetailView: View {
                     } label: {
                         Text("Cancel session")
                             .font(AppFont.headline(.semibold))
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .padding(.horizontal, Spacing.m)
+                            .padding(.vertical, AccessibilityLayout.controlVerticalPadding)
+                            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                     }
                     .buttonStyle(.bordered)
                     .disabled(viewModel.isSubmitting)
@@ -731,10 +781,14 @@ struct SessionDetailView: View {
             } else {
                 Text(title)
                     .font(AppFont.headline(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
         }
-        .frame(height: 50)
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, AccessibilityLayout.controlVerticalPadding)
+        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
     }
 
     private var calendarButtonTitle: String {

@@ -18,5 +18,8 @@ supabase/.temp
 # macOS
 .DS_Store
 
+# Local manual verification artifacts
+docs/testflight-evidence/
+
 # XcodeGen binary (optional local tool)
 ios/xcodegen

@@ -9,6 +9,7 @@ struct SessionCard: View {
     var onJoin: (() -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     // MARK: - Body
 
@@ -30,7 +31,7 @@ struct SessionCard: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .appCardStyle(cornerRadius: 20)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: onJoin == nil ? .combine : .contain)
         .accessibilityHint(onJoin == nil ? "" : "Opens session details; use the action button for quick join or leave")
     }
 
@@ -54,54 +55,68 @@ struct SessionCard: View {
 
     /// Main info + actions.
     private var contentArea: some View {
-        HStack(alignment: .top, spacing: Spacing.m) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                // Sport name + relative badge on same row
-                HStack(alignment: .center, spacing: Spacing.s) {
-                    Text(session.sportDisplayName)
-                        .font(AppFont.headline(.bold))
-                        .foregroundStyle(AppColor.textPrimary(colorScheme))
-
-                    TimelineView(.periodic(from: .now, by: 30)) { context in
-                        relativeBadge(at: context.date)
+        Group {
+            if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    sessionDetails
+                    if let onJoin {
+                        joinButton(action: onJoin)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-
-                // Location
-                Label(session.locationName, systemImage: "mappin.and.ellipse")
-                    .font(AppFont.caption(.regular))
-                    .foregroundStyle(AppColor.textSecondary(colorScheme))
-                    .lineLimit(1)
-
-                // Time line
-                TimelineView(.periodic(from: .now, by: 60)) { context in
-                    Text(SessionDateFormatter.cardLabel(for: session.startsAt, relativeTo: context.date))
-                        .font(AppFont.caption(.regular))
-                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+            } else {
+                HStack(alignment: .top, spacing: Spacing.m) {
+                    sessionDetails
+                    if let onJoin {
+                        joinButton(action: onJoin)
+                    }
                 }
-
-                Spacer(minLength: Spacing.s)
-
-                // Capacity indicator + skill pill
-                HStack(spacing: Spacing.s) {
-                    CapacityIndicator(
-                        playerCount: session.playerCount,
-                        capacity: session.capacity,
-                        filledColor: AppColor.sportAccent(session.sport)
-                    )
-
-                    SkillPill(skill: session.skillLevel)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Join / Leave button
-            if let onJoin {
-                joinButton(action: onJoin)
             }
         }
         .padding(Spacing.m)
         .padding(.top, Spacing.xs)
+    }
+
+    private var sessionDetails: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            // Sport name + relative badge on same row
+            HStack(alignment: .center, spacing: Spacing.s) {
+                Text(session.sportDisplayName)
+                    .font(AppFont.headline(.bold))
+                    .foregroundStyle(AppColor.textPrimary(colorScheme))
+
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    relativeBadge(at: context.date)
+                }
+            }
+
+            // Location
+            Label(session.locationName, systemImage: "mappin.and.ellipse")
+                .font(AppFont.caption(.regular))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Time line
+            TimelineView(.periodic(from: .now, by: 60)) { context in
+                Text(SessionDateFormatter.cardLabel(for: session.startsAt, relativeTo: context.date))
+                    .font(AppFont.caption(.regular))
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+            }
+
+            Spacer(minLength: Spacing.s)
+
+            // Capacity indicator + skill pill
+            HStack(spacing: Spacing.s) {
+                CapacityIndicator(
+                    playerCount: session.playerCount,
+                    capacity: session.capacity,
+                    filledColor: AppColor.sportAccent(session.sport)
+                )
+
+                SkillPill(skill: session.skillLevel)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Relative-time badge
@@ -148,7 +163,8 @@ struct SessionCard: View {
                         .font(AppFont.caption(.bold))
                 }
             }
-            .frame(minWidth: 72, minHeight: 36)
+            .frame(minWidth: 72, minHeight: AccessibilityLayout.minimumTouchTarget)
+            .padding(.horizontal, Spacing.s)
             .foregroundStyle(isDestructiveAction ? AppColor.destructive : buttonForeground)
             .background(buttonBackground)
             .overlay {

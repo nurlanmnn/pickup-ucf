@@ -4,6 +4,7 @@ import UIKit
 struct DiscoverView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(AppState.self) private var appState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel = DiscoverViewModel()
     @State private var navigationPath = NavigationPath()
     @State private var presentation: DiscoverPresentation = .list
@@ -343,13 +344,16 @@ struct DiscoverView: View {
             HStack(spacing: 2) {
                 ForEach(DiscoverPresentation.allCases) { p in
                     Button {
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.7)) {
+                        withAnimation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.7)) {
                             presentation = p
                         }
                     } label: {
                         Image(systemName: p.icon)
                             .font(.system(size: 13, weight: .semibold))
-                            .frame(width: 30, height: 30)
+                            .frame(
+                                minWidth: AccessibilityLayout.minimumTouchTarget,
+                                minHeight: AccessibilityLayout.minimumTouchTarget
+                            )
                             .background(presentation == p ? AppColor.gold : Color.clear)
                             .foregroundStyle(presentation == p ? Color.black : AppColor.textSecondary(colorScheme))
                             .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
@@ -375,6 +379,7 @@ struct DiscoverView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 7)
+        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
         .foregroundStyle(isActive ? Color.black : AppColor.textPrimary(colorScheme))
         .background(isActive ? AppColor.gold : AppColor.elevatedSurface(colorScheme))
         .clipShape(Capsule())
@@ -416,6 +421,7 @@ private struct SportChip: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: action) {
@@ -429,6 +435,7 @@ private struct SportChip: View {
             }
             .padding(.horizontal, Spacing.m)
             .padding(.vertical, Spacing.s)
+            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
             .background(isSelected ? AppColor.gold : Color.clear)
             .foregroundStyle(isSelected ? Color.black : AppColor.gold)
             .overlay {
@@ -438,7 +445,7 @@ private struct SportChip: View {
             .scaleEffect(isSelected ? 1.04 : 1)
         }
         .buttonStyle(.plain)
-        .animation(.spring(response: 0.32, dampingFraction: 0.68), value: isSelected)
+        .animation(reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 0.68), value: isSelected)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

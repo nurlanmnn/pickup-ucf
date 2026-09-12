@@ -59,7 +59,9 @@ struct DeleteAccountView: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.vertical, AccessibilityLayout.controlVerticalPadding)
+                    .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                     .foregroundStyle(.white)
                     .background(confirmation == "DELETE" ? AppColor.destructive : AppColor.destructive.opacity(0.35))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))

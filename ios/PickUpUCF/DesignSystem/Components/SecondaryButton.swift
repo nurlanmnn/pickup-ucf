@@ -18,8 +18,12 @@ struct SecondaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(AppFont.headline(.semibold))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
-                .frame(height: 50)
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, AccessibilityLayout.controlVerticalPadding)
+                .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                 .foregroundStyle(foregroundColor)
                 .background(backgroundFill)
                 .overlay {
@@ -29,6 +33,7 @@ struct SecondaryButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .accessibilityLabel(title)
+        .accessibilityIdentifier("secondary-button-\(title)")
     }
 
     private var foregroundColor: Color {

@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var profile: Profile?
     @State private var profileLoadError: String?
 
@@ -113,7 +114,7 @@ struct ProfileView: View {
     // MARK: - Stat tiles
 
     private var statTiles: some View {
-        HStack(spacing: Spacing.s) {
+        LazyVGrid(columns: statColumns, spacing: Spacing.s) {
             statTile(
                 value: profile.map { "\($0.gamesPlayed)" } ?? "–",
                 label: "Games",
@@ -133,6 +134,11 @@ struct ProfileView: View {
                 color: Color(red: 0.22, green: 0.72, blue: 0.33)
             )
         }
+    }
+
+    private var statColumns: [GridItem] {
+        let count = AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) ? 1 : 3
+        return Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: count)
     }
 
     private func statTile(

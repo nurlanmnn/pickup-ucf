@@ -54,6 +54,8 @@ private struct FormKeyboardAccessoryModifier: ViewModifier {
     let onNext: () -> Void
     let onDone: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -68,7 +70,7 @@ private struct FormKeyboardAccessoryModifier: ViewModifier {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: isPresented)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: isPresented)
     }
 }
 

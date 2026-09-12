@@ -3,6 +3,7 @@ import SwiftUI
 struct VerifyEmailView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: VerifyEmailViewModel
     @FocusState private var isOTPFocused: Bool
 
@@ -60,9 +61,9 @@ struct VerifyEmailView: View {
                         .keyboardType(.numberPad)
                         .textContentType(.oneTimeCode)
                         .multilineTextAlignment(.center)
-                        .font(.system(size: 34, design: .rounded).monospacedDigit().weight(.bold))
+                        .font(AppFont.title(.bold).monospacedDigit())
                         .foregroundStyle(AppColor.textPrimary(colorScheme))
-                        .tracking(12)
+                        .tracking(dynamicTypeSize.isAccessibilitySize ? 4 : 12)
                         .padding(.vertical, Spacing.m)
                         .frame(maxWidth: .infinity)
                         .background(AppColor.elevatedSurface(colorScheme))
