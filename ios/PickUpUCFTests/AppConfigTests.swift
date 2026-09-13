@@ -2,6 +2,17 @@ import XCTest
 @testable import PickUpUCF
 
 final class AppConfigTests: XCTestCase {
+    func testLaunchModePreventsBackendAccessWhenConfigurationIsUnavailable() {
+        XCTAssertEqual(
+            AppConfig.launchMode(isConfigured: false),
+            .serviceUnavailable
+        )
+        XCTAssertEqual(
+            AppConfig.launchMode(isConfigured: true),
+            .ready
+        )
+    }
+
     func testAcceptsCompleteProductionSupabaseConfiguration() {
         let configuration = AppConfig.validatedSupabaseConfiguration(
             urlString: "https://project-ref.supabase.co",

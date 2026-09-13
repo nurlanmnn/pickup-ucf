@@ -5,6 +5,11 @@ struct SupabaseConfiguration {
     let anonKey: String
 }
 
+enum AppLaunchMode {
+    case ready
+    case serviceUnavailable
+}
+
 enum AppConfig {
     /// Keep in sync with Supabase Auth → Email → OTP expiration (300 seconds).
     static let emailOTPExpirySeconds = 300
@@ -40,6 +45,14 @@ enum AppConfig {
 
     static var isConfigured: Bool {
         supabaseConfiguration != nil
+    }
+
+    static var currentLaunchMode: AppLaunchMode {
+        launchMode(isConfigured: isConfigured)
+    }
+
+    static func launchMode(isConfigured: Bool) -> AppLaunchMode {
+        isConfigured ? .ready : .serviceUnavailable
     }
 
     static func validatedSupabaseConfiguration(

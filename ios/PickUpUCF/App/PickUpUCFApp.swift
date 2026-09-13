@@ -8,37 +8,45 @@ struct PickUpUCFApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(appState)
-                .preferredColorScheme(appState.preferredColorScheme)
-                .onOpenURL { url in
-                    handleDeepLink(url)
+            Group {
+                switch AppConfig.currentLaunchMode {
+                case .ready:
+                    RootView()
+                case .serviceUnavailable:
+                    ContentUnavailableView(
+                        "Service Unavailable",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("Please try again later.")
+                    )
                 }
-                .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
-                    guard let target = note.object as? PushNavigationTarget else { return }
-                    appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
+            }
+            .environment(appState)
+            .preferredColorScheme(appState.preferredColorScheme)
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
+                guard let target = note.object as? PushNavigationTarget else { return }
+                appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
+            }
+            .task {
+                guard AppConfig.currentLaunchMode == .ready else { return }
+                if let session = await AuthRepository().currentSession() {
+                    await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
                 }
-                .task {
-                    if !AppConfig.isConfigured {
-                        appState.showError(
-                            "The service is temporarily unavailable. Please try again later."
-                        )
-                    }
-                    if let session = await AuthRepository().currentSession() {
-                        await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
-                    }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active, appState.isAuthenticated else { return }
+                Task {
+                    await PushNotificationService.shared
+                        .refreshRegistrationAfterAuthorizationChange()
                 }
-                .onChange(of: scenePhase) { _, newPhase in
-                    guard newPhase == .active, appState.isAuthenticated else { return }
-                    Task {
-                        await PushNotificationService.shared
-                            .refreshRegistrationAfterAuthorizationChange()
-                    }
-                }
+            }
         }
     }
 
     private func handleDeepLink(_ url: URL) {
+        guard AppConfig.currentLaunchMode == .ready else { return }
         guard let destination = DeepLinkRouter.destination(from: url) else { return }
         switch destination {
         case .confirmEmail, .resetPassword:
