@@ -58,7 +58,7 @@
 
 ### Not yet verified
 
-- [ ] Signed archive and App Store Connect validation.
+- [x] Signed archive and App Store Connect validation.
 - [ ] Physical-device push notification and Live Activity behavior.
 - [ ] Production Supabase migrations, secrets, cron jobs, email hook, and APNs configuration.
 - [x] SQL/RLS integration suite passed against a clean local Supabase reset on 2026-09-11.
@@ -97,12 +97,12 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - [x] Set the correct distribution bundle identifiers and provisioning profiles in the Release/archive configuration.
 - [x] Increment the build number for the upload.
 - [x] Create a signed Archive using the Release configuration.
-- [ ] Run Xcode Organizer validation and resolve every blocking error or warning.
+- [x] Run Xcode Organizer validation and resolve every blocking error or warning.
 - [ ] Upload the archive and confirm App Store Connect finishes processing it.
 
 **Done when:** A signed archive validates, uploads, processes in App Store Connect, contains the app icon and required entitlements, and installs from TestFlight on a physical device.
 
-**Evidence (2026-09-13):** Build **1.0 (2)** was committed and pushed from `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive and successfully exported an App Store Connect distribution package using cloud-managed Apple Distribution signing. The export summary confirms bundle ID `edu.ucf.pickup`, matching app/widget build 2, App Store provisioning profiles, `get-task-allow=false`, and `aps-environment=production`. The exported app contains the first-party privacy manifest. Organizer validation, upload, Apple processing, and TestFlight installation remain open.
+**Evidence (2026-09-13):** Build **1.0 (2)** was committed and pushed from `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive and successfully exported an App Store Connect distribution package using cloud-managed Apple Distribution signing. The export summary confirms bundle ID `edu.ucf.pickup`, matching app/widget build 2, App Store provisioning profiles, `get-task-allow=false`, and `aps-environment=production`. The exported app contains the first-party privacy manifest. Xcode Organizer then reported **“Your app successfully passed all validation checks.”** Upload, Apple processing, and TestFlight installation remain open.
 
 ## TF-02 — App privacy manifest and required-reason API declaration
 
@@ -237,7 +237,7 @@ Safe simulator checks on the current working tree confirmed authenticated cold l
 
 The linked production backend is **not candidate-ready**: a fresh dry run shows exactly `20260822000000`, `20260909000000`, and `20260910120000` remain pending. They were not applied because no recoverable hosted backup is available without a Supabase plan upgrade. The privacy-hardened `send-auth-email` revision was type-checked and deployed successfully; `fetch-weather` and `send-push` remain active, but the project secret-name inventory still does not contain `APNS_ENV`, `APNS_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, or `CRON_SECRET`. No secret values were read. Production cron status and exact `send-push` code parity remain unverified.
 
-Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive, exported it with cloud-managed Apple Distribution signing, and confirmed production APNs entitlement, matching app/widget build numbers, App Store profiles, and the root privacy manifest. The generated privacy report was visually reviewed and stored in the ignored evidence directory. Organizer validation, upload, Apple processing, production migrations/APNs/cron setup, and physical-device testing remain open. Detailed tester instructions remain in `tasks/plan.md`.
+Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive, exported it with cloud-managed Apple Distribution signing, and confirmed production APNs entitlement, matching app/widget build numbers, App Store profiles, and the root privacy manifest. The generated privacy report was visually reviewed and stored in the ignored evidence directory. Xcode Organizer validation passed every check. Upload, Apple processing, production migrations/APNs/cron setup, and physical-device testing remain open. Detailed tester instructions remain in `tasks/plan.md`.
 
 **Done when:** All automated checks pass, a processed TestFlight build completes the physical-device critical-path smoke test, and the build’s exact backend/configuration state is recorded.
 

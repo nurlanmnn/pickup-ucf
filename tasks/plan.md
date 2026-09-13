@@ -177,7 +177,7 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 | Privacy/security review | Passed locally | Configuration now fails closed; user-facing setup details were removed. Email-hook logs no longer include addresses, domains, raw errors, or provider response bodies. A heuristic tracked/history scan found no committed sensitive file or credential; it is not a substitute for key rotation or a dedicated secret scanner. |
 | Simulator lifecycle | Passed within scope | Authenticated cold launch, force-quit/relaunch, background/foreground restoration, and safe rejection of a malformed session deep link passed. No crash, assertion, app-owned high-severity log, or PII-bearing app diagnostic was observed. |
 | Production parity | **Blocked / stop ship** | A fresh dry run confirms exactly three migrations remain pending; they were not applied without a recoverable backup. Required APNs and cron secret names remain absent. The privacy-hardened email function is deployed, but `send-push` parity and cron execution are unverified. |
-| Processed TestFlight / physical devices | **Partially complete / stop ship** | Build 1.0 (2) has a successful App Store Connect distribution export, production APNs entitlement, and reviewed privacy report. Organizer validation, upload/processing, iOS 17 coverage, and current-iOS coverage remain unverified. |
+| Processed TestFlight / physical devices | **Partially complete / stop ship** | Build 1.0 (2) has a successful App Store Connect distribution export, production APNs entitlement, reviewed privacy report, and a clean Xcode Organizer validation. Upload/processing, iOS 17 coverage, and current-iOS coverage remain unverified. |
 
 ### Fixed release-gate defects
 
@@ -195,7 +195,7 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 | Environment | Linked production project, inspected read-only; not candidate-ready |
 | Latest local migration | `20260910120000_secure_device_token_ownership.sql` |
 | Latest production migration | `20260718220000` |
-| Archive/export | App Store Connect distribution export complete; not validated, uploaded, or processed |
+| Archive/export | App Store Connect distribution export and Organizer validation complete; not uploaded or processed |
 
 ## Physical-Device and Processed-TestFlight Execution Guide
 
@@ -268,7 +268,7 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 1. Upgrade the Supabase project or otherwise establish an approved recoverable backup/restore path. Until then, the three pending production migrations will not be applied.
 2. Enter the private APNs key, key ID, team ID, production environment, app bundle ID, and a new cron secret in Supabase's protected secret manager. Do not send those values through chat or commit them to Git.
 3. Confirm the App Store Connect privacy answers match the reviewed archive privacy report.
-4. Explicitly authorize Xcode validation and upload when ready. Build 1.0 (2) is archived, distribution-exported, and ready for those steps; it has not been transmitted to App Store Connect.
+4. Explicitly authorize Xcode upload when ready. Build 1.0 (2) is archived, distribution-exported, and validated; it has not been uploaded to App Store Connect.
 5. After Apple processing, install from TestFlight and execute every matrix row on the iOS 17 and current-iOS lanes. Attach privacy-safe evidence under `docs/testflight-evidence/tf-06/` and update only the corresponding checklist boxes.
 6. TF-06 may close only after production parity and every processed-build physical-device gate pass. Then the next checklist workstream is EXT-01; it has not been started here.
 
