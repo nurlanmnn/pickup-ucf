@@ -21,7 +21,7 @@ struct PickUpUCFApp: App {
                 .task {
                     if !AppConfig.isConfigured {
                         appState.showError(
-                            "Supabase is not configured. Copy Config.xcconfig.example → Config.xcconfig and add your project URL and anon key."
+                            "The service is temporarily unavailable. Please try again later."
                         )
                     }
                     if let session = await AuthRepository().currentSession() {

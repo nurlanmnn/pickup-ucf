@@ -1,5 +1,10 @@
 import Foundation
 
+struct SupabaseConfiguration {
+    let url: URL
+    let anonKey: String
+}
+
 enum AppConfig {
     /// Keep in sync with Supabase Auth → Email → OTP expiration (300 seconds).
     static let emailOTPExpirySeconds = 300
@@ -12,33 +17,58 @@ enum AppConfig {
         return minutes == 1 ? "1 minute" : "\(minutes) minutes"
     }
 
+    private static var supabaseConfiguration: SupabaseConfiguration? {
+        validatedSupabaseConfiguration(
+            urlString: Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
+            anonKey: Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String
+        )
+    }
+
     static var supabaseURL: URL {
-        guard let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
-              let url = URL(string: urlString),
-              !urlString.contains("YOUR_PROJECT")
-        else {
-            return URL(string: "https://placeholder.supabase.co")!
+        guard let configuration = supabaseConfiguration else {
+            preconditionFailure("Supabase configuration is unavailable.")
         }
-        return url
+        return configuration.url
     }
 
     static var supabaseAnonKey: String {
-        guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String,
-              !key.contains("your_anon")
-        else {
-            return "placeholder"
+        guard let configuration = supabaseConfiguration else {
+            preconditionFailure("Supabase configuration is unavailable.")
         }
-        return key
+        return configuration.anonKey
     }
 
     static var isConfigured: Bool {
-        guard let urlString = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
-              let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String,
+        supabaseConfiguration != nil
+    }
+
+    static func validatedSupabaseConfiguration(
+        urlString: String?,
+        anonKey: String?
+    ) -> SupabaseConfiguration? {
+        guard let urlString = urlString?.trimmingCharacters(in: .whitespacesAndNewlines),
+              let anonKey = anonKey?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !urlString.isEmpty,
+              !anonKey.isEmpty,
+              !urlString.lowercased().contains("placeholder"),
+              !urlString.lowercased().contains("your_project"),
+              !anonKey.lowercased().contains("placeholder"),
+              !anonKey.lowercased().contains("your_anon"),
+              anonKey.hasPrefix("eyJ"),
               let url = URL(string: urlString),
-              url.host?.contains("supabase.co") == true
-        else { return false }
-        return !urlString.contains("YOUR_PROJECT")
-            && !key.contains("your_anon")
-            && key.hasPrefix("eyJ")
+              url.scheme?.lowercased() == "https",
+              let host = url.host?.lowercased(),
+              host.hasSuffix(".supabase.co"),
+              url.user == nil,
+              url.password == nil,
+              url.port == nil,
+              url.query == nil,
+              url.fragment == nil,
+              url.path.isEmpty || url.path == "/"
+        else {
+            return nil
+        }
+
+        return SupabaseConfiguration(url: url, anonKey: anonKey)
     }
 }

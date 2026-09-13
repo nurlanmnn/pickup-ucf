@@ -4,7 +4,7 @@
 
 **Status:** Not ready for TestFlight upload
 
-**Last audited:** 2026-09-02
+**Last audited:** 2026-09-12
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -211,12 +211,12 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 
 **Tasks:**
 
-- [ ] Run the full iOS unit suite in Release-compatible conditions.
-- [ ] Run the Deno Edge Function suite.
-- [ ] Start local Supabase/Docker and run the SQL/RLS integration suite.
-- [ ] Review the final app diff with special attention to auth, privacy, RLS, migrations, notifications, and secrets.
+- [x] Run the full iOS unit suite in Release-compatible conditions.
+- [x] Run the Deno Edge Function suite.
+- [x] Start local Supabase/Docker and run the SQL/RLS integration suite.
+- [x] Review the final app diff with special attention to auth, privacy, RLS, migrations, notifications, and secrets.
 - [ ] Confirm production configuration contains no placeholders, test endpoints, debug flags, or development credentials.
-- [ ] Verify no secrets, APNs tokens, emails, message bodies, or other PII are logged.
+- [x] Verify no secrets, APNs tokens, emails, message bodies, or other PII are logged.
 - [ ] Install the processed build through TestFlight on at least one physical iPhone running iOS 17 and one current-iOS device when available.
 - [ ] Smoke test launch, sign-up/sign-in, email verification, onboarding, discover, create, join, leave, chat, edit/cancel, reporting/blocking, profile editing, sign-out, and account deletion.
 - [ ] Test poor connectivity, airplane-mode relaunch, background/foreground transitions, force quit, and expired sessions.
@@ -224,6 +224,14 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 - [ ] Verify calendar export and location permission denial/recovery.
 - [ ] Confirm crash-free launch and no high-severity runtime console errors.
 - [ ] Record the build number, commit SHA, environment, migration version, known issues, and tester instructions.
+
+**Evidence (2026-09-12):** TF-06 began from clean `main` at `f54880285026010be5ec5c1d48137fc41374a21e`; a fresh read-only remote check confirmed `origin/main` at the same SHA with zero divergence. The final review baseline is `7076810`, immediately before the seven candidate commits that added/fixed Live Activity delivery and then completed TF-02 through TF-05. The optimized Release-configured simulator suite passed **156/156** with `ENABLE_TESTABILITY=YES`, 0 failures, 0 skipped, on iPhone 16e / iOS 26.3.1. An initial unmodified Release test attempt failed before execution because shipping Release correctly has testability disabled while the suite uses `@testable import`; this was a test-configuration constraint, not an application build failure. The Deno suites passed **24/24** (send-push 14/14; fetch-weather 10/10). A clean local Supabase reset applied all 24 migrations, and the complete SQL/RLS suite passed all **23** phase assertions with stop-on-error enabled. The unsigned generic-device Release build and Release static analyzer passed with no emitted application warnings; the built app contains `Assets.car` and a byte-identical privacy manifest, while the widget correctly has no separate manifest. Source plists and the built app/widget report version **1.0 (1)**. The local Release configuration contains present, non-placeholder, HTTPS Supabase settings and targets the same linked project, but secret values were not displayed or recorded.
+
+The final baseline-to-candidate review covered tests first, then authentication/session transitions, APNs ownership, Live Activities, push payload/deep-link routing, privacy resources, error mapping, RLS/RPC grants, migrations, accessibility changes, and dependency/configuration scope. It found and repaired two TF-06 defects in the uncommitted working tree: invalid app configuration previously fell back to a placeholder service and showed developer setup instructions to users, and `send-auth-email` logged a rejected full address plus raw verification/provider error details. `AppConfig` now validates and fails closed, with 3/3 focused tests demonstrated red then green; the email function now logs only bounded event/status metadata and passes `deno check`. A static diagnostics audit found no iOS app logging APIs and no remaining email/token/body/error-detail arguments in the email function's logs. A high-confidence tracked-history scan found only the documented private-key marker example in `README.md`; no sensitive-path file has been tracked. `deno fmt --check` remains red for the pre-existing formatting of `send-auth-email/index.ts`; a broad unrelated reformat was intentionally not bundled into TF-06.
+
+Safe simulator checks on the current working tree confirmed authenticated cold launch, force-quit/relaunch, background/foreground restoration, and rejection of a malformed custom-scheme session link without mutating account data. The app remained on the authenticated Discover surface. Fourteen initial and two final high-severity unified-log entries were all Apple Network framework connection-state queries (`unconnected connection` / `no local endpoint`); there was no crash, assertion, app-owned error log, or PII-bearing app diagnostic. This does not close the processed-build/physical-device console check.
+
+The linked production backend is **not candidate-ready**: its migration history stops at `20260718220000`, so `20260822000000`, `20260909000000`, and `20260910120000` are not deployed. The deployed `fetch-weather`, `send-auth-email`, and `send-push` functions report active, but the project secret-name inventory does not contain `APNS_ENV`, `APNS_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, or `CRON_SECRET`. No secret values were read. Production cron status, signed production entitlements, archive validation/privacy report, build-number uniqueness, and exact function-code parity remain unverified. The working tree also has no final candidate commit SHA, and build 1 has not been incremented to the intended first-upload build **2**. Detailed physical-device matrices and tester instructions are recorded in `tasks/plan.md`. No archive, upload, deployment, production mutation, commit, or push was performed.
 
 **Done when:** All automated checks pass, a processed TestFlight build completes the physical-device critical-path smoke test, and the build’s exact backend/configuration state is recorded.
 

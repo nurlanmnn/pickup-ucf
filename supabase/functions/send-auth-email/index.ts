@@ -92,8 +92,8 @@ Deno.serve(async (req) => {
 
   try {
     payload = verifyPayload(body, req);
-  } catch (error) {
-    console.error("send-auth-email: hook verification failed", error);
+  } catch {
+    console.error("send-auth-email: hook verification failed");
     console.error("send-auth-email: webhook headers present", {
       id: Boolean(req.headers.get("webhook-id")),
       timestamp: Boolean(req.headers.get("webhook-timestamp")),
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
   const action = data?.email_action_type ?? "";
   const otp = (data?.token ?? "").trim();
 
-  console.log("send-auth-email: received", { action, emailDomain: email.split("@")[1] ?? "" });
+  console.log("send-auth-email: received request");
 
   if (!email || !data) {
     console.error("send-auth-email: missing user email or email_data");
@@ -115,12 +115,12 @@ Deno.serve(async (req) => {
   }
 
   if (!isUCFEmail(email)) {
-    console.error("send-auth-email: rejected non-UCF email", email);
+    console.error("send-auth-email: rejected non-UCF email");
     return jsonResponse({ error: "UCF email required" }, 400);
   }
 
   if (!SEND_ACTIONS.has(action)) {
-    console.log("send-auth-email: ignored action", action);
+    console.log("send-auth-email: ignored unsupported action");
     return jsonResponse({}, 200);
   }
 
@@ -184,11 +184,11 @@ Deno.serve(async (req) => {
   });
 
   if (!brevoRes.ok) {
-    const errText = await brevoRes.text();
-    console.error("send-auth-email: Brevo error", brevoRes.status, errText);
+    await brevoRes.text();
+    console.error("send-auth-email: Brevo error", { status: brevoRes.status });
     return jsonResponse({ error: "Failed to send email" }, 500);
   }
 
-  console.log("send-auth-email: sent via Brevo", { action, emailDomain: email.split("@")[1] ?? "" });
+  console.log("send-auth-email: sent via Brevo", { action });
   return jsonResponse({}, 200);
 });
