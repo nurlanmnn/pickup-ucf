@@ -161,7 +161,7 @@ git status --short --branch
 - Local Supabase reset is destructive only to disposable local Docker data. Do not target a linked or remote project.
 - Do not archive, sign, validate in Organizer, upload, submit for review, deploy migrations/functions, modify App Store Connect, commit, push, or start EXT/BETA work.
 
-## Verification Results (2026-09-12)
+## Verification Results (2026-09-13)
 
 Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0, Docker 29.6.1, and an iPhone 16e simulator on iOS 26.3.1.
 
@@ -169,7 +169,7 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 | --- | --- | --- |
 | Candidate provenance | Passed | Clean `main`; HEAD, local tracking ref, and fresh remote `main` were `f54880285026010be5ec5c1d48137fc41374a21e`, with zero divergence. Review baseline: `7076810`. |
 | Project generation | Passed with reproducibility note | Sources/configuration were preserved. XcodeGen changes the temporary Products group UUID nondeterministically; that unrelated UUID churn was restored, leaving only the expected new test-file references. |
-| iOS tests | Passed | Release-optimized suite with testability enabled: 156 executed, 156 passed, 0 failed, 0 skipped on iPhone 16e / iOS 26.3.1. The unmodified Release configuration cannot compile `@testable` tests because shipping Release correctly has `ENABLE_TESTABILITY=NO`. |
+| iOS tests | Passed | Release-optimized suite with testability enabled: 157 executed, 157 passed, 0 failed, 0 skipped on iPhone 16e / iOS 26.3.1. The unmodified Release configuration cannot compile `@testable` tests because shipping Release correctly has `ENABLE_TESTABILITY=NO`. |
 | Edge Function tests | Passed | 24/24: `send-push` 14/14 and `fetch-weather` 10/10. `send-auth-email` has no test suite; `deno check` passed. |
 | Local database/RLS | Passed | Clean reset applied all 24 migrations; all 23 ordered SQL phase assertions passed with stop-on-error. The local stack was stopped without backup afterward. |
 | Release build/analyzer | Passed | Unsigned generic-device Release build and analyzer completed without emitted application warnings. |
@@ -181,7 +181,7 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 
 ### Fixed release-gate defects
 
-1. `AppConfig` previously substituted placeholder service settings when Release configuration was invalid. It now accepts only a root HTTPS `*.supabase.co` endpoint and a plausibly shaped anon key, otherwise fails closed. Three focused tests were demonstrated red then green.
+1. `AppConfig` previously substituted placeholder service settings when Release configuration was invalid. It now accepts only a root HTTPS `*.supabase.co` endpoint and a plausibly shaped anon key, otherwise displays a service-unavailable state without constructing the backend client. Four focused tests were demonstrated red then green.
 2. `send-auth-email` previously logged a rejected address and raw verification/provider error details. Logs now contain only bounded action/status metadata.
 
 ### Candidate record

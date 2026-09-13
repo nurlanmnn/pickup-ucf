@@ -21,7 +21,7 @@
 
 - [x] Regenerate the Xcode project and confirm only expected test references remain; document nondeterministic temporary-group UUID churn.
 - [x] Run the complete iOS unit suite in Release-compatible optimized conditions.
-- [x] Record exact iOS counts: 156 executed/passed, 0 failed, 0 skipped.
+- [x] Record exact iOS counts: 157 executed/passed, 0 failed, 0 skipped.
 - [x] Run all `send-push` Deno tests: 14/14 passed.
 - [x] Run all `fetch-weather` Deno tests: 10/10 passed.
 - [x] Start local Supabase/Docker without touching production data.
