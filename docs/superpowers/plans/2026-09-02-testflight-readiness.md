@@ -92,15 +92,17 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - [x] Add source-controlled entitlements for the main app, including Push Notifications.
 - [x] Add or verify widget entitlements and App Group configuration used by the app and widget.
 - [x] Set `CODE_SIGN_ENTITLEMENTS` for each target that requires entitlements.
-- [ ] Enable the Push Notifications capability and verify the generated signed entitlement contains the correct production APNs environment.
+- [x] Enable the Push Notifications capability and verify the generated signed entitlement contains the correct production APNs environment.
 - [x] Confirm regenerating the Xcode project from `ios/project.yml` does not remove signing or capability configuration.
-- [ ] Set the correct distribution bundle identifiers and provisioning profiles in the Release/archive configuration.
-- [ ] Increment the build number for the upload.
-- [ ] Create a signed Archive using the Release configuration.
+- [x] Set the correct distribution bundle identifiers and provisioning profiles in the Release/archive configuration.
+- [x] Increment the build number for the upload.
+- [x] Create a signed Archive using the Release configuration.
 - [ ] Run Xcode Organizer validation and resolve every blocking error or warning.
 - [ ] Upload the archive and confirm App Store Connect finishes processing it.
 
 **Done when:** A signed archive validates, uploads, processes in App Store Connect, contains the app icon and required entitlements, and installs from TestFlight on a physical device.
+
+**Evidence (2026-09-13):** Build **1.0 (2)** was committed and pushed from `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive and successfully exported an App Store Connect distribution package using cloud-managed Apple Distribution signing. The export summary confirms bundle ID `edu.ucf.pickup`, matching app/widget build 2, App Store provisioning profiles, `get-task-allow=false`, and `aps-environment=production`. The exported app contains the first-party privacy manifest. Organizer validation, upload, Apple processing, and TestFlight installation remain open.
 
 ## TF-02 — App privacy manifest and required-reason API declaration
 
@@ -113,11 +115,13 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - [x] Declare `NSPrivacyAccessedAPICategoryUserDefaults` with an Apple-approved reason matching the actual usage.
 - [x] Add a separate manifest to the widget target if its own code requires one. (Inventory confirmed it does not.)
 - [x] Declare tracking and collected-data fields accurately; do not copy dependency declarations blindly.
-- [ ] Verify the manifest is included in the archived app bundle.
-- [ ] Generate and review Xcode’s privacy report for the archive.
+- [x] Verify the manifest is included in the archived app bundle.
+- [x] Generate and review Xcode’s privacy report for the archive.
 - [ ] Ensure App Store Connect privacy answers match the manifest and real production behavior.
 
 **Evidence (2026-09-10):** Added `ios/PickUpUCF/PrivacyInfo.xcprivacy` to the main app resources only. First-party and resolved-package inspection found only app `UserDefaults` required-reason use; its app-only defaults domain matches Apple reason `CA92.1`. The widget has no required-reason API use, independent collection/tracking, or third-party dependency, so it has no separate manifest. The manifest declares tracking false, no tracking domains, and nine linked/non-tracking categories based on repository behavior: name, email address, fitness, precise custom game coordinates, emails/text messages, other user content, user ID, device ID, and product interaction. Fitness and the user ID used to retrieve preferred sports are used for app functionality and product personalization; the remaining categories are used for app functionality. `xcodegen generate` placed the file only in the app resources phase. Source, Debug, and unsigned Release app manifests match byte-for-byte and pass `plutil`; both built widget bundles correctly contain no manifest. Debug simulator tests passed (123/123), as did the unsigned Release device build and Release static analyzer. The user confirmed the main App Store Connect record exists for bundle ID `edu.ucf.pickup` (Apple ID `68107128702`, Prepare for Submission); no widget record was created. The user also confirmed Supabase, Brevo, Open-Meteo, and APNs are used only for app functionality, with no advertising, data-broker sharing, cross-company tracking, or undisclosed analytics/crash-reporting integration. Archive placement, Xcode's archive privacy report, and App Store Connect privacy answers remain unverified/user-owned.
+
+**Archive evidence (2026-09-13):** The App Store Connect export contains the root app privacy manifest. Xcode Organizer generated a one-page privacy report with the declared linked, non-tracking data categories; visual inspection found no clipping, overlap, invalid-manifest warning, or unreadable content. The report is stored locally at `docs/testflight-evidence/tf-06/PickUpUCF-1.0-2-Privacy-Report.pdf` and remains ignored by Git. App Store Connect privacy answers still require owner confirmation.
 
 **Done when:** The signed archive contains valid privacy manifests, Xcode’s privacy report has been reviewed, and App Store Connect privacy answers are consistent with the app.
 
@@ -223,7 +227,7 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 - [ ] Verify push notifications, deep-link routing, badge behavior, and Live Activities on physical hardware.
 - [ ] Verify calendar export and location permission denial/recovery.
 - [ ] Confirm crash-free launch and no high-severity runtime console errors.
-- [ ] Record the build number, commit SHA, environment, migration version, known issues, and tester instructions.
+- [x] Record the build number, commit SHA, environment, migration version, known issues, and tester instructions.
 
 **Evidence (2026-09-13):** TF-06 began from clean `main` at `f54880285026010be5ec5c1d48137fc41374a21e`; a fresh read-only remote check confirmed `origin/main` at the same SHA with zero divergence. The final review baseline is `7076810`, immediately before the seven candidate commits that added/fixed Live Activity delivery and then completed TF-02 through TF-05. The optimized Release-configured simulator suite passed **157/157** with `ENABLE_TESTABILITY=YES`, 0 failures, 0 skipped, on iPhone 16e / iOS 26.3.1. An initial unmodified Release test attempt failed before execution because shipping Release correctly has testability disabled while the suite uses `@testable import`; this was a test-configuration constraint, not an application build failure. The Deno suites passed **24/24** (send-push 14/14; fetch-weather 10/10). A clean local Supabase reset applied all 24 migrations, and the complete SQL/RLS suite passed all **23** phase assertions with stop-on-error enabled. The unsigned generic-device Release build and Release static analyzer passed with no emitted application warnings; the built app contains `Assets.car` and a byte-identical privacy manifest, while the widget correctly has no separate manifest. Source plists and the built app/widget report version **1.0 (1)**. The local Release configuration contains present, non-placeholder, HTTPS Supabase settings and targets the same linked project, but secret values were not displayed or recorded.
 
@@ -231,7 +235,9 @@ The final baseline-to-candidate review covered tests first, then authentication/
 
 Safe simulator checks on the current working tree confirmed authenticated cold launch, force-quit/relaunch, background/foreground restoration, and rejection of a malformed custom-scheme session link without mutating account data. The app remained on the authenticated Discover surface. Fourteen initial and two final high-severity unified-log entries were all Apple Network framework connection-state queries (`unconnected connection` / `no local endpoint`); there was no crash, assertion, app-owned error log, or PII-bearing app diagnostic. This does not close the processed-build/physical-device console check.
 
-The linked production backend is **not candidate-ready**: its migration history stops at `20260718220000`, so `20260822000000`, `20260909000000`, and `20260910120000` are not deployed. The deployed `fetch-weather`, `send-auth-email`, and `send-push` functions report active, but the project secret-name inventory does not contain `APNS_ENV`, `APNS_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, or `CRON_SECRET`. No secret values were read. Production cron status, signed production entitlements, archive validation/privacy report, build-number uniqueness, and exact function-code parity remain unverified. The working tree also has no final candidate commit SHA, and build 1 has not been incremented to the intended first-upload build **2**. Detailed physical-device matrices and tester instructions are recorded in `tasks/plan.md`. No archive, upload, deployment, production mutation, commit, or push was performed.
+The linked production backend is **not candidate-ready**: a fresh dry run shows exactly `20260822000000`, `20260909000000`, and `20260910120000` remain pending. They were not applied because no recoverable hosted backup is available without a Supabase plan upgrade. The privacy-hardened `send-auth-email` revision was type-checked and deployed successfully; `fetch-weather` and `send-push` remain active, but the project secret-name inventory still does not contain `APNS_ENV`, `APNS_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, or `CRON_SECRET`. No secret values were read. Production cron status and exact `send-push` code parity remain unverified.
+
+Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive, exported it with cloud-managed Apple Distribution signing, and confirmed production APNs entitlement, matching app/widget build numbers, App Store profiles, and the root privacy manifest. The generated privacy report was visually reviewed and stored in the ignored evidence directory. Organizer validation, upload, Apple processing, production migrations/APNs/cron setup, and physical-device testing remain open. Detailed tester instructions remain in `tasks/plan.md`.
 
 **Done when:** All automated checks pass, a processed TestFlight build completes the physical-device critical-path smoke test, and the build’s exact backend/configuration state is recorded.
 
