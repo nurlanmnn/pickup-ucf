@@ -274,15 +274,25 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 
 **Tasks:**
 
-- [ ] Publish a stable HTTPS privacy-policy URL.
+- [x] Publish a stable HTTPS privacy-policy URL.
 - [ ] Link the privacy policy from an easily discoverable in-app location and App Store Connect.
-- [ ] Document what is collected and why: email, profile identity, sessions, attendance, chat, reports, device tokens, location permission behavior, calendar identifiers, and notification data.
-- [ ] Name relevant processors/services, including Supabase, Brevo, Open-Meteo, and Apple/APNs, and explain their roles accurately.
-- [ ] Document retention, deletion, account deletion, consent withdrawal, security practices, and contact details.
+- [x] Document what is collected and why: email, profile identity, sessions, attendance, chat, reports, device tokens, location permission behavior, calendar identifiers, and notification data.
+- [x] Name relevant processors/services, including Supabase, Brevo, Open-Meteo, and Apple/APNs, and explain their roles accurately.
+- [x] Document retention, deletion, account deletion, consent withdrawal, security practices, and contact details.
 - [ ] Publish Terms of Use/community rules appropriate for a campus social/sports app.
 - [ ] Confirm in-app account deletion removes or anonymizes data according to the published policy and any safety/legal retention needs.
 - [ ] Complete App Store Connect App Privacy answers from the production data-flow inventory.
 - [ ] Ensure support email, privacy contact, and response ownership are monitored.
+
+**Evidence (2026-09-14):** The privacy policy is publicly available at
+`https://pickup-ucf-privacy.vercel.app`. The production deployment returned HTTP
+200 over HTTPS and was manually checked at desktop and mobile widths with no
+browser-console errors or warnings. The page names the app's data categories,
+purposes, service providers, device-permission behavior, retention and deletion
+approach, user choices, security practices, and public contact address. App Store
+Connect's nine data-type disclosures are configured but remain unpublished; the
+privacy-policy URL is saved in the English (U.S.) metadata. An easily discoverable
+in-app link remains open for a later build.
 
 **Done when:** In-app links work, policies match the shipped product and backend, App Store disclosures are consistent, and deletion/retention behavior has been tested.
 

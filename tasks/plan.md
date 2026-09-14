@@ -6,7 +6,7 @@ Complete TF-06 only. Establish a reproducible internal-TestFlight candidate base
 
 ## Preserved Prior Work
 
-- TF-02 privacy-manifest implementation remains complete at `6934d39`; archive placement, archive privacy report, and App Store Connect answers remain open.
+- TF-02 privacy-manifest implementation remains complete at `6934d39`; the public privacy policy and App Store Connect disclosure draft are complete, while the archive placement, archive privacy report, final disclosure publication, and in-app privacy link remain open.
 - TF-03 APNs token-ownership implementation remains complete at `ab9e67b`; its clean-reset SQL evidence remains valid, while production deployment and physical-device notification/account-switch testing remain open.
 - TF-04 safe user-facing error mapping remains complete at `7a81129`.
 - TF-05 accessibility layout and motion work remains complete at `f548802`, with 153/153 Debug simulator tests, 4/4 focused accessibility tests, unsigned Release build, Release analyzer, and `git diff --check` previously passing.
