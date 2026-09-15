@@ -2,11 +2,11 @@
 
 ## Overview
 
-Complete TF-06 only. Establish a reproducible internal-TestFlight candidate baseline, run every safe local release gate, review all application changes since the pre-readiness baseline, and separate simulator/local evidence from checks that require a signed processed TestFlight build or physical hardware. Do not start EXT-01, BETA-04, or any later workstream, and do not archive, upload, deploy, commit, push, or change production data.
+Complete TF-06 only. Establish a reproducible internal-TestFlight candidate baseline, run every safe local release gate, review all application changes since the pre-readiness baseline, and separate simulator/local evidence from checks that require a signed processed TestFlight build or physical hardware. The original local-review phase did not authorize archiving, uploading, deploying, committing, pushing, or changing production data; later user-authorized release actions are recorded below. Do not start EXT-01, BETA-04, or any later workstream.
 
 ## Preserved Prior Work
 
-- TF-02 privacy-manifest implementation remains complete at `6934d39`; the public privacy policy and App Store Connect disclosure draft are complete, while the archive placement, archive privacy report, final disclosure publication, and in-app privacy link remain open.
+- TF-02 privacy-manifest implementation remains complete at `6934d39`; the public privacy policy, archive placement/report review, and App Store Connect disclosure publication are complete. The in-app privacy link remains open.
 - TF-03 APNs token-ownership implementation remains complete at `ab9e67b`; its clean-reset SQL evidence remains valid, while production deployment and physical-device notification/account-switch testing remain open.
 - TF-04 safe user-facing error mapping remains complete at `7a81129`.
 - TF-05 accessibility layout and motion work remains complete at `f548802`, with 153/153 Debug simulator tests, 4/4 focused accessibility tests, unsigned Release build, Release analyzer, and `git diff --check` previously passing.
@@ -134,14 +134,14 @@ git status --short --branch
 | Field | Value |
 | --- | --- |
 | Marketing version | 1.0 |
-| Intended build number | 2 (current local value is 1; no bump performed) |
-| Commit SHA | `f54880285026010be5ec5c1d48137fc41374a21e` until source changes |
-| Environment | Linked production project; read-only audit found it not candidate-ready |
+| Intended build number | 2 (committed, archived, and uploaded) |
+| Commit SHA | `316b29bd59f5efafcf43151f634ad55b46921b8f` |
+| Environment | Linked production project; migrations intentionally deferred for this internal beta |
 | Latest migration | Local: `20260910120000_secure_device_token_ownership.sql`; production: `20260718220000` |
-| Processed TestFlight build | Not uploaded or verified |
+| Processed TestFlight build | `1.0 (2)` uploaded Sep 14, 2026; Apple processing and export compliance complete; binary state `Validated` and build status `Ready to Submit` |
 | iOS 17 physical device | Not verified |
 | Current-iOS physical device | Not verified |
-| Known issues | Production migration/APNs/cron gap; no final SHA; build not bumped; signed archive and physical-device lanes unverified |
+| Known issues | Three production migrations and scheduler/function parity remain unverified by user choice; physical-device lanes remain unverified |
 
 ## Risks and Mitigations
 
@@ -176,8 +176,8 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 | Bundle/configuration | Local candidate passed | App IDs are `edu.ucf.pickup` and `edu.ucf.pickup.widget`; app icon, app entitlements, widget, and byte-identical app privacy manifest are present. Local Release Supabase settings are present, HTTPS, and non-placeholder. |
 | Privacy/security review | Passed locally | Configuration now fails closed; user-facing setup details were removed. Email-hook logs no longer include addresses, domains, raw errors, or provider response bodies. A heuristic tracked/history scan found no committed sensitive file or credential; it is not a substitute for key rotation or a dedicated secret scanner. |
 | Simulator lifecycle | Passed within scope | Authenticated cold launch, force-quit/relaunch, background/foreground restoration, and safe rejection of a malformed session deep link passed. No crash, assertion, app-owned high-severity log, or PII-bearing app diagnostic was observed. |
-| Production parity | **Blocked / stop ship** | A fresh dry run confirms exactly three migrations remain pending; they were not applied without a recoverable backup. Required APNs and cron secret names remain absent. The privacy-hardened email function is deployed, but `send-push` parity and cron execution are unverified. |
-| Processed TestFlight / physical devices | **Partially complete / stop ship** | Build 1.0 (2) has a successful App Store Connect distribution export, production APNs entitlement, reviewed privacy report, and a clean Xcode Organizer validation. Upload/processing, iOS 17 coverage, and current-iOS coverage remain unverified. |
+| Production parity | **Deferred / known internal-beta limitation** | A fresh dry run confirms exactly three migrations remain pending; the user chose not to upgrade Supabase or apply them for this internal beta. The six required APNs/cron secret names are present without values being read. The privacy-hardened email function is deployed, but exact `send-push` parity and scheduler execution remain unverified. |
+| Processed TestFlight / physical devices | **Upload passed; device testing open** | Build 1.0 (2) passed Organizer validation, uploaded successfully, completed Apple processing/export compliance, and is `Ready to Submit`. Apple reports binary state `Validated`, production APNs, matching app/widget identifiers, and no non-exempt encryption. iOS 17 and current-iOS physical-device coverage remain unverified. |
 
 ### Fixed release-gate defects
 
@@ -192,10 +192,10 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 | Current local build | 2 |
 | Intended first-upload build | 2; committed and pushed |
 | Candidate app/build SHA | `316b29bd59f5efafcf43151f634ad55b46921b8f` |
-| Environment | Linked production project, inspected read-only; not candidate-ready |
+| Environment | Linked production project; three migrations deliberately deferred for this internal beta |
 | Latest local migration | `20260910120000_secure_device_token_ownership.sql` |
 | Latest production migration | `20260718220000` |
-| Archive/export | App Store Connect distribution export and Organizer validation complete; not uploaded or processed |
+| Archive/export | Organizer validation, upload, Apple processing, and export compliance complete; build `1.0 (2)` is `Ready to Submit` |
 
 ## Physical-Device and Processed-TestFlight Execution Guide
 
@@ -265,12 +265,12 @@ Toolchain: Xcode 26.2 (17C52), XcodeGen 2.45.4, Deno 2.9.3, Supabase CLI 2.99.0,
 
 ## Required User-Owned Release Actions
 
-1. Upgrade the Supabase project or otherwise establish an approved recoverable backup/restore path. Until then, the three pending production migrations will not be applied.
-2. Enter the private APNs key, key ID, team ID, production environment, app bundle ID, and a new cron secret in Supabase's protected secret manager. Do not send those values through chat or commit them to Git.
-3. Confirm the App Store Connect privacy answers match the reviewed archive privacy report.
-4. Explicitly authorize Xcode upload when ready. Build 1.0 (2) is archived, distribution-exported, and validated; it has not been uploaded to App Store Connect.
-5. After Apple processing, install from TestFlight and execute every matrix row on the iOS 17 and current-iOS lanes. Attach privacy-safe evidence under `docs/testflight-evidence/tf-06/` and update only the corresponding checklist boxes.
-6. TF-06 may close only after production parity and every processed-build physical-device gate pass. Then the next checklist workstream is EXT-01; it has not been started here.
+1. The user intentionally deferred the Supabase plan upgrade and three production migrations for this internal beta. Treat session-count, Live Activity end-push, and secure device-token ownership behavior as known limitations; do not claim production parity.
+2. The six APNs/cron secret names are present in Supabase. Values were not read; scheduler execution and exact deployed `send-push` parity remain unverified.
+3. The App Store Connect privacy answers were published and the public privacy-policy URL was saved.
+4. Build `1.0 (2)` was uploaded and processed successfully. Export compliance records standard encryption, no non-exempt encryption, and no distribution in France.
+5. Create or select an internal TestFlight group, add the intended internal tester, install the build, and execute every matrix row on the iOS 17 and current-iOS lanes. Attach privacy-safe evidence under `docs/testflight-evidence/tf-06/` and update only the corresponding checklist boxes.
+6. TF-06 may close only after the explicitly required backend parity and processed-build physical-device gates pass or the release criteria are formally revised. EXT-01 has not been started.
 
 ## Known Constraints and Mitigation Notes
 

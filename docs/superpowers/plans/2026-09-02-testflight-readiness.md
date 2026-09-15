@@ -2,9 +2,9 @@
 
 > **Purpose:** Single source of truth for preparing PickUp UCF for internal TestFlight, external testers, and beta stabilization. Complete the checklist in order, update each checkbox as work lands, and create a focused step-by-step implementation plan for each workstream before changing production code.
 
-**Status:** Not ready for TestFlight upload
+**Status:** Internal TestFlight build uploaded and processed; physical-device validation pending
 
-**Last audited:** 2026-09-13
+**Last audited:** 2026-09-15
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -98,11 +98,11 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - [x] Increment the build number for the upload.
 - [x] Create a signed Archive using the Release configuration.
 - [x] Run Xcode Organizer validation and resolve every blocking error or warning.
-- [ ] Upload the archive and confirm App Store Connect finishes processing it.
+- [x] Upload the archive and confirm App Store Connect finishes processing it.
 
 **Done when:** A signed archive validates, uploads, processes in App Store Connect, contains the app icon and required entitlements, and installs from TestFlight on a physical device.
 
-**Evidence (2026-09-13):** Build **1.0 (2)** was committed and pushed from `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive and successfully exported an App Store Connect distribution package using cloud-managed Apple Distribution signing. The export summary confirms bundle ID `edu.ucf.pickup`, matching app/widget build 2, App Store provisioning profiles, `get-task-allow=false`, and `aps-environment=production`. The exported app contains the first-party privacy manifest. Xcode Organizer then reported **“Your app successfully passed all validation checks.”** Upload, Apple processing, and TestFlight installation remain open.
+**Evidence (updated 2026-09-15):** Build **1.0 (2)** was committed and pushed from `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive and successfully exported an App Store Connect distribution package using cloud-managed Apple Distribution signing. The export summary confirms bundle ID `edu.ucf.pickup`, matching app/widget build 2, App Store provisioning profiles, `get-task-allow=false`, and `aps-environment=production`. The exported app contains the first-party privacy manifest, compiled 1024×1024 `AppIcon` rendition, and Xcode Organizer reported **“Your app successfully passed all validation checks.”** The build uploaded on Sep 14, 2026 and finished Apple processing/export compliance. App Store Connect reports binary state `Validated`, status `Ready to Submit`, production APNs, and `App Icon Hidden: No`. Physical-device TestFlight installation remains open.
 
 ## TF-02 — App privacy manifest and required-reason API declaration
 
@@ -117,11 +117,11 @@ All `TF-*` items are **P0** and must be complete before uploading the first buil
 - [x] Declare tracking and collected-data fields accurately; do not copy dependency declarations blindly.
 - [x] Verify the manifest is included in the archived app bundle.
 - [x] Generate and review Xcode’s privacy report for the archive.
-- [ ] Ensure App Store Connect privacy answers match the manifest and real production behavior.
+- [x] Ensure App Store Connect privacy answers match the manifest and real production behavior.
 
 **Evidence (2026-09-10):** Added `ios/PickUpUCF/PrivacyInfo.xcprivacy` to the main app resources only. First-party and resolved-package inspection found only app `UserDefaults` required-reason use; its app-only defaults domain matches Apple reason `CA92.1`. The widget has no required-reason API use, independent collection/tracking, or third-party dependency, so it has no separate manifest. The manifest declares tracking false, no tracking domains, and nine linked/non-tracking categories based on repository behavior: name, email address, fitness, precise custom game coordinates, emails/text messages, other user content, user ID, device ID, and product interaction. Fitness and the user ID used to retrieve preferred sports are used for app functionality and product personalization; the remaining categories are used for app functionality. `xcodegen generate` placed the file only in the app resources phase. Source, Debug, and unsigned Release app manifests match byte-for-byte and pass `plutil`; both built widget bundles correctly contain no manifest. Debug simulator tests passed (123/123), as did the unsigned Release device build and Release static analyzer. The user confirmed the main App Store Connect record exists for bundle ID `edu.ucf.pickup` (Apple ID `68107128702`, Prepare for Submission); no widget record was created. The user also confirmed Supabase, Brevo, Open-Meteo, and APNs are used only for app functionality, with no advertising, data-broker sharing, cross-company tracking, or undisclosed analytics/crash-reporting integration. Archive placement, Xcode's archive privacy report, and App Store Connect privacy answers remain unverified/user-owned.
 
-**Archive evidence (2026-09-13):** The App Store Connect export contains the root app privacy manifest. Xcode Organizer generated a one-page privacy report with the declared linked, non-tracking data categories; visual inspection found no clipping, overlap, invalid-manifest warning, or unreadable content. The report is stored locally at `docs/testflight-evidence/tf-06/PickUpUCF-1.0-2-Privacy-Report.pdf` and remains ignored by Git. App Store Connect privacy answers still require owner confirmation.
+**Archive evidence (updated 2026-09-15):** The App Store Connect export contains the root app privacy manifest. Xcode Organizer generated a one-page privacy report with the declared linked, non-tracking data categories; visual inspection found no clipping, overlap, invalid-manifest warning, or unreadable content. The report is stored locally at `docs/testflight-evidence/tf-06/PickUpUCF-1.0-2-Privacy-Report.pdf` and remains ignored by Git. The user published the matching App Store Connect privacy answers and saved the public privacy-policy URL.
 
 **Done when:** The signed archive contains valid privacy manifests, Xcode’s privacy report has been reviewed, and App Store Connect privacy answers are consistent with the app.
 
@@ -219,6 +219,7 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 - [x] Run the Deno Edge Function suite.
 - [x] Start local Supabase/Docker and run the SQL/RLS integration suite.
 - [x] Review the final app diff with special attention to auth, privacy, RLS, migrations, notifications, and secrets.
+- [x] Upload the validated archive and confirm Apple processing/export compliance.
 - [ ] Confirm production configuration contains no placeholders, test endpoints, debug flags, or development credentials.
 - [x] Verify no secrets, APNs tokens, emails, message bodies, or other PII are logged.
 - [ ] Install the processed build through TestFlight on at least one physical iPhone running iOS 17 and one current-iOS device when available.
@@ -235,9 +236,13 @@ The final baseline-to-candidate review covered tests first, then authentication/
 
 Safe simulator checks on the current working tree confirmed authenticated cold launch, force-quit/relaunch, background/foreground restoration, and rejection of a malformed custom-scheme session link without mutating account data. The app remained on the authenticated Discover surface. Fourteen initial and two final high-severity unified-log entries were all Apple Network framework connection-state queries (`unconnected connection` / `no local endpoint`); there was no crash, assertion, app-owned error log, or PII-bearing app diagnostic. This does not close the processed-build/physical-device console check.
 
-The linked production backend is **not candidate-ready**: a fresh dry run shows exactly `20260822000000`, `20260909000000`, and `20260910120000` remain pending. They were not applied because no recoverable hosted backup is available without a Supabase plan upgrade. The privacy-hardened `send-auth-email` revision was type-checked and deployed successfully; `fetch-weather` and `send-push` remain active, but the project secret-name inventory still does not contain `APNS_ENV`, `APNS_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, or `CRON_SECRET`. No secret values were read. Production cron status and exact `send-push` code parity remain unverified.
+The linked production backend is **not at migration parity**: a fresh dry run shows exactly `20260822000000`, `20260909000000`, and `20260910120000` remain pending. They were not applied because no recoverable hosted backup is available without a Supabase plan upgrade, which the user chose to defer for this internal beta. The privacy-hardened `send-auth-email` revision was type-checked and deployed successfully; `fetch-weather` and `send-push` remain active. The six required APNs/cron secret names are now present, but no secret values were read. Production cron status and exact `send-push` code parity remain unverified.
 
-Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive, exported it with cloud-managed Apple Distribution signing, and confirmed production APNs entitlement, matching app/widget build numbers, App Store profiles, and the root privacy manifest. The generated privacy report was visually reviewed and stored in the ignored evidence directory. Xcode Organizer validation passed every check. Upload, Apple processing, production migrations/APNs/cron setup, and physical-device testing remain open. Detailed tester instructions remain in `tasks/plan.md`.
+Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46921b8f`. Xcode created a Release archive, exported it with cloud-managed Apple Distribution signing, and confirmed production APNs entitlement, matching app/widget build numbers, App Store profiles, and the root privacy manifest. The generated privacy report was visually reviewed and stored in the ignored evidence directory. Xcode Organizer validation passed every check.
+
+**Processed-build update (2026-09-15):** Xcode uploaded build **1.0 (2)** on Sep 14, 2026, and App Store Connect completed processing and export compliance. The build is `Ready to Submit`; Build Metadata reports binary state `Validated`, bundle ID `edu.ucf.pickup`, minimum iOS 17.0, arm64, symbols included, `get-task-allow: false`, production `aps-environment`, and the matching `edu.ucf.pickup.widget` extension. It reports `App Uses Non-Exempt Encryption: No` and `App Icon Hidden: No`. The submitted compliance answers identify standard encryption and exclude France, avoiding a separate French encryption filing for this build. The compiled distribution asset catalog contains the 1024×1024 `AppIcon` rendition, although App Store Connect may continue to show a placeholder until the build is attached to a version.
+
+The user published the App Store privacy answers and saved the public privacy-policy URL. The six required APNs/cron secret names are present without their values being read. By user choice, the Supabase upgrade and the three pending production migrations remain deferred for this internal beta; scheduler execution and exact deployed `send-push` parity remain unverified. Physical-device installation and every iOS 17/current-iOS matrix row remain open. Detailed tester instructions remain in `tasks/plan.md`.
 
 **Done when:** All automated checks pass, a processed TestFlight build completes the physical-device critical-path smoke test, and the build’s exact backend/configuration state is recorded.
 
@@ -275,13 +280,13 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 **Tasks:**
 
 - [x] Publish a stable HTTPS privacy-policy URL.
-- [ ] Link the privacy policy from an easily discoverable in-app location and App Store Connect.
+- [ ] Link the privacy policy from an easily discoverable in-app location. The App Store Connect URL is saved.
 - [x] Document what is collected and why: email, profile identity, sessions, attendance, chat, reports, device tokens, location permission behavior, calendar identifiers, and notification data.
 - [x] Name relevant processors/services, including Supabase, Brevo, Open-Meteo, and Apple/APNs, and explain their roles accurately.
 - [x] Document retention, deletion, account deletion, consent withdrawal, security practices, and contact details.
 - [ ] Publish Terms of Use/community rules appropriate for a campus social/sports app.
 - [ ] Confirm in-app account deletion removes or anonymizes data according to the published policy and any safety/legal retention needs.
-- [ ] Complete App Store Connect App Privacy answers from the production data-flow inventory.
+- [x] Complete and publish App Store Connect App Privacy answers from the production data-flow inventory.
 - [ ] Ensure support email, privacy contact, and response ownership are monitored.
 
 **Evidence (2026-09-14):** The privacy policy is publicly available at
@@ -290,8 +295,8 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 browser-console errors or warnings. The page names the app's data categories,
 purposes, service providers, device-permission behavior, retention and deletion
 approach, user choices, security practices, and public contact address. App Store
-Connect's nine data-type disclosures are configured but remain unpublished; the
-privacy-policy URL is saved in the English (U.S.) metadata. An easily discoverable
+Connect's nine data-type disclosures are published, and the privacy-policy URL is
+saved in the English (U.S.) metadata. An easily discoverable
 in-app link remains open for a later build.
 
 **Done when:** In-app links work, policies match the shipped product and backend, App Store disclosures are consistent, and deletion/retention behavior has been tested.

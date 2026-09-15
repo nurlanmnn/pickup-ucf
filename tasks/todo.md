@@ -70,11 +70,12 @@
 - [x] Separate poor-connectivity/airplane/lifecycle/session-expiry tests.
 - [x] Separate destructive account-deletion and same-device account-transition tests.
 - [x] Provide prerequisites, expected results, stop-ship conditions, and failure evidence for every matrix row.
-- [ ] Record processed build results only after the user completes them.
+- [x] Record upload, Apple processing, export-compliance, and signed-metadata results for build 1.0 (2).
+- [ ] Record physical-device results only after each TestFlight matrix row is executed.
 
 ## Documentation and Decision
 
-- [x] Record current candidate build/provenance, environment and migration gaps, known issues, and tester instructions; final commit/build remain explicitly pending.
+- [x] Record candidate build/provenance, processed-build metadata, deferred migration gaps, known issues, and tester instructions.
 - [x] Update only evidence-supported TF-06 checklist boxes.
 - [x] Add dated TF-06 evidence without altering TF-02 through TF-05 evidence.
 - [x] Record failures and root causes, including configuration and production blockers separately.
