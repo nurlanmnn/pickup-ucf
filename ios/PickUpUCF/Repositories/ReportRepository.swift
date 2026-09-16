@@ -1,67 +1,76 @@
 import Foundation
 import Supabase
 
-private struct SessionReportInsert: Encodable {
-    let reporterId: UUID
-    let sessionId: UUID
-    let reason: String
+private struct SubmitReportParams: Encodable {
+    let targetType: ReportTargetType
+    let targetId: UUID
+    let category: ReportCategory
+    let context: String?
 
     enum CodingKeys: String, CodingKey {
-        case reporterId = "reporter_id"
-        case sessionId = "session_id"
-        case reason
+        case targetType = "p_target_type"
+        case targetId = "p_target_id"
+        case category = "p_category"
+        case context = "p_context"
     }
 }
 
 enum ReportRepositoryError: LocalizedError {
-    case reasonTooShort
-    case reasonTooLong
+    case contextTooShort
+    case contextTooLong
     case alreadyReported
+    case rateLimited
+    case invalidTarget
 
     var errorDescription: String? {
         switch self {
-        case .reasonTooShort:
-            return "Please describe the issue in at least 10 characters."
-        case .reasonTooLong:
-            return "Keep your report under 500 characters."
+        case .contextTooShort:
+            "Add at least 10 characters of context or leave it blank."
+        case .contextTooLong:
+            "Keep your report context under 500 characters."
         case .alreadyReported:
-            return "You already reported this session."
+            "You already have an open report for this item."
+        case .rateLimited:
+            "You’ve submitted several reports. Please wait before sending another."
+        case .invalidTarget:
+            "This item can’t be reported or is no longer available."
         }
     }
 }
 
-final class ReportRepository {
+protocol ReportRepositoryProtocol {
+    func submitReport(target: ReportTarget, category: ReportCategory, context: String?) async throws
+}
+
+final class ReportRepository: ReportRepositoryProtocol {
     private let client: SupabaseClient
 
     init(client: SupabaseClient = SupabaseManager.shared) {
         self.client = client
     }
 
-    func submitReport(sessionId: UUID, reason: String) async throws {
-        let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count >= 10 else {
-            throw ReportRepositoryError.reasonTooShort
+    func submitReport(target: ReportTarget, category: ReportCategory, context: String?) async throws {
+        let safeContext = try UserContentPolicy.validateOptional(context, field: .reportContext)
+        if let safeContext, safeContext.count < 10 {
+            throw ReportRepositoryError.contextTooShort
         }
-        guard trimmed.count <= 500 else {
-            throw ReportRepositoryError.reasonTooLong
-        }
-
-        let reporterId = try await client.auth.session.user.id
-        let payload = SessionReportInsert(
-            reporterId: reporterId,
-            sessionId: sessionId,
-            reason: trimmed
-        )
 
         do {
-            try await client
-                .from("session_reports")
-                .insert(payload)
-                .execute()
+            try await client.rpc(
+                "submit_moderation_report",
+                params: SubmitReportParams(
+                    targetType: target.type,
+                    targetId: target.id,
+                    category: category,
+                    context: safeContext
+                )
+            ).execute()
         } catch {
             let text = String(describing: error).lowercased()
-            if text.contains("duplicate") || text.contains("unique") {
-                throw ReportRepositoryError.alreadyReported
+            if text.contains("report_already_submitted") { throw ReportRepositoryError.alreadyReported }
+            if text.contains("report_rate_limited") { throw ReportRepositoryError.rateLimited }
+            if text.contains("report_target") || text.contains("invalid_report_target") {
+                throw ReportRepositoryError.invalidTarget
             }
             throw error
         }

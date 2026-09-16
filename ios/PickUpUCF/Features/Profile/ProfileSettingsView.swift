@@ -5,14 +5,39 @@ struct ProfileSettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var showSignOutConfirm = false
     @State private var errorMessage: String?
+    @State private var isModerator = false
+    @State private var moderationNotices: [ModerationNotice] = []
 
     private let repository: AuthRepositoryProtocol = AuthRepository()
+    private let moderationRepository: ModerationRepositoryProtocol = ModerationRepository()
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 if let errorMessage {
                     ErrorBanner(message: errorMessage)
+                }
+
+                ForEach(moderationNotices) { notice in
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Label(
+                            notice.kind == .suspendUser ? "Account suspended" : "Community warning",
+                            systemImage: "exclamationmark.shield.fill"
+                        )
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.destructive)
+                        Text(notice.message)
+                            .font(AppFont.body())
+                            .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        Button("Acknowledge") {
+                            Task { await acknowledge(notice) }
+                        }
+                        .font(AppFont.body(.semibold))
+                    }
+                    .padding(Spacing.m)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppColor.destructive.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
 
                 // Account
@@ -70,7 +95,20 @@ struct ProfileSettingsView: View {
                 }
 
                 // Privacy
-                SettingsCardGroup(label: "Privacy") {
+                SettingsCardGroup(label: "Safety & Privacy") {
+                    NavigationLink {
+                        CommunityRulesView()
+                    } label: {
+                        SettingsRow(
+                            systemImage: "checkmark.shield.fill",
+                            iconColor: AppColor.gold,
+                            title: "Community rules"
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider().padding(.leading, 46)
+
                     NavigationLink {
                         BlockedUsersView()
                     } label: {
@@ -92,6 +130,32 @@ struct ProfileSettingsView: View {
                         )
                     }
                     .buttonStyle(.plain)
+
+                    Divider().padding(.leading, 46)
+
+                    Link(destination: URL(string: "mailto:support.roomateapp@gmail.com?subject=PickUp%20UCF%20Support")!) {
+                        SettingsRow(
+                            systemImage: "envelope.fill",
+                            iconColor: Color(red: 0.24, green: 0.55, blue: 0.94),
+                            title: "Contact support"
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                if isModerator {
+                    SettingsCardGroup(label: "Moderation") {
+                        NavigationLink {
+                            ModerationQueueView()
+                        } label: {
+                            SettingsRow(
+                                systemImage: "shield.lefthalf.filled",
+                                iconColor: AppColor.destructive,
+                                title: "Review reports"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
 
                 // Danger zone
@@ -152,6 +216,22 @@ struct ProfileSettingsView: View {
                 }
             }
             Button("Cancel", role: .cancel) {}
+        }
+        .task {
+            async let moderator = moderationRepository.isCurrentUserModerator()
+            async let notices = moderationRepository.fetchNotices()
+            isModerator = (try? await moderator) ?? false
+            moderationNotices = (try? await notices) ?? []
+        }
+    }
+
+    @MainActor
+    private func acknowledge(_ notice: ModerationNotice) async {
+        do {
+            try await moderationRepository.acknowledgeNotice(id: notice.id)
+            moderationNotices.removeAll { $0.id == notice.id }
+        } catch {
+            errorMessage = AppErrorMapper.message(for: error)
         }
     }
 }

@@ -7,6 +7,8 @@ struct ChatView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var viewModel: ChatViewModel
+    @State private var reportMessage: SessionMessage?
+    @State private var userToBlock: UUID?
     @FocusState private var composerFocused: Bool
 
     init(sessionId: UUID, currentUserId: UUID) {
@@ -38,6 +40,31 @@ struct ChatView: View {
         }
         .onDisappear {
             Task { await viewModel.stopRealtime() }
+        }
+        .sheet(item: $reportMessage) { message in
+            NavigationStack {
+                ReportSheet(target: .message(message.id))
+            }
+            .appSheetChrome(detents: [.medium, .large])
+        }
+        .confirmationDialog(
+            "Block this user?",
+            isPresented: Binding(
+                get: { userToBlock != nil },
+                set: { if !$0 { userToBlock = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Block user", role: .destructive) {
+                guard let userId = userToBlock else { return }
+                Task {
+                    _ = await viewModel.block(userId: userId)
+                    userToBlock = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { userToBlock = nil }
+        } message: {
+            Text("You will no longer see each other’s messages, sessions, profiles, or notifications.")
         }
     }
 
@@ -76,6 +103,20 @@ struct ChatView: View {
                                     colorScheme: colorScheme
                                 )
                                 .id(message.id)
+                                .contextMenu {
+                                    if message.userId != currentUserId {
+                                        Button {
+                                            reportMessage = message
+                                        } label: {
+                                            Label("Report message", systemImage: "exclamationmark.bubble")
+                                        }
+                                        Button(role: .destructive) {
+                                            userToBlock = message.userId
+                                        } label: {
+                                            Label("Block user", systemImage: "hand.raised")
+                                        }
+                                    }
+                                }
                             }
                         }
                         .padding(Spacing.m)

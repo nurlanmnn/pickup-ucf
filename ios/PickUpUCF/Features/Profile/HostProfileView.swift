@@ -62,6 +62,7 @@ struct HostProfileView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: HostProfileViewModel
     @State private var showBlockConfirm = false
+    @State private var showReportSheet = false
 
     init(
         userId: UUID,
@@ -103,6 +104,23 @@ struct HostProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task(id: userId) {
             await viewModel.load()
+        }
+        .toolbar {
+            if canShowBlock {
+                ToolbarItem(placement: .secondaryAction) {
+                    Button {
+                        showReportSheet = true
+                    } label: {
+                        Label("Report user", systemImage: "exclamationmark.bubble")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showReportSheet) {
+            NavigationStack {
+                ReportSheet(target: .user(userId))
+            }
+            .appSheetChrome(detents: [.medium, .large])
         }
         .confirmationDialog(
             "Block this user?",

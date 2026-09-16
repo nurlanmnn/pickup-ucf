@@ -23,7 +23,8 @@ final class AuthRepository: AuthRepositoryProtocol {
     }
 
     func signUp(email: String, password: String, displayName: String) async throws {
-        let metadata: [String: AnyJSON] = ["display_name": .string(displayName)]
+        let safeDisplayName = try UserContentPolicy.validate(displayName, field: .displayName)
+        let metadata: [String: AnyJSON] = ["display_name": .string(safeDisplayName)]
         let response = try await client.auth.signUp(
             email: email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines),
             password: password,

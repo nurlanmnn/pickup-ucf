@@ -128,7 +128,7 @@ struct SessionDetailView: View {
         }
         .sheet(isPresented: $showReportSheet) {
             NavigationStack {
-                ReportSheet(sessionId: sessionId)
+                ReportSheet(target: .session(sessionId))
             }
             .appSheetChrome(detents: [.medium, .large])
         }

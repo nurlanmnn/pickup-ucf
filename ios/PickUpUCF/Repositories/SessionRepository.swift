@@ -62,15 +62,10 @@ final class SessionRepository: SessionRepositoryProtocol {
         self.client = client
     }
 
-    private static let maxCustomSportNameLength = 40
-
     /// Stored name when `sport == .other`; otherwise `nil` (clears any previous custom name on update).
-    private static func normalizedCustomSportName(sport: SportType, raw: String?) -> String? {
+    private static func normalizedCustomSportName(sport: SportType, raw: String?) throws -> String? {
         guard sport == .other else { return nil }
-        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !trimmed.isEmpty else { return nil }
-        if trimmed.count <= maxCustomSportNameLength { return trimmed }
-        return String(trimmed.prefix(maxCustomSportNameLength))
+        return try UserContentPolicy.validateOptional(raw, field: .customSport)
     }
 
     func fetchUpcoming(
@@ -234,16 +229,17 @@ final class SessionRepository: SessionRepositoryProtocol {
 
         let resolved = try Self.resolveLocation(venueId: input.venueId, custom: input.customLocation)
 
-        let normalizedOther = Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
+        let normalizedOther = try Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
         if input.sport == .other, normalizedOther == nil {
             throw SessionRepositoryError.customSportNameRequired
         }
 
-        let notesToStore = OtherSportNotes.composedNotes(
+        let composedNotes = OtherSportNotes.composedNotes(
             sport: input.sport,
             customOtherName: normalizedOther,
             userNotes: input.notes
         )
+        let notesToStore = try UserContentPolicy.validateOptional(composedNotes, field: .sessionNotes)
 
         let recurrenceRuleJSON: String?
         if let rule = input.recurrenceRule {
@@ -299,16 +295,17 @@ final class SessionRepository: SessionRepositoryProtocol {
 
         let resolved = try Self.resolveLocation(venueId: input.venueId, custom: input.customLocation)
 
-        let normalizedOther = Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
+        let normalizedOther = try Self.normalizedCustomSportName(sport: input.sport, raw: input.customSportName)
         if input.sport == .other, normalizedOther == nil {
             throw SessionRepositoryError.customSportNameRequired
         }
 
-        let notesToStore = OtherSportNotes.composedNotes(
+        let composedNotes = OtherSportNotes.composedNotes(
             sport: input.sport,
             customOtherName: normalizedOther,
             userNotes: input.notes
         )
+        let notesToStore = try UserContentPolicy.validateOptional(composedNotes, field: .sessionNotes)
 
         let payload = SessionRowPatch(
             sport: input.sport,
@@ -467,8 +464,10 @@ private extension SessionRepository {
             throw SessionRepositoryError.locationRequired
         }
 
-        let label = custom.label.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !label.isEmpty else {
+        let label: String
+        do {
+            label = try UserContentPolicy.validate(custom.label, field: .customLocation)
+        } catch UserContentPolicyError.required {
             throw SessionRepositoryError.customLocationPinRequired
         }
 

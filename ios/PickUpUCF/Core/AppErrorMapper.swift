@@ -142,6 +142,8 @@ enum AppErrorMapper {
             return error.errorDescription
         case let error as CalendarExportError:
             return error.errorDescription
+        case let error as UserContentPolicyError:
+            return error.errorDescription
         default:
             return nil
         }
@@ -217,6 +219,24 @@ enum AppErrorMapper {
         }
         if text.contains("user_blocked") {
             return "You can’t join this host’s sessions."
+        }
+        if text.contains("account_suspended") {
+            return "This account is temporarily suspended. Contact support if you believe this is a mistake."
+        }
+        if text.contains("moderator_required") {
+            return "You don’t have permission to access moderation tools."
+        }
+        if text.contains("report_rate_limited") {
+            return "You’ve submitted several reports. Please wait before sending another."
+        }
+        if text.contains("report_already_submitted") {
+            return "You already have an open report for this item."
+        }
+        if text.contains("report_target_not_found") || text.contains("invalid_report_target") {
+            return "This item can’t be reported or is no longer available."
+        }
+        if text.contains("user_content_rejected") {
+            return "This text may violate the community rules. Edit it and try again."
         }
         if text.contains("preferred_sports_required") {
             return "Select at least one sport."

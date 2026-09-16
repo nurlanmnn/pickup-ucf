@@ -28,12 +28,9 @@ final class BlockRepository: BlockRepositoryProtocol {
     }
 
     func fetchBlockedUsers() async throws -> [BlockedUser] {
-        let rows: [BlockedUserRow] = try await client
-            .from("user_blocks")
-            .select("blocked_id, profiles!user_blocks_blocked_id_fkey(id, display_name, username)")
+        try await client
+            .rpc("list_blocked_users")
             .execute()
             .value
-
-        return rows.map(\.blockedUser)
     }
 }

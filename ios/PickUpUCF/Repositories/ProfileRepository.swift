@@ -26,12 +26,14 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     }
 
     func ensureProfile(userId: UUID, displayName: String) async throws {
-        let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        let safeDisplayName: String
+        do {
+            safeDisplayName = try UserContentPolicy.validate(displayName, field: .displayName)
+        } catch UserContentPolicyError.required {
             throw ProfileRepositoryError.missingDisplayName
         }
 
-        let row = ProfileUpsert(id: userId, displayName: trimmed)
+        let row = ProfileUpsert(id: userId, displayName: safeDisplayName)
         try await client
             .from("profiles")
             .upsert(row, onConflict: "id")
@@ -143,4 +145,3 @@ enum ProfileRepositoryError: LocalizedError {
         }
     }
 }
-

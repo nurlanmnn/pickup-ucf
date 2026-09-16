@@ -13,20 +13,24 @@ final class ChatViewModel {
     var sendError: String?
 
     private let repository: ChatRepositoryProtocol
+    private let blockRepository: BlockRepositoryProtocol
     private let client: SupabaseClient
 
     private var realtimeChannel: RealtimeChannelV2?
     private var realtimeTask: Task<Void, Never>?
+    private var blockedUserIds: Set<UUID> = []
 
     init(
         sessionId: UUID,
         currentUserId: UUID,
         repository: ChatRepositoryProtocol = ChatRepository(),
+        blockRepository: BlockRepositoryProtocol = BlockRepository(),
         client: SupabaseClient = SupabaseManager.shared
     ) {
         self.sessionId = sessionId
         self.currentUserId = currentUserId
         self.repository = repository
+        self.blockRepository = blockRepository
         self.client = client
     }
 
@@ -34,10 +38,42 @@ final class ChatViewModel {
     func load() async {
         messages = .loading
         do {
-            let items = try await repository.fetchMessages(sessionId: sessionId, limit: AppPagination.chatMessageLimit)
-            messages = .loaded(items)
+            async let fetchedMessages = repository.fetchMessages(sessionId: sessionId, limit: AppPagination.chatMessageLimit)
+            async let fetchedBlockedIds = blockRepository.fetchBlockedUserIds()
+            let (items, blockedIds) = try await (fetchedMessages, fetchedBlockedIds)
+            blockedUserIds = blockedIds
+            messages = .loaded(
+                BlockedMessageFilter.visibleMessages(
+                    items,
+                    currentUserId: currentUserId,
+                    blockedUserIds: blockedIds
+                )
+            )
         } catch {
             messages = .failed(AppErrorMapper.message(for: error))
+        }
+    }
+
+    @MainActor
+    func block(userId: UUID) async -> Bool {
+        guard userId != currentUserId else { return false }
+        sendError = nil
+        do {
+            try await blockRepository.block(userId: userId)
+            blockedUserIds.insert(userId)
+            if case let .loaded(current) = messages {
+                messages = .loaded(
+                    BlockedMessageFilter.visibleMessages(
+                        current,
+                        currentUserId: currentUserId,
+                        blockedUserIds: blockedUserIds
+                    )
+                )
+            }
+            return true
+        } catch {
+            sendError = AppErrorMapper.message(for: error)
+            return false
         }
     }
 
@@ -135,6 +171,7 @@ final class ChatViewModel {
             createdAt: createdAt,
             author: nil
         )
+        guard row.userId == currentUserId || !blockedUserIds.contains(row.userId) else { return }
         guard !containsMessage(id: row.id) else { return }
         appendMessage(row)
     }

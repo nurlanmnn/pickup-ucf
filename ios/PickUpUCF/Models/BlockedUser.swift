@@ -8,32 +8,20 @@ struct BlockUserParams: Encodable {
     }
 }
 
-struct BlockedUser: Identifiable, Equatable {
+struct BlockedUser: Codable, Identifiable, Equatable {
     let id: UUID
     let displayName: String
     let username: String?
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case displayName = "display_name"
+        case username
+    }
+
     var handle: String {
         if let username, !username.isEmpty { return "@\(username)" }
         return displayName
-    }
-}
-
-struct BlockedUserRow: Decodable {
-    let blockedId: UUID
-    let blocked: ProfileSummary
-
-    enum CodingKeys: String, CodingKey {
-        case blockedId = "blocked_id"
-        case blocked = "profiles"
-    }
-
-    var blockedUser: BlockedUser {
-        BlockedUser(
-            id: blockedId,
-            displayName: blocked.displayName,
-            username: blocked.username
-        )
     }
 }
 

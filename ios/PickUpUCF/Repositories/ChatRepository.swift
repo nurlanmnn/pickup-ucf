@@ -29,13 +29,15 @@ final class ChatRepository: ChatRepositoryProtocol {
     }
 
     func sendMessage(sessionId: UUID, body: String) async throws -> SessionMessage {
-        let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        let safeBody: String
+        do {
+            safeBody = try UserContentPolicy.validate(body, field: .chatMessage)
+        } catch UserContentPolicyError.required {
             throw ChatRepositoryError.emptyMessage
         }
 
         let userId = try await client.auth.session.user.id
-        let payload = MessageInsert(sessionId: sessionId, userId: userId, body: trimmed)
+        let payload = MessageInsert(sessionId: sessionId, userId: userId, body: safeBody)
 
         return try await client
             .from("messages")
