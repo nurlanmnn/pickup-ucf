@@ -104,6 +104,7 @@ export async function sendDueLiveActivities(
             event: "end",
             "content-state": {
               startsAt: appleReferenceDateSeconds(row.starts_at),
+              endsAt: appleReferenceDateSeconds(row.ends_at),
             },
             "dismissal-date": timestamp - 1,
           },

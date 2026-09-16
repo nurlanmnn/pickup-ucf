@@ -100,6 +100,10 @@ Deno.test("sendDueLiveActivities sends an immediate ActivityKit end event", asyn
     body.aps["content-state"].startsAt,
     appleReferenceDateSeconds(row.starts_at),
   );
+  assertEquals(
+    body.aps["content-state"].endsAt,
+    appleReferenceDateSeconds(row.ends_at),
+  );
 });
 
 Deno.test("sendDueLiveActivities deletes an expired APNs token after 410", async () => {

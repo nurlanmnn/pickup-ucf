@@ -15,9 +15,10 @@ enum GameLiveActivityManager {
 
     @available(iOS 16.2, *)
     static func refresh(upcomingSessions: [PickupSession], now: Date = Date()) {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
-
         Task {
+            await endExpired(now: now)
+            guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+
             guard let session = GameLiveActivitySelection.nextSession(from: upcomingSessions, now: now) else {
                 await endAll()
                 return
@@ -29,7 +30,7 @@ enum GameLiveActivityManager {
                current.activityState != .ended,
                current.activityState != .dismissed {
                 let content = ActivityContent(
-                    state: GameLiveActivityAttributes.ContentState(startsAt: session.startsAt),
+                    state: contentState(for: session),
                     staleDate: GameLiveActivitySelection.contentStaleDate(for: session)
                 )
                 await current.update(content)
@@ -48,7 +49,15 @@ enum GameLiveActivityManager {
     static func end(forSessionId sessionId: UUID) async {
         for activity in Activity<GameLiveActivityAttributes>.activities
             where activity.attributes.sessionId == sessionId.uuidString {
-            await activity.end(nil, dismissalPolicy: .immediate)
+            await end(activity)
+        }
+    }
+
+    @available(iOS 16.2, *)
+    static func endExpired(now: Date = Date()) async {
+        for activity in Activity<GameLiveActivityAttributes>.activities
+            where activity.content.state.endsAt <= now {
+            await end(activity)
         }
     }
 
@@ -61,7 +70,7 @@ enum GameLiveActivityManager {
             sportSystemImage: session.sport.systemImage
         )
         let content = ActivityContent(
-            state: GameLiveActivityAttributes.ContentState(startsAt: session.startsAt),
+            state: contentState(for: session),
             staleDate: GameLiveActivitySelection.contentStaleDate(for: session)
         )
 
@@ -103,8 +112,24 @@ enum GameLiveActivityManager {
     @available(iOS 16.2, *)
     fileprivate static func endAll() async {
         for activity in Activity<GameLiveActivityAttributes>.activities {
-            await activity.end(nil, dismissalPolicy: .immediate)
+            await end(activity)
         }
+    }
+
+    private static func contentState(for session: PickupSession) -> GameLiveActivityAttributes.ContentState {
+        GameLiveActivityAttributes.ContentState(
+            startsAt: session.startsAt,
+            endsAt: session.endsAt
+        )
+    }
+
+    @available(iOS 16.2, *)
+    private static func end(_ activity: Activity<GameLiveActivityAttributes>) async {
+        let finalContent = ActivityContent(
+            state: activity.content.state,
+            staleDate: nil
+        )
+        await activity.end(finalContent, dismissalPolicy: .immediate)
     }
 }
 
@@ -132,6 +157,12 @@ enum GameLiveActivityCoordinator {
             Task {
                 await GameLiveActivityManager.end(forSessionId: sessionId)
             }
+        }
+    }
+
+    static func endExpired(now: Date = Date()) async {
+        if #available(iOS 16.2, *) {
+            await GameLiveActivityManager.endExpired(now: now)
         }
     }
 

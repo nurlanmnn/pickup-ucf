@@ -30,14 +30,17 @@ struct PickUpUCFApp: App {
                 appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
             }
             .task {
+                await GameLiveActivityCoordinator.endExpired()
                 guard AppConfig.currentLaunchMode == .ready else { return }
                 if let session = await AuthRepository().currentSession() {
                     await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active, appState.isAuthenticated else { return }
+                guard newPhase == .active else { return }
                 Task {
+                    await GameLiveActivityCoordinator.endExpired()
+                    guard appState.isAuthenticated else { return }
                     await PushNotificationService.shared
                         .refreshRegistrationAfterAuthorizationChange()
                 }

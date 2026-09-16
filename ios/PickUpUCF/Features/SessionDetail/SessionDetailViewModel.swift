@@ -161,6 +161,7 @@ final class SessionDetailViewModel {
 
         do {
             try await repository.cancelSession(id: current.id)
+            GameLiveActivityCoordinator.end(forSessionId: current.id)
             await load()
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             return true

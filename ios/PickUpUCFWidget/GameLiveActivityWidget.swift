@@ -21,7 +21,7 @@ struct GameLiveActivityWidget: Widget {
                 DynamicIslandExpandedRegion(.trailing) {
                     GameLiveActivityTimerText(
                         startsAt: context.state.startsAt,
-                        isStale: context.isStale
+                        endsAt: context.state.endsAt
                     )
                         .monospacedDigit()
                         .font(.headline.weight(.semibold))
@@ -40,11 +40,9 @@ struct GameLiveActivityWidget: Widget {
                             .font(.caption)
                             .lineLimit(1)
                         Spacer(minLength: 0)
-                        Text(
-                            GameLiveActivityPresentation.isLive(
-                                startsAt: context.state.startsAt,
-                                isStale: context.isStale
-                            ) ? "Live" : "Starts in"
+                        GameLiveActivityStatusCaption(
+                            startsAt: context.state.startsAt,
+                            endsAt: context.state.endsAt
                         )
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(LiveActivityTheme.gold)
@@ -56,7 +54,7 @@ struct GameLiveActivityWidget: Widget {
             } compactTrailing: {
                 GameLiveActivityTimerText(
                     startsAt: context.state.startsAt,
-                    isStale: context.isStale
+                    endsAt: context.state.endsAt
                 )
                     .monospacedDigit()
                     .foregroundStyle(LiveActivityTheme.gold)
@@ -71,18 +69,13 @@ struct GameLiveActivityWidget: Widget {
 
 private struct GameLiveActivityTimerText: View {
     let startsAt: Date
-    let isStale: Bool
+    let endsAt: Date
 
     @ViewBuilder
     var body: some View {
         let now = Date.now
-        if GameLiveActivityPresentation.isLive(
-            startsAt: startsAt,
-            isStale: isStale,
-            now: now
-        ) {
-            Text("LIVE")
-        } else {
+        switch GameLiveActivityPresentation.phase(startsAt: startsAt, endsAt: endsAt, now: now) {
+        case .preSession:
             Text(
                 timerInterval: GameLiveActivityPresentation.countdownInterval(
                     startsAt: startsAt,
@@ -91,6 +84,26 @@ private struct GameLiveActivityTimerText: View {
                 pauseTime: startsAt,
                 countsDown: true
             )
+        case .live:
+            Text("LIVE")
+        case .ended:
+            Text("ENDED")
+        }
+    }
+}
+
+private struct GameLiveActivityStatusCaption: View {
+    let startsAt: Date
+    let endsAt: Date
+
+    var body: some View {
+        switch GameLiveActivityPresentation.phase(startsAt: startsAt, endsAt: endsAt) {
+        case .preSession:
+            Text("Starts in")
+        case .live:
+            Text("In progress")
+        case .ended:
+            Text("Ended")
         }
     }
 }
@@ -110,10 +123,10 @@ private struct GameLiveActivitySportGlyph: View {
 private struct GameLiveActivityLockScreenView: View {
     let context: ActivityViewContext<GameLiveActivityAttributes>
 
-    private var hasStarted: Bool {
-        GameLiveActivityPresentation.isLive(
+    private var phase: GameLiveActivityPresentation.Phase {
+        GameLiveActivityPresentation.phase(
             startsAt: context.state.startsAt,
-            isStale: context.isStale
+            endsAt: context.state.endsAt
         )
     }
 
@@ -145,18 +158,26 @@ private struct GameLiveActivityLockScreenView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 GameLiveActivityTimerText(
                     startsAt: context.state.startsAt,
-                    isStale: context.isStale
+                    endsAt: context.state.endsAt
                 )
                     .font(.title3.monospacedDigit().weight(.bold))
                     .foregroundStyle(LiveActivityTheme.gold)
                     .multilineTextAlignment(.trailing)
                     .minimumScaleFactor(0.8)
-                Text(hasStarted ? "In progress" : "Starts in")
+                Text(statusCaption)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white.opacity(0.65))
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+
+    private var statusCaption: String {
+        switch phase {
+        case .preSession: return "Starts in"
+        case .live: return "In progress"
+        case .ended: return "Ended"
+        }
     }
 }

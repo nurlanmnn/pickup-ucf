@@ -20,6 +20,6 @@ enum GameLiveActivitySelection {
     }
 
     static func contentStaleDate(for session: PickupSession) -> Date {
-        session.startsAt
+        session.endsAt
     }
 }

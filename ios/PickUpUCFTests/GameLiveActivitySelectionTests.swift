@@ -56,37 +56,68 @@ final class GameLiveActivitySelectionTests: XCTestCase {
         XCTAssertEqual(endDate, session.endsAt)
     }
 
-    func testActivityContentBecomesStaleWhenSessionStarts() {
+    func testActivityContentBecomesStaleWhenSessionEnds() {
         let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
         let session = makeSession(startsAt: startsAt)
 
         XCTAssertEqual(
             GameLiveActivitySelection.contentStaleDate(for: session),
-            startsAt
+            session.endsAt
+        )
+    }
+
+    func testContentStateCarriesSessionStartAndEndTimes() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let endsAt = startsAt.addingTimeInterval(5400)
+
+        let state = GameLiveActivityAttributes.ContentState(
+            startsAt: startsAt,
+            endsAt: endsAt
+        )
+
+        XCTAssertEqual(state.startsAt, startsAt)
+        XCTAssertEqual(state.endsAt, endsAt)
+    }
+
+    func testPresentationIsPreSessionBeforeStartTime() {
+        let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let endsAt = startsAt.addingTimeInterval(5400)
+
+        XCTAssertEqual(
+            GameLiveActivityPresentation.phase(
+                startsAt: startsAt,
+                endsAt: endsAt,
+                now: startsAt.addingTimeInterval(-1)
+            ),
+            .preSession
         )
     }
 
     func testPresentationIsLiveAtExactStartTime() {
         let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let endsAt = startsAt.addingTimeInterval(5400)
 
-        XCTAssertTrue(
-            GameLiveActivityPresentation.isLive(
+        XCTAssertEqual(
+            GameLiveActivityPresentation.phase(
                 startsAt: startsAt,
-                isStale: false,
+                endsAt: endsAt,
                 now: startsAt
-            )
+            ),
+            .live
         )
     }
 
-    func testPresentationIsNotLiveBeforeStartTime() {
+    func testPresentationIsEndedAtExactEndTime() {
         let startsAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let endsAt = startsAt.addingTimeInterval(5400)
 
-        XCTAssertFalse(
-            GameLiveActivityPresentation.isLive(
+        XCTAssertEqual(
+            GameLiveActivityPresentation.phase(
                 startsAt: startsAt,
-                isStale: false,
-                now: startsAt.addingTimeInterval(-1)
-            )
+                endsAt: endsAt,
+                now: endsAt
+            ),
+            .ended
         )
     }
 

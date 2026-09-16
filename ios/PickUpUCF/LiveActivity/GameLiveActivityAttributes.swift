@@ -4,6 +4,7 @@ import Foundation
 struct GameLiveActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var startsAt: Date
+        var endsAt: Date
     }
 
     var sportName: String
@@ -13,8 +14,16 @@ struct GameLiveActivityAttributes: ActivityAttributes {
 }
 
 enum GameLiveActivityPresentation {
-    static func isLive(startsAt: Date, isStale: Bool, now: Date = .now) -> Bool {
-        isStale || startsAt <= now
+    enum Phase: Equatable {
+        case preSession
+        case live
+        case ended
+    }
+
+    static func phase(startsAt: Date, endsAt: Date, now: Date = .now) -> Phase {
+        if now >= endsAt { return .ended }
+        if now >= startsAt { return .live }
+        return .preSession
     }
 
     static func countdownInterval(startsAt: Date, now: Date = .now) -> ClosedRange<Date> {

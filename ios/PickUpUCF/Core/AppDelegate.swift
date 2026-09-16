@@ -83,6 +83,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             return
         }
 
+        GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
             do {
                 let removed = try CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
@@ -98,6 +99,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             return
         }
 
+        GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
             try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
         }
