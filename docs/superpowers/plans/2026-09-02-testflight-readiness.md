@@ -4,7 +4,7 @@
 
 **Status:** Internal TestFlight build uploaded and processed; physical-device validation pending
 
-**Last audited:** 2026-09-15
+**Last audited:** 2026-09-16
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -220,6 +220,7 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 - [x] Start local Supabase/Docker and run the SQL/RLS integration suite.
 - [x] Review the final app diff with special attention to auth, privacy, RLS, migrations, notifications, and secrets.
 - [x] Upload the validated archive and confirm Apple processing/export compliance.
+- [x] Create the internal TestFlight group, assign build 1.0 (2), invite the initial internal tester, and save “What to Test” instructions.
 - [ ] Confirm production configuration contains no placeholders, test endpoints, debug flags, or development credentials.
 - [x] Verify no secrets, APNs tokens, emails, message bodies, or other PII are logged.
 - [ ] Install the processed build through TestFlight on at least one physical iPhone running iOS 17 and one current-iOS device when available.
@@ -242,7 +243,9 @@ Build **1.0 (2)** is committed and pushed at `316b29bd59f5efafcf43151f634ad55b46
 
 **Processed-build update (2026-09-15):** Xcode uploaded build **1.0 (2)** on Sep 14, 2026, and App Store Connect completed processing and export compliance. The build is `Ready to Submit`; Build Metadata reports binary state `Validated`, bundle ID `edu.ucf.pickup`, minimum iOS 17.0, arm64, symbols included, `get-task-allow: false`, production `aps-environment`, and the matching `edu.ucf.pickup.widget` extension. It reports `App Uses Non-Exempt Encryption: No` and `App Icon Hidden: No`. The submitted compliance answers identify standard encryption and exclude France, avoiding a separate French encryption filing for this build. The compiled distribution asset catalog contains the 1024×1024 `AppIcon` rendition, although App Store Connect may continue to show a placeholder until the build is attached to a version.
 
-The user published the App Store privacy answers and saved the public privacy-policy URL. The six required APNs/cron secret names are present without their values being read. By user choice, the Supabase upgrade and the three pending production migrations remain deferred for this internal beta; scheduler execution and exact deployed `send-push` parity remain unverified. Physical-device installation and every iOS 17/current-iOS matrix row remain open. Detailed tester instructions remain in `tasks/plan.md`.
+The user published the App Store privacy answers and saved the public privacy-policy URL. The six required APNs/cron secret names are present without their values being read. By user choice, the Supabase upgrade and the three pending production migrations remain deferred for this internal beta; scheduler execution and exact deployed `send-push` parity remain unverified. Physical-device installation and every iOS 17/current-iOS matrix row remain open. Detailed tester instructions are in `docs/testflight/tf-06-device-runbook.md`.
+
+**Internal-testing update (2026-09-16):** The internal TestFlight group **Internal Testers** exists. Build **1.0 (2)** is assigned to the group with status **Testing**, one internal Apple Account has been invited, and the internal “What to Test” instructions are saved. This completes the upload and internal-group setup portion of TF-06 only. It does not close TF-06: invitation acceptance, TestFlight installation, and every iOS 17/current-iOS physical-device row still require direct device evidence.
 
 **Live Activity and in-app privacy update (2026-09-15):** Settings → Privacy now includes a native system `Link` labeled **Privacy Policy** that opens the published `https://pickup-ucf-privacy.vercel.app` page. Live Activity content now carries both session start and end times, derives pre-session/live/ended presentation from those dates, and uses the session end as the stale boundary instead of treating staleness as the start signal. The app immediately ends expired activities when it launches, becomes active, or refreshes My Games session data, while leave, host cancellation, cancellation notifications, sign-out, and account transitions retain immediate local cleanup. The APNs end payload now includes `startsAt` and `endsAt`, matching the Swift content state. Regression tests were demonstrated red before the fix and green afterward; focused checks passed 13/13 iOS and 3/3 Live Activity Edge Function tests, the complete iOS suite passed 159/159, all 14 `send-push` tests passed, Deno formatting passed, and the unsigned Release build and Release analyzer passed.
 
@@ -284,7 +287,7 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 **Tasks:**
 
 - [x] Publish a stable HTTPS privacy-policy URL.
-- [ ] Link the privacy policy from an easily discoverable in-app location. The App Store Connect URL is saved.
+- [x] Link the privacy policy from an easily discoverable in-app location. The App Store Connect URL is saved.
 - [x] Document what is collected and why: email, profile identity, sessions, attendance, chat, reports, device tokens, location permission behavior, calendar identifiers, and notification data.
 - [x] Name relevant processors/services, including Supabase, Brevo, Open-Meteo, and Apple/APNs, and explain their roles accurately.
 - [x] Document retention, deletion, account deletion, consent withdrawal, security practices, and contact details.
@@ -300,8 +303,9 @@ browser-console errors or warnings. The page names the app's data categories,
 purposes, service providers, device-permission behavior, retention and deletion
 approach, user choices, security practices, and public contact address. App Store
 Connect's nine data-type disclosures are published, and the privacy-policy URL is
-saved in the English (U.S.) metadata. An easily discoverable
-in-app link remains open for a later build.
+saved in the English (U.S.) metadata. Settings → Privacy now includes a native
+**Privacy Policy** link in source after build 1.0 (2); it requires a future build
+and physical-device verification before external testing.
 
 **Done when:** In-app links work, policies match the shipped product and backend, App Store disclosures are consistent, and deletion/retention behavior has been tested.
 
@@ -325,9 +329,9 @@ in-app link remains open for a later build.
 
 **Tasks:**
 
-- [ ] Add beta description and concise “What to Test” instructions.
+- [ ] Add the external-beta description and final “What to Test” scope. Internal instructions for build 1.0 (2) are saved.
 - [ ] Add a monitored feedback email and contact information.
-- [ ] Add the required export-compliance information.
+- [x] Add the required export-compliance information for build 1.0 (2), with France excluded.
 - [ ] Prepare screenshots or annotated test notes for flows that require setup.
 - [ ] List known issues honestly and distinguish unsupported behavior from defects.
 - [ ] Create an initial small external group before widening access.
