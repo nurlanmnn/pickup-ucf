@@ -81,6 +81,17 @@ struct ProfileSettingsView: View {
                         )
                     }
                     .buttonStyle(.plain)
+
+                    Divider().padding(.leading, 46)
+
+                    Link(destination: URL(string: "https://pickup-ucf-privacy.vercel.app")!) {
+                        SettingsRow(
+                            systemImage: "hand.raised.square.fill",
+                            iconColor: Color(red: 0.64, green: 0.24, blue: 0.88),
+                            title: "Privacy Policy"
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 // Danger zone
