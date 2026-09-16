@@ -282,6 +282,8 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 
 **Done when:** Users can filter/avoid, report, and block abusive content or users; moderators can act on reports promptly; the policy and contact path are visible; abuse tests pass.
 
+**Local implementation evidence (2026-09-16):** Source now includes client/server UGC validation, typed message/user/session reports, symmetric block enforcement, private rate-limited moderation RPCs, audited moderator actions, warning/suspension notices, in-app rules/support, and an operations runbook. A clean local migration reset and the full SQL/RLS suite pass, along with 167 iOS tests, an unsigned Release build, and static analysis. EXT-01 remains open because the new migration is not deployed, moderator/support ownership is not provisioned in production, the public guidelines source is not published, physical-device behavior is not verified, and the App Store age-rating/content questionnaire remains user-owned.
+
 ## EXT-02 — Privacy policy, terms, data disclosures, and support
 
 **Tasks:**

@@ -11,39 +11,39 @@
 ## Plan and policy
 
 - [x] Write the focused EXT-01 technical contract and implementation plan before code.
-- [ ] Add community rules and prohibited-content standards.
-- [ ] Add support visibility, response targets, and escalation documentation.
-- [ ] Add content-policy tests before implementation.
-- [ ] Implement client content validation for all UGC fields.
+- [x] Add community rules and prohibited-content standards.
+- [x] Add support visibility, response targets, and escalation documentation.
+- [x] Add content-policy tests before implementation.
+- [x] Implement client content validation for all UGC fields.
 
 ## Backend safety (local only)
 
-- [ ] Add typed message/user/session reports with duplicate protection.
-- [ ] Add per-user report rate limits.
-- [ ] Add moderator membership, queue, actions, suspensions, and audit records.
-- [ ] Protect moderation data and functions with least-privilege RLS/RPC grants.
-- [ ] Enforce blocking across profile/session/message visibility, joins, chat, and notifications.
-- [ ] Define and test retained-but-hidden shared history.
-- [ ] Add abusive-content, false-report, duplicate, block/unblock, deleted-account, suspension, and notification SQL tests.
-- [ ] Run a clean local reset and full SQL/RLS suite.
+- [x] Add typed message/user/session reports with duplicate protection.
+- [x] Add per-user report rate limits.
+- [x] Add moderator membership, queue, actions, suspensions, and audit records.
+- [x] Protect moderation data and functions with least-privilege RLS/RPC grants.
+- [x] Enforce blocking across profile/session/message visibility, joins, chat, and notifications.
+- [x] Define and test retained-but-hidden shared history.
+- [x] Add abusive-content, false-report, duplicate, block/unblock, deleted-account, suspension, and notification SQL tests.
+- [x] Run a clean local reset and full SQL/RLS suite (2026-09-16).
 
 ## iOS reporting and moderation
 
-- [ ] Add report reason/target models and repository contract.
-- [ ] Add message, user, and session report entry points.
-- [ ] Add accessible community rules and support surfaces.
-- [ ] Filter blocked realtime messages.
-- [ ] Add server-gated moderator queue and action UI.
-- [ ] Add focused unit/view-model tests.
+- [x] Add report reason/target models and repository contract.
+- [x] Add message, user, and session report entry points.
+- [x] Add accessible community rules and support surfaces.
+- [x] Filter blocked realtime messages.
+- [x] Add server-gated moderator queue and action UI.
+- [x] Add focused policy and blocked-message unit tests.
 
 ## Verification and delivery
 
-- [ ] Run the full iOS suite.
-- [ ] Run the unsigned Release build and Release analyzer.
-- [ ] Run `git diff --check` and secret/PII review.
-- [ ] Review the complete diff across correctness, readability, architecture, security, and performance.
-- [ ] Update readiness evidence without falsely closing production/device gates.
-- [ ] Commit in clean boundaries and push to `main`.
+- [x] Run the full iOS suite (167 tests, 2026-09-16).
+- [x] Run the unsigned Release build and analyzer (2026-09-16).
+- [x] Run `git diff --check` and secret/PII review.
+- [x] Review the complete diff across correctness, readability, architecture, security, and performance.
+- [x] Update readiness evidence without falsely closing production/device gates.
+- [x] Commit in clean boundaries and push to `main` (completed by this delivery).
 
 ## Explicitly deferred / user-owned
 
