@@ -1,4 +1,5 @@
 import XCTest
+import Supabase
 @testable import PickUpUCF
 
 final class DeviceTokenRepositoryTests: XCTestCase {
@@ -25,15 +26,47 @@ final class DeviceTokenRepositoryTests: XCTestCase {
         XCTAssertEqual(json["p_apns_token"], "def456")
     }
 
+    func testUnregisterFallsBackToOwnerScopedDeleteOnlyWhenRPCIsMissing() async throws {
+        let missingRPC = PostgrestError(code: "PGRST202", message: "redacted")
+        var deletedTokens: [String] = []
+        let repository = DeviceTokenRepository(
+            unregisterRPC: { _ in throw missingRPC },
+            deleteOwnedToken: { deletedTokens.append($0) }
+        )
+
+        try await repository.unregister(token: "safe-token")
+
+        XCTAssertEqual(deletedTokens, ["safe-token"])
+    }
+
+    func testUnregisterDoesNotFallbackForOtherServerFailures() async {
+        let serverFailure = PostgrestError(code: "PGRST500", message: "redacted")
+        var deleteCount = 0
+        let repository = DeviceTokenRepository(
+            unregisterRPC: { _ in throw serverFailure },
+            deleteOwnedToken: { _ in deleteCount += 1 }
+        )
+
+        do {
+            try await repository.unregister(token: "safe-token")
+            XCTFail("Expected unregister to fail")
+        } catch {}
+
+        XCTAssertEqual(deleteCount, 0)
+    }
+
     func testUserDefaultsStorePersistsTokenAcrossInstances() throws {
         let suiteName = "DeviceTokenRepositoryTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let token = String(repeating: "ef", count: 32)
 
-        UserDefaultsDeviceTokenStore(defaults: defaults).token = token
+        let store = UserDefaultsDeviceTokenStore(defaults: defaults)
+        store.token = token
+        store.requiresServerRecovery = true
 
         XCTAssertEqual(UserDefaultsDeviceTokenStore(defaults: defaults).token, token)
+        XCTAssertTrue(UserDefaultsDeviceTokenStore(defaults: defaults).requiresServerRecovery)
     }
 
     @MainActor
@@ -96,7 +129,8 @@ final class DeviceTokenRepositoryTests: XCTestCase {
         try await service.unregisterForAccountTransition()
 
         XCTAssertEqual(repository.unregisteredTokens, ["owned-token"])
-        XCTAssertEqual(store.token, "owned-token")
+        XCTAssertNil(store.token)
+        XCTAssertFalse(store.requiresServerRecovery)
         XCTAssertEqual(localUnregisterCount, 1)
         XCTAssertEqual(liveActivityEndCount, 1)
     }
@@ -120,7 +154,9 @@ final class DeviceTokenRepositoryTests: XCTestCase {
             XCTFail("Expected backend cleanup to fail")
         } catch {}
 
+        XCTAssertEqual(repository.unregisteredTokens, ["retry-token", "retry-token"])
         XCTAssertEqual(store.token, "retry-token")
+        XCTAssertTrue(store.requiresServerRecovery)
         XCTAssertEqual(localUnregisterCount, 1)
         XCTAssertEqual(liveActivityEndCount, 1)
     }
@@ -165,7 +201,7 @@ final class DeviceTokenRepositoryTests: XCTestCase {
     }
 
     @MainActor
-    func testUserASignOutThenUserBSignInReusesTokenForAtomicTransfer() async throws {
+    func testConfirmedSignOutCleanupPreventsStoredTokenReuseByNextAccount() async throws {
         let tokenData = Data(repeating: 0x34, count: 32)
         let token = String(repeating: "34", count: 32)
         let repository = RecordingDeviceTokenRepository()
@@ -184,8 +220,44 @@ final class DeviceTokenRepositoryTests: XCTestCase {
 
         XCTAssertEqual(
             repository.actions,
-            ["register:\(token)", "unregister:\(token)", "register:\(token)"]
+            ["register:\(token)", "unregister:\(token)"]
         )
+    }
+
+    @MainActor
+    func testFailedCleanupQuarantinesPushUntilAtomicRegistrationRecovers() async {
+        let token = String(repeating: "34", count: 32)
+        let repository = RecordingDeviceTokenRepository(
+            registerResults: [.failure(TestError.failed), .success(())],
+            unregisterResults: [.failure(TestError.failed), .failure(TestError.failed)]
+        )
+        let store = InMemoryDeviceTokenStore(token: token)
+        var localRegisterCount = 0
+        var localUnregisterCount = 0
+        let service = PushNotificationService(
+            tokenRepository: repository,
+            tokenStore: store,
+            registerForRemoteNotifications: { localRegisterCount += 1 },
+            unregisterForRemoteNotifications: { localUnregisterCount += 1 },
+            endLiveActivities: {}
+        )
+
+        do {
+            try await service.unregisterForAccountTransition()
+            XCTFail("Expected backend cleanup to fail")
+        } catch {}
+
+        await service.registerStoredTokenIfAvailable()
+        await service.requestAuthorizationAndRegister(requestAuthorization: { true })
+
+        XCTAssertTrue(store.requiresServerRecovery)
+        XCTAssertEqual(localRegisterCount, 0)
+        XCTAssertEqual(localUnregisterCount, 2)
+
+        await service.refreshRegistrationAfterAuthorizationChange()
+
+        XCTAssertFalse(store.requiresServerRecovery)
+        XCTAssertEqual(localRegisterCount, 1)
     }
 
     @MainActor
@@ -251,33 +323,52 @@ private enum TestError: Error {
 
 private final class InMemoryDeviceTokenStore: DeviceTokenStoring {
     var token: String?
+    var requiresServerRecovery: Bool
 
-    init(token: String? = nil) {
+    init(token: String? = nil, requiresServerRecovery: Bool = false) {
         self.token = token
+        self.requiresServerRecovery = requiresServerRecovery
     }
 }
 
 private final class RecordingDeviceTokenRepository: DeviceTokenRepositoryProtocol {
     private let registerError: Error?
     private let unregisterError: Error?
+    private var registerResults: [Result<Void, Error>]
+    private var unregisterResults: [Result<Void, Error>]
     private(set) var registeredTokens: [String] = []
     private(set) var unregisteredTokens: [String] = []
     private(set) var actions: [String] = []
 
-    init(registerError: Error? = nil, unregisterError: Error? = nil) {
+    init(
+        registerError: Error? = nil,
+        unregisterError: Error? = nil,
+        registerResults: [Result<Void, Error>] = [],
+        unregisterResults: [Result<Void, Error>] = []
+    ) {
         self.registerError = registerError
         self.unregisterError = unregisterError
+        self.registerResults = registerResults
+        self.unregisterResults = unregisterResults
     }
 
     func register(token: String) async throws {
         registeredTokens.append(token)
         actions.append("register:\(token)")
+        if !registerResults.isEmpty {
+            try registerResults.removeFirst().get()
+            return
+        }
         if let registerError { throw registerError }
     }
 
     func unregister(token: String) async throws {
         unregisteredTokens.append(token)
         actions.append("unregister:\(token)")
+        if !unregisterResults.isEmpty {
+            try unregisterResults.removeFirst().get()
+            return
+        }
         if let unregisterError { throw unregisterError }
     }
 }
@@ -300,7 +391,7 @@ final class AccountTransitionCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testSignOutClearsAppStateWhenCleanupAndRemoteLogoutFail() async {
+    func testSignOutReportsTokenCleanupFailureAndClearsAppState() async {
         let appState = authenticatedAppState()
         var events: [String] = []
 
@@ -310,6 +401,22 @@ final class AccountTransitionCoordinatorTests: XCTestCase {
                 events.append("unregister")
                 throw TestError.failed
             },
+            signOut: { events.append("signOut") }
+        )
+
+        XCTAssertEqual(events, ["unregister", "signOut"])
+        XCTAssertNil(appState.session)
+        XCTAssertEqual(outcome, .completedWithWarning([.deviceTokenCleanup]))
+    }
+
+    @MainActor
+    func testSignOutReportsRemoteFailureAndClearsLocalSession() async {
+        let appState = authenticatedAppState()
+        var events: [String] = []
+
+        let outcome = await AccountTransitionCoordinator.signOut(
+            appState: appState,
+            unregisterToken: { events.append("unregister") },
             signOut: {
                 events.append("signOut")
                 throw TestError.failed
@@ -318,7 +425,7 @@ final class AccountTransitionCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(events, ["unregister", "signOut"])
         XCTAssertNil(appState.session)
-        XCTAssertEqual(outcome, .completedWithWarning)
+        XCTAssertEqual(outcome, .completedWithWarning([.remoteSignOut]))
     }
 
     @MainActor

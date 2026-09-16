@@ -94,7 +94,7 @@ struct DeleteAccountView: View {
                     await PushNotificationService.shared.restoreAfterFailedAccountDeletion()
                 }
             )
-            if outcome == .completedWithWarning {
+            if outcome.hasWarning {
                 appState.showError(
                     "Your account was deleted, but some device cleanup could not be confirmed."
                 )

@@ -3,10 +3,12 @@ import UserNotifications
 
 protocol DeviceTokenStoring: AnyObject {
     var token: String? { get set }
+    var requiresServerRecovery: Bool { get set }
 }
 
 final class UserDefaultsDeviceTokenStore: DeviceTokenStoring {
     private static let tokenKey = "pushNotifications.lastAPNSToken"
+    private static let recoveryKey = "pushNotifications.requiresServerRecovery"
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
@@ -16,6 +18,11 @@ final class UserDefaultsDeviceTokenStore: DeviceTokenStoring {
     var token: String? {
         get { defaults.string(forKey: Self.tokenKey) }
         set { defaults.set(newValue, forKey: Self.tokenKey) }
+    }
+
+    var requiresServerRecovery: Bool {
+        get { defaults.bool(forKey: Self.recoveryKey) }
+        set { defaults.set(newValue, forKey: Self.recoveryKey) }
     }
 }
 
@@ -51,13 +58,21 @@ final class PushNotificationService: NSObject {
     }
 
     func requestAuthorizationAndRegister() async {
-        let center = UNUserNotificationCenter.current()
+        await requestAuthorizationAndRegister {
+            try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .sound, .badge])
+        }
+    }
+
+    func requestAuthorizationAndRegister(
+        requestAuthorization: () async throws -> Bool
+    ) async {
         do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-            guard granted else { return }
+            let granted = try await requestAuthorization()
+            guard granted, acceptsTokenRegistration else { return }
             registerForRemoteNotifications()
         } catch {
-            // Non-fatal; user can enable later in Settings
+            // Non-fatal; user can enable later in Settings.
         }
     }
 
@@ -67,10 +82,15 @@ final class PushNotificationService: NSObject {
         tokenStore.token = token
         guard acceptsTokenRegistration else { return }
         await enqueueRegistration {
-            if let previousToken, previousToken != token {
-                try? await self.tokenRepository.unregister(token: previousToken)
+            do {
+                if let previousToken, previousToken != token {
+                    try? await self.tokenRepository.unregister(token: previousToken)
+                }
+                try await self.tokenRepository.register(token: token)
+                self.tokenStore.requiresServerRecovery = false
+            } catch {
+                self.quarantineRegistration()
             }
-            try? await self.tokenRepository.register(token: token)
         }
     }
 
@@ -78,7 +98,12 @@ final class PushNotificationService: NSObject {
         acceptsTokenRegistration = true
         guard let token = tokenStore.token else { return }
         await enqueueRegistration {
-            try? await self.tokenRepository.register(token: token)
+            do {
+                try await self.tokenRepository.register(token: token)
+                self.tokenStore.requiresServerRecovery = false
+            } catch {
+                self.quarantineRegistration()
+            }
         }
     }
 
@@ -88,8 +113,24 @@ final class PushNotificationService: NSObject {
         await endLiveActivities()
         unregisterForRemoteNotifications()
         await pendingRegistration?.value
-        guard let token else { return }
-        try await tokenRepository.unregister(token: token)
+        guard let token else {
+            tokenStore.requiresServerRecovery = false
+            return
+        }
+
+        do {
+            try await tokenRepository.unregister(token: token)
+        } catch {
+            do {
+                try await tokenRepository.unregister(token: token)
+            } catch {
+                tokenStore.requiresServerRecovery = true
+                throw error
+            }
+        }
+
+        tokenStore.token = nil
+        tokenStore.requiresServerRecovery = false
     }
 
     func restoreAfterFailedAccountDeletion() async {
@@ -98,6 +139,7 @@ final class PushNotificationService: NSObject {
 
     func refreshRegistrationAfterAuthorizationChange() async {
         await registerStoredTokenIfAvailable()
+        guard acceptsTokenRegistration else { return }
         registerForRemoteNotifications()
     }
 
@@ -109,5 +151,11 @@ final class PushNotificationService: NSObject {
         }
         pendingRegistration = registration
         await registration.value
+    }
+
+    private func quarantineRegistration() {
+        tokenStore.requiresServerRecovery = true
+        acceptsTokenRegistration = false
+        unregisterForRemoteNotifications()
     }
 }

@@ -208,7 +208,7 @@ struct ProfileSettingsView: View {
                         },
                         signOut: { try await repository.signOut() }
                     )
-                    if outcome == .completedWithWarning {
+                    if outcome.hasWarning {
                         appState.showError(
                             "You’re signed out. Some server cleanup could not be confirmed."
                         )

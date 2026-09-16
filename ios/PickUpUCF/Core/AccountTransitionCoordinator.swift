@@ -1,8 +1,18 @@
 import Foundation
 
+enum AccountTransitionFailure: Equatable, Hashable {
+    case deviceTokenCleanup
+    case remoteSignOut
+}
+
 enum AccountTransitionOutcome: Equatable {
     case completed
-    case completedWithWarning
+    case completedWithWarning(Set<AccountTransitionFailure>)
+
+    var hasWarning: Bool {
+        if case .completedWithWarning = self { return true }
+        return false
+    }
 }
 
 enum AccountTransitionCoordinator {
@@ -12,12 +22,12 @@ enum AccountTransitionCoordinator {
         unregisterToken: () async throws -> Void,
         signOut: () async throws -> Void
     ) async -> AccountTransitionOutcome {
-        var needsWarning = false
+        var failures: Set<AccountTransitionFailure> = []
 
         do {
             try await unregisterToken()
         } catch {
-            needsWarning = true
+            failures.insert(.deviceTokenCleanup)
         }
 
         do {
@@ -25,11 +35,11 @@ enum AccountTransitionCoordinator {
         } catch {
             // Supabase Swift removes the persisted local session before its
             // remote logout request, so a network failure is safe to finish locally.
-            needsWarning = true
+            failures.insert(.remoteSignOut)
         }
 
         appState.session = nil
-        return needsWarning ? .completedWithWarning : .completed
+        return failures.isEmpty ? .completed : .completedWithWarning(failures)
     }
 
     @MainActor
@@ -40,12 +50,12 @@ enum AccountTransitionCoordinator {
         signOut: () async throws -> Void,
         restoreNotifications: () async -> Void
     ) async throws -> AccountTransitionOutcome {
-        var needsWarning = false
+        var failures: Set<AccountTransitionFailure> = []
 
         do {
             try await unregisterToken()
         } catch {
-            needsWarning = true
+            failures.insert(.deviceTokenCleanup)
         }
 
         do {
@@ -60,10 +70,10 @@ enum AccountTransitionCoordinator {
         do {
             try await signOut()
         } catch {
-            needsWarning = true
+            failures.insert(.remoteSignOut)
         }
 
         appState.session = nil
-        return needsWarning ? .completedWithWarning : .completed
+        return failures.isEmpty ? .completed : .completedWithWarning(failures)
     }
 }
