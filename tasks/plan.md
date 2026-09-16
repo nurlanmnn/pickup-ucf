@@ -1,4 +1,29 @@
-# Implementation Plan: EXT-01 UGC Safety and Moderation
+# Implementation Plan: TF-06 Account-Transition Cleanup Failure
+
+## Objective
+
+Diagnose the physical-device sign-out warning from TestFlight build 1.0 (2), preserve the failed/blocked runbook state, add a secure code-owned compatibility cleanup and notification quarantine without weakening token ownership, and leave the authoritative production migration explicitly pending authorization.
+
+## Confirmed evidence and approach
+
+- The 2026-09-16 10:09 AM America/New_York screenshot shows local sign-out completed with an unconfirmed server-cleanup warning; device model and iOS version were not recorded.
+- The shipped cleanup path is unchanged between source `316b29b` and pre-remediation `main` at `0fba725`.
+- Read-only migration and schema checks confirm production lacks migration `20260910120000` and both device-token RPCs.
+- Treat step 11 as failed, step 16 as blocked, and TF-06 as open.
+- Add an exact-token, owner-RLS-protected delete only for PostgREST’s explicit missing-function response. Do not add a registration/table-upsert fallback.
+- Retry idempotent unregister once. If cleanup or registration remains unconfirmed, persist a quarantine and keep APNs locally disabled until authenticated atomic registration succeeds.
+- Keep the aggregate user warning for genuine failures while retaining private, typed failure categories in memory for tests and future privacy-safe diagnostics.
+
+## Verification
+
+- Focused account-transition and device-token tests, followed by the complete iOS suite.
+- Unsigned generic-device Release build and Release static analyzer.
+- Privacy/log scan, complete diff review, and `git diff --check`.
+- Documentation must state that production migration deployment and two-lane physical-device retesting remain authorized follow-up work, not completed work.
+
+---
+
+# Previous Implementation Plan: EXT-01 UGC Safety and Moderation
 
 ## Objective
 

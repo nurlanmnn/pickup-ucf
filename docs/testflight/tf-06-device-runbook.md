@@ -44,3 +44,49 @@ Do not capture email addresses, tokens, message bodies, precise locations, or se
 Stop and record a failure for any crash; cross-account data/token/notification/badge/chat/Live Activity leak; auth or deletion failure; authorization/RLS bypass; duplicate destructive operation; inconsistent membership count; PII/secret in UI/logs; or repeatable P1 regression.
 
 TF-06 remains open until all rows have evidence for both OS lanes. The intentionally deferred production migrations remain limitations rather than passes.
+
+## Device result — 2026-09-16 sign-out cleanup failure
+
+- Build: **PickUp UCF 1.0 (2)**, source `316b29bd59f5efafcf43151f634ad55b46921b8f`
+- Date/time: **2026-09-16, approximately 10:09 AM America/New_York**
+- Device model: **not recorded**
+- iOS version: **not recorded**
+- Tester initials: **not recorded**
+- Evidence: redacted screenshot supplied locally as `Screenshot 2026-09-16 at 10.09.55 AM.png`; it shows the signed-out Welcome screen and the warning “You’re signed out. Some server cleanup could not be confirmed.” No email, APNs token, session token, or message content is visible.
+- Step 11 result: **FAILED** for the sign-out/account-transition portion. Local authenticated UI state cleared, but server cleanup was not confirmed, so the account-switch isolation requirement did not pass.
+- Step 16 result: **BLOCKED**. Do not trigger or evaluate an A-only notification on account B until A’s device-token cleanup is proven; absence of a notification would not be trustworthy while production ownership cleanup is unresolved.
+- TF-06 status: **OPEN / NOT COMPLETE**.
+
+### Confirmed diagnosis
+
+The confirmed broken cleanup dependency is APNs token unregistration. Build 1.0 (2) calls the authenticated `unregister_device_token` RPC before Supabase sign-out whenever the device has a stored APNs token. A read-only linked migration listing on 2026-09-16 showed `20260910120000_secure_device_token_ownership.sql` absent from production. A fresh schema-only production export independently confirmed that neither `register_device_token` nor `unregister_device_token` exists; production still has the prior `(user_id, apns_token)` primary key and owner-scoped `device_tokens_all` policy. Any unregister attempt from this build therefore fails at the missing RPC.
+
+Live Activity cleanup did not cause this warning: the shipped local cleanup closure is non-throwing and cannot set the warning outcome. Supabase Swift removes the persisted local auth session before attempting remote logout, which matches the observed Welcome screen. Build 1.0 (2) aggregated token-cleanup and remote-logout failures into the same warning, and the device’s notification-permission/token state was not recorded. The screenshot therefore cannot forensically prove which branch set the warning or whether remote logout also failed. The missing APNs RPC is the only cleanup defect independently confirmed; no evidence establishes a remote sign-out failure.
+
+Immediately before this remediation, `main` at `0fba725` had no changes from the build source in `AccountTransitionCoordinator.swift`, `PushNotificationService.swift`, `DeviceTokenRepository.swift`, or the device-token ownership migration. Later `main` changes affected moderation, UI, documentation, and Live Activity lifecycle behavior, but not the shipped token-unregistration path.
+
+### Required physical-device retest
+
+Prerequisites: install a build containing the remediation, then obtain separate production authorization to deploy migration `20260910120000_secure_device_token_ownership.sql` and verify both token RPCs exist. Without that migration, positive B notification delivery cannot pass even though the compatibility cleanup safely removes A's legacy row. Use controlled accounts A and B on the same physical iPhone. Record the device model, exact iOS version, tester initials, build number/source SHA, production migration version, and timestamp.
+
+1. Sign in as A, allow notifications, background and foreground the app once, and confirm the app remains authenticated.
+2. Sign out A while online. Confirm the Welcome screen appears **without** the server-cleanup warning.
+3. Sign in as B on the same device, then force quit and relaunch. Confirm only B’s profile, badges, chat, cached content, and notification state are present.
+4. From a second controlled device/account, trigger an A-only eligible notification. Confirm the switched device receives no A notification.
+5. Trigger a B-only eligible notification. Confirm exactly one safe B notification arrives and routes only to authorized B content.
+6. Repeat steps 1–5 once with network loss during A sign-out. Confirm the cleanup warning remains visible, local auth clears, B does not enable push while ownership is unconfirmed, and notification registration recovers only after connectivity returns and atomic server ownership succeeds.
+7. Repeat the full sequence in both required lanes: one physical iPhone on iOS 17 and one on the current iOS release. Step 11 and step 16 remain open until both lanes pass with recorded evidence.
+
+Deploying `20260910120000_secure_device_token_ownership.sql` remains the authoritative production fix for atomic one-token/one-account ownership. This investigation did not deploy or alter production schema or data.
+
+### Code verification — 2026-09-16
+
+The remediation adds a missing-RPC compatibility delete constrained by both authenticated user ID and exact APNs token, with the existing owner-scoped RLS as a second boundary. It does not add a registration/upsert fallback. Confirmed cleanup clears the stored token; unconfirmed cleanup is retried once, keeps the warning, locally disables APNs, and quarantines registration until an authenticated atomic token claim succeeds. Failure categories contain no backend text or private identifiers.
+
+- Focused device-token tests: **15/15 passed**.
+- Focused account-transition tests: **5/5 passed**.
+- Complete iOS suite: **171/171 passed**.
+- Unsigned generic-device Release build: **passed**.
+- Release static analyzer: **passed**.
+- Static logging/privacy scan and `git diff --check`: **passed**.
+- Physical-device retest: **pending**; step 11 remains failed and step 16 remains blocked.
