@@ -9,7 +9,7 @@
 - [x] Run the complete iOS suite (171/171), unsigned Release build, Release analyzer, privacy/static checks, and `git diff --check`.
 - [x] Review the complete diff across correctness, readability, architecture, security/privacy, and performance.
 - [x] Commit in clean boundaries and push `main` (completed by this delivery).
-- [ ] Obtain authorization before deploying migration `20260910120000`; no production deployment is part of this work.
+- [x] Obtain authorization and deploy migration `20260910120000` with the other three pending migrations in order; verify production migration parity and token RPC definitions (2026-09-16).
 - [ ] Retest runbook steps 11 and 16 on recorded iOS 17 and current-iOS physical devices.
 
 ---
@@ -20,7 +20,7 @@
 
 - [x] Record Internal Testers group, build 1.0 (2) assignment/Testing status, one tester invitation, and saved “What to Test”.
 - [x] Keep TF-06 open for both physical-device lanes.
-- [x] Preserve the three intentionally deferred production migrations.
+- [x] Preserve the deferred production migrations until explicit authorization; all four pending migrations were authorized and deployed on 2026-09-16 without a backup.
 - [ ] Record iOS 17 physical-device evidence (user-owned).
 - [ ] Record current-iOS physical-device evidence (user-owned).
 
@@ -61,10 +61,10 @@
 - [x] Update readiness evidence without falsely closing production/device gates.
 - [x] Commit in clean boundaries and push to `main` (completed by this delivery).
 
-## Explicitly deferred / user-owned
+## Production follow-up / user-owned
 
-- [ ] Deploy any EXT-01 migration/function revision to production.
-- [ ] Deploy the three previously deferred production migrations.
+- [x] Deploy the EXT-01 migration/function revision to production (2026-09-16).
+- [x] Deploy the three previously deferred production migrations (2026-09-16).
 - [ ] Provision production moderator accounts and confirm monitored support ownership.
 - [ ] Complete App Store age-rating/content answers.
 - [ ] Invite external testers or submit to Beta App Review.

@@ -43,7 +43,7 @@ Do not capture email addresses, tokens, message bodies, precise locations, or se
 
 Stop and record a failure for any crash; cross-account data/token/notification/badge/chat/Live Activity leak; auth or deletion failure; authorization/RLS bypass; duplicate destructive operation; inconsistent membership count; PII/secret in UI/logs; or repeatable P1 regression.
 
-TF-06 remains open until all rows have evidence for both OS lanes. The intentionally deferred production migrations remain limitations rather than passes.
+TF-06 remains open until all rows have evidence for both OS lanes. Production migration parity does not substitute for physical-device evidence.
 
 ## Device result — 2026-09-16 sign-out cleanup failure
 
@@ -54,7 +54,7 @@ TF-06 remains open until all rows have evidence for both OS lanes. The intention
 - Tester initials: **not recorded**
 - Evidence: redacted screenshot supplied locally as `Screenshot 2026-09-16 at 10.09.55 AM.png`; it shows the signed-out Welcome screen and the warning “You’re signed out. Some server cleanup could not be confirmed.” No email, APNs token, session token, or message content is visible.
 - Step 11 result: **FAILED** for the sign-out/account-transition portion. Local authenticated UI state cleared, but server cleanup was not confirmed, so the account-switch isolation requirement did not pass.
-- Step 16 result: **BLOCKED**. Do not trigger or evaluate an A-only notification on account B until A’s device-token cleanup is proven; absence of a notification would not be trustworthy while production ownership cleanup is unresolved.
+- Step 16 result: **BLOCKED**. Do not mark account-specific notification isolation passed until a physical-device retest proves A’s token cleanup and B’s subsequent ownership claim; migration deployment alone is not runtime proof.
 - TF-06 status: **OPEN / NOT COMPLETE**.
 
 ### Confirmed diagnosis
@@ -67,7 +67,7 @@ Immediately before this remediation, `main` at `0fba725` had no changes from the
 
 ### Required physical-device retest
 
-Prerequisites: install a build containing the remediation, then obtain separate production authorization to deploy migration `20260910120000_secure_device_token_ownership.sql` and verify both token RPCs exist. Without that migration, positive B notification delivery cannot pass even though the compatibility cleanup safely removes A's legacy row. Use controlled accounts A and B on the same physical iPhone. Record the device model, exact iOS version, tester initials, build number/source SHA, production migration version, and timestamp.
+Prerequisites: install a build containing the remediation. Production migration `20260910120000_secure_device_token_ownership.sql` was deployed and its token RPCs were verified on 2026-09-16; confirm migration parity again before testing if the backend changes. Use controlled accounts A and B on the same physical iPhone. Record the device model, exact iOS version, tester initials, build number/source SHA, production migration version, and timestamp.
 
 1. Sign in as A, allow notifications, background and foreground the app once, and confirm the app remains authenticated.
 2. Sign out A while online. Confirm the Welcome screen appears **without** the server-cleanup warning.
@@ -77,7 +77,17 @@ Prerequisites: install a build containing the remediation, then obtain separate 
 6. Repeat steps 1–5 once with network loss during A sign-out. Confirm the cleanup warning remains visible, local auth clears, B does not enable push while ownership is unconfirmed, and notification registration recovers only after connectivity returns and atomic server ownership succeeds.
 7. Repeat the full sequence in both required lanes: one physical iPhone on iOS 17 and one on the current iOS release. Step 11 and step 16 remain open until both lanes pass with recorded evidence.
 
-Deploying `20260910120000_secure_device_token_ownership.sql` remains the authoritative production fix for atomic one-token/one-account ownership. This investigation did not deploy or alter production schema or data.
+Migration `20260910120000_secure_device_token_ownership.sql` is the authoritative production fix for atomic one-token/one-account ownership and was deployed on 2026-09-16. This removes the known backend prerequisite but does not change the recorded failure or close steps 11 and 16 without a passing device retest.
+
+### Production migration result — 2026-09-16
+
+- Authorization: the user explicitly authorized deploying all four pending migrations without first creating a backup.
+- Deployment time: approximately **10:07 PM America/New_York**.
+- Applied in order: `20260822000000_fix_leave_session_player_count.sql`, `20260909000000_live_activity_end_pushes.sql`, `20260910120000_secure_device_token_ownership.sql`, and `20260916090000_ugc_safety_and_moderation.sql`.
+- Post-deployment migration listing: **verified local/remote parity** for all four versions.
+- Post-deployment schema export: **verified** `device_tokens` has primary key `(apns_token)`; `register_device_token(text)` and `unregister_device_token(text)` exist as `SECURITY DEFINER` functions with fixed `search_path`; public execution is revoked and authenticated execution is granted; unregistration deletes only the current authenticated user's exact token.
+- Backup: **not created**, by explicit user authorization. Rollback therefore depends on forward repair or any provider-managed recovery that may independently exist.
+- TF-06 status: **OPEN / NOT COMPLETE**. Step 11 remains failed and step 16 remains blocked pending the exact physical-device retest below.
 
 ### Code verification — 2026-09-16
 

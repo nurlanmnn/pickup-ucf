@@ -2,13 +2,13 @@
 
 ## Objective
 
-Diagnose the physical-device sign-out warning from TestFlight build 1.0 (2), preserve the failed/blocked runbook state, add a secure code-owned compatibility cleanup and notification quarantine without weakening token ownership, and leave the authoritative production migration explicitly pending authorization.
+Diagnose the physical-device sign-out warning from TestFlight build 1.0 (2), preserve the failed/blocked runbook state, and add a secure code-owned compatibility cleanup and notification quarantine without weakening token ownership. The authoritative production migration was subsequently authorized and deployed on 2026-09-16; device retesting remains required.
 
 ## Confirmed evidence and approach
 
 - The 2026-09-16 10:09 AM America/New_York screenshot shows local sign-out completed with an unconfirmed server-cleanup warning; device model and iOS version were not recorded.
 - The shipped cleanup path is unchanged between source `316b29b` and pre-remediation `main` at `0fba725`.
-- Read-only migration and schema checks confirm production lacks migration `20260910120000` and both device-token RPCs.
+- Pre-remediation read-only migration and schema checks confirmed production lacked migration `20260910120000` and both device-token RPCs. The migration and RPCs were deployed and verified on 2026-09-16.
 - Treat step 11 as failed, step 16 as blocked, and TF-06 as open.
 - Add an exact-token, owner-RLS-protected delete only for PostgREST’s explicit missing-function response. Do not add a registration/table-upsert fallback.
 - Retry idempotent unregister once. If cleanup or registration remains unconfirmed, persist a quarantine and keep APNs locally disabled until authenticated atomic registration succeeds.
@@ -19,7 +19,7 @@ Diagnose the physical-device sign-out warning from TestFlight build 1.0 (2), pre
 - Focused account-transition and device-token tests, followed by the complete iOS suite.
 - Unsigned generic-device Release build and Release static analyzer.
 - Privacy/log scan, complete diff review, and `git diff --check`.
-- Documentation must state that production migration deployment and two-lane physical-device retesting remain authorized follow-up work, not completed work.
+- Documentation must preserve the historical failure, record the production deployment separately, and keep two-lane physical-device retesting open.
 
 ---
 
@@ -36,8 +36,8 @@ This plan starts from `main` at `8791117`. Build 1.0 (2) remains the processed i
 - Internal group **Internal Testers** exists; build 1.0 (2) is assigned with status **Testing**.
 - One internal Apple Account is invited and “What to Test” is saved.
 - TF-06 upload/setup is complete, but TF-06 remains open until the iOS 17 and current-iOS device matrix has evidence.
-- Production is intentionally missing migrations `20260822000000`, `20260909000000`, and `20260910120000`.
-- EXT-01 work may add local migrations and tests, but no migration/function deployment, Supabase upgrade, production data change, App Review submission, or external tester invitation is authorized.
+- Production was intentionally missing migrations `20260822000000`, `20260909000000`, and `20260910120000` at planning time. Those migrations and `20260916090000` were explicitly authorized and deployed on 2026-09-16 without a backup.
+- No Supabase upgrade, App Review submission, or external tester invitation was performed.
 
 ## Technical Contract
 
