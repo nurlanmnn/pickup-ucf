@@ -351,9 +351,9 @@ and physical-device verification before external testing.
 
 - [x] Deploy every currently tracked Supabase migration to the production project in order (verified at parity 2026-09-16).
 - [ ] Verify RLS is enabled and least-privilege policies behave correctly for anonymous, authenticated, blocked, and deleted users.
-- [ ] Configure `APNS_ENV=production`, APNs key/team/bundle identifiers, and rotation ownership.
-- [ ] Configure Edge Function secrets, Brevo/email-hook secrets, cron secret, and environment-specific URLs.
-- [ ] Confirm notification outbox cron schedules are active, idempotent, and monitored.
+- [x] Configure `APNS_ENV=production` and verify the existing APNs key/team/bundle identifiers for TestFlight delivery (2026-09-17).
+- [ ] Complete secret ownership documentation; the dedicated push cron secret is configured, while Brevo/email-hook ownership still requires verification.
+- [ ] Confirm notification outbox cron schedules are active, idempotent, and monitored. The once-per-minute push schedule is active, but physical-device delivery remains open after the 2026-09-18 APNs provider-token correction.
 - [ ] Exercise the production email-verification/reset hooks and failure path.
 - [ ] Verify APNs invalid-token cleanup and delivery status handling.
 - [ ] Verify push taps route to the correct session/chat and fail safely when content was deleted or access was revoked.

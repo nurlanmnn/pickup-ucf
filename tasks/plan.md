@@ -21,6 +21,16 @@ Diagnose the physical-device sign-out warning from TestFlight build 1.0 (2), pre
 - Privacy/log scan, complete diff review, and `git diff --check`.
 - Documentation must preserve the historical failure, record the production deployment separately, and keep two-lane physical-device retesting open.
 
+## Notification delivery follow-up — 2026-09-17 through 2026-09-18
+
+- Preserve the separate chat-notification failure as TF-06 step 13 failed and step 16 blocked.
+- Prove the production eligibility path and outbox state with privacy-safe counts before changing code.
+- Restore the missing once-per-minute dispatcher with a dedicated Vault-backed credential and remove all temporary production helpers.
+- Diagnose APNs rejections using status plus a fixed allowlist of Apple reason codes only; never log device tokens, user identifiers, message content, credentials, or arbitrary response bodies.
+- Reuse APNs provider JWTs for 50 minutes so refresh stays within Apple's 20–60 minute window; rejected rows remain pending for safe retry.
+- Verify unit coverage, migration parity, production queue processing, full iOS checks, Release build/analyzer, privacy scan, and diff review before committing and pushing.
+- Keep steps 11, 13, and 16 open until the exact physical-device retest succeeds in both required OS lanes.
+
 ---
 
 # Previous Implementation Plan: EXT-01 UGC Safety and Moderation

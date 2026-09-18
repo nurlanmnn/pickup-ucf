@@ -12,6 +12,21 @@
 - [x] Obtain authorization and deploy migration `20260910120000` with the other three pending migrations in order; verify production migration parity and token RPC definitions (2026-09-16).
 - [ ] Retest runbook steps 11 and 16 on recorded iOS 17 and current-iOS physical devices.
 
+## TF-06 Chat Notification Delivery Follow-up
+
+- [x] Record the 2026-09-16 observation with unknown device/build fields as “not recorded”; mark step 13 failed and step 16 blocked.
+- [x] Prove chat outbox creation, recipient eligibility, preferences, device-token presence, and the absence of blocking/suspension using privacy-safe production checks.
+- [x] Restore the missing once-per-minute `send-push` schedule with a dedicated Vault-backed credential.
+- [x] Synchronize the scheduler/function credential and remove the temporary least-privilege bootstrap and rotation RPCs.
+- [x] Set `APNS_ENV=production` for TestFlight delivery.
+- [x] Add privacy-safe APNs diagnostics and confirm HTTP 429 `TooManyProviderTokenUpdates` without logging private data.
+- [x] Cache and share the APNs provider JWT for 50 minutes; keep rejected outbox rows pending for retry.
+- [x] Confirm the stable JWT processes eligible backlog rows and isolates the remaining APNs response as HTTP 400 `BadDeviceToken`.
+- [x] Remove only exact tokens rejected as `BadDeviceToken`, leave the current attempt failed, and permit fresh app registration recovery.
+- [x] Pass the complete Edge Function suite (19/19) and formatting checks.
+- [x] Confirm the recovered production backlog reaches zero pending rows after stable-JWT processing and exact invalid-token cleanup (2026-09-18 approximately 8:55 AM America/New_York).
+- [ ] Run and record the exact physical-device notification and account-isolation retest; keep TF-06 open until it passes in both lanes.
+
 ---
 
 # Previous EXT-01 Task Checklist

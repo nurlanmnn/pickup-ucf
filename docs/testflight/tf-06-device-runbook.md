@@ -100,3 +100,47 @@ The remediation adds a missing-RPC compatibility delete constrained by both auth
 - Release static analyzer: **passed**.
 - Static logging/privacy scan and `git diff --check`: **passed**.
 - Physical-device retest: **pending**; step 11 remains failed and step 16 remains blocked.
+
+## Device result — 2026-09-16 chat notification delivery failure
+
+- Date/time: **2026-09-16, approximately 11:10 PM America/New_York**
+- Sending client: **Xcode simulator**, signed in as controlled account A
+- Receiving device: **personal physical iPhone**, signed in as controlled account B
+- Receiving device model: **not recorded**
+- Receiving iOS version: **not recorded**
+- Receiving app build/source SHA: **not recorded for this observation**
+- Tester initials: **not recorded**
+- Observed result: account A sent chat messages while account B was eligible for chat notifications, but the physical phone received no notification.
+- Step 13 result: **FAILED** for background/terminated chat notification delivery. Foreground banner behavior was not evaluated by this observation.
+- Step 16 result: **BLOCKED** pending a fresh two-account physical-device isolation test after delivery is proven.
+- TF-06 status: **OPEN / NOT COMPLETE**.
+
+### Confirmed diagnosis and production remediation — 2026-09-17 through 2026-09-18
+
+Privacy-safe production checks confirmed four chat messages had four matching `notification_outbox` rows, each with an eligible recipient, chat notifications enabled, a registered device token, no block relationship, and no sender suspension. All four outbox rows remained unprocessed. Production had no cron job invoking the `send-push` Edge Function, so message creation and notification eligibility worked but dispatch never ran. This was the first confirmed cause of the observed delivery failure; it was not an iOS message-creation failure or a device-token ownership failure.
+
+After scheduling was restored, the outbox still did not drain. A direct authenticated invocation returned HTTP 200 with zero successful sends, proving scheduler/function authentication and execution while preserving failed rows for retry. A privacy-safe diagnostic revision then recorded only APNs status and a documented reason. Production APNs returned HTTP 429 `TooManyProviderTokenUpdates` for every attempted device delivery. The function created a new provider JWT for each outbox recipient, including 16 tokens within seconds during the recovered backlog. Apple requires provider-token refreshes no more than once every 20 minutes, so APNs rejected the batch. This was the second confirmed server-side cause.
+
+The code-owned correction caches one provider JWT for 50 minutes, resolves it only once per notification/Live Activity batch, reuses it across warm scheduled invocations, and clears the cache if token generation fails. It neither suppresses APNs failures nor marks rejected rows sent. Once APNs accepted the stable provider token, 10 of the 16 pending chat rows advanced. The remaining six were repeatedly rejected as HTTP 400 `BadDeviceToken`, proving those exact registered tokens were unusable in the now-working production APNs configuration. The narrow recovery deletes only a token explicitly rejected with that status/reason, leaves the current outbox attempt failed, and allows a subsequent app registration to claim a fresh token; other APNs failures remain logged and pending.
+
+The function tests pass **19/19**, including explicit single-JWT batch reuse, cache refresh, safe diagnostics, exact `BadDeviceToken` recovery, 410 stale-token cleanup, account-token isolation, notification payload routing, and Live Activity cleanup. The corrected function was deployed on 2026-09-18. At approximately 8:55 AM America/New_York, a privacy-safe count confirmed zero pending chat outbox rows. The six invalid-token rows were retired only after their unusable tokens had been removed and a later retry confirmed there was no registered destination; they were not falsely counted as successful APNs deliveries. A fresh physical-device registration and delivery remains required before step 13 can pass.
+
+Production runs the function with gateway JWT verification disabled because the function performs its own dedicated `CRON_SECRET` bearer check. A random dispatcher credential is stored in Supabase Vault and synchronized to the Edge Function secret. The `pickup-dispatch-push` cron job invokes `send-push` once per minute. Temporary `service_role`-only bootstrap/rotation RPCs were removed after setup. `APNS_ENV` is explicitly `production` for TestFlight delivery. No APNs token, email address, session token, message body, private key, or dispatcher secret was written to the runbook, logs added by this remediation, or committed files.
+
+Five migration records capture the production operation: `20260917190000_bootstrap_push_dispatch.sql`, `20260917190500_fix_push_dispatch_secret_generation.sql`, `20260917191000_remove_push_dispatch_bootstrap.sql`, `20260917192000_rotate_push_dispatch_secret.sql`, and `20260917192500_remove_push_dispatch_secret_rotation.sql`. The correction migration safely schema-qualifies key generation. The later pair records the one-time credential resynchronization and immediately removes that helper. Applying these migrations alone does not schedule or rotate another environment because each production-only helper required an explicit `service_role` invocation and no helper remains callable after the full sequence.
+
+### Exact notification retest
+
+No new iOS build is required for this server-side scheduler and provider-token repair. Use the currently installed remediated build, but record its exact build number and source SHA before testing. The recovered outbox is clear; the receiving app must now launch while signed in and online so it can register a fresh device token before generating the test message.
+
+1. Record the receiving iPhone model, exact iOS version, installed build number/source SHA, tester initials, and timestamp.
+2. Launch the app while online, sign in as controlled account B on the physical iPhone, and leave it open through one background/foreground cycle so APNs registration can complete. Confirm iOS notification permission and in-app chat notifications are enabled.
+3. Open the relevant session chat once, then leave that chat and put the app in the background. Do not keep the chat visible in the foreground for the delivery check.
+4. On the Xcode simulator, sign in as controlled account A and send one new synthetic message in the same session.
+5. Wait up to **90 seconds**. Confirm exactly one notification arrives on B's phone and exposes no message body or private account data on the lock screen beyond the app's intended safe copy.
+6. Tap the notification. Confirm it opens the authorized session chat for B and shows the new message exactly once.
+7. Force quit the app on B's phone. From A, send a second synthetic message. Wait up to **90 seconds** and confirm exactly one notification arrives and routes safely after launch.
+8. Sign out B on the phone and sign in as controlled account C. From A, send a B-only eligible message. Confirm the phone receives no B notification while C is signed in.
+9. Trigger one C-only eligible notification and confirm exactly one notification reaches C. Then complete the existing step 11 and step 16 account-switch sequence in both required physical-device OS lanes.
+
+Step 13, step 11, and step 16 remain open until the applicable physical-device checks pass with recorded evidence.
