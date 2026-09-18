@@ -96,8 +96,8 @@ final class AppState {
     /// Opened via `pickupucf://session/…` before the user signed in.
     var pendingSessionDeepLink: UUID?
     var pendingSessionDeepLinkOpenChat = false
-    /// When true, session detail should push chat after loading (from chat push).
-    var sessionDetailOpenChat = false
+    /// The session whose chat should open after its detail finishes loading.
+    private var sessionDetailOpenChatId: UUID?
     /// True when the signed-in user has not finished first-run onboarding.
     var needsOnboarding = false
     /// Incremented to request presenting Create session from tabs (e.g. Discover host nudge).
@@ -133,11 +133,10 @@ final class AppState {
 
     func clearSessionDetailDeepLink() {
         sessionDetailDeepLink = nil
-        sessionDetailOpenChat = false
     }
 
     func queueSessionDeepLink(id: UUID, openChat: Bool = false) {
-        sessionDetailOpenChat = openChat
+        sessionDetailOpenChatId = openChat ? id : nil
         if isAuthenticated {
             presentSessionDetail(id: id, on: .discover)
         } else {
@@ -155,8 +154,8 @@ final class AppState {
     }
 
     func consumeSessionDetailOpenChat(for sessionId: UUID) -> Bool {
-        guard sessionDetailDeepLink == sessionId, sessionDetailOpenChat else { return false }
-        sessionDetailOpenChat = false
+        guard sessionDetailOpenChatId == sessionId else { return false }
+        sessionDetailOpenChatId = nil
         return true
     }
 

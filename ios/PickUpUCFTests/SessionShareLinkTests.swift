@@ -18,4 +18,20 @@ final class SessionShareLinkTests: XCTestCase {
             XCTFail("Expected session destination")
         }
     }
+
+    func testChatDeepLinkSurvivesSessionNavigationConsumption() {
+        let sessionId = UUID()
+        let appState = AppState()
+        appState.session = AppSession(
+            userId: UUID(),
+            email: "student@ucf.edu",
+            isEmailConfirmed: true
+        )
+
+        appState.queueSessionDeepLink(id: sessionId, openChat: true)
+        appState.clearSessionDetailDeepLink()
+
+        XCTAssertTrue(appState.consumeSessionDetailOpenChat(for: sessionId))
+        XCTAssertFalse(appState.consumeSessionDetailOpenChat(for: sessionId))
+    }
 }
