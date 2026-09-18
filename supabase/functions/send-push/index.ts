@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 import { importPKCS8, SignJWT } from "https://esm.sh/jose@5.9.6";
 
 export const BATCH_SIZE = 50;
+export const APNS_JWT_REFRESH_INTERVAL_MS = 50 * 60 * 1000;
 
 export interface OutboxRow {
   id: string;
@@ -24,9 +25,74 @@ export interface HandlerDeps {
   fetchImpl?: typeof fetch;
   getJwt?: () => Promise<string>;
   now?: () => Date;
+  onAPNsFailure?: (failure: APNsFailure) => void;
+}
+
+export interface APNsFailure {
+  status: number;
+  reason: string;
 }
 
 const APPLE_REFERENCE_DATE_OFFSET_SECONDS = 978_307_200;
+const SAFE_APNS_REASONS = new Set([
+  "BadCertificate",
+  "BadCertificateEnvironment",
+  "BadCollapseId",
+  "BadDeviceToken",
+  "BadExpirationDate",
+  "BadMessageId",
+  "BadPriority",
+  "BadTopic",
+  "DeviceTokenNotForTopic",
+  "DuplicateHeaders",
+  "ExpiredProviderToken",
+  "Forbidden",
+  "IdleTimeout",
+  "InternalServerError",
+  "InvalidProviderToken",
+  "InvalidPushType",
+  "MissingDeviceToken",
+  "MissingProviderToken",
+  "MissingTopic",
+  "PayloadEmpty",
+  "ServiceUnavailable",
+  "Shutdown",
+  "TooManyProviderTokenUpdates",
+  "TooManyRequests",
+  "TopicDisallowed",
+  "Unregistered",
+]);
+
+async function reportAPNsFailure(
+  response: Response,
+  callback: (failure: APNsFailure) => void,
+): Promise<APNsFailure> {
+  let reason = "Unknown";
+  try {
+    const body = await response.json();
+    if (
+      typeof body === "object" && body !== null &&
+      "reason" in body && typeof body.reason === "string" &&
+      SAFE_APNS_REASONS.has(body.reason)
+    ) {
+      reason = body.reason;
+    }
+  } catch {
+    // Keep diagnostics limited to the status and a fixed fallback value.
+  }
+
+  const failure = { status: response.status, reason };
+  callback(failure);
+  return failure;
+}
+
+function logAPNsFailure(failure: APNsFailure): void {
+  console.warn("send-push: APNs delivery rejected", failure);
+}
+
+function isInvalidDeviceToken(failure: APNsFailure): boolean {
+  return failure.status === 400 && failure.reason === "BadDeviceToken";
+}
 
 export function apnsBaseUrl(): string {
   return Deno.env.get("APNS_ENV") === "sandbox"
@@ -51,6 +117,32 @@ export async function apnsJwt(): Promise<string> {
     .setIssuedAt()
     .sign(key);
 }
+
+export function createCachedJwtProvider(
+  generateJwt: () => Promise<string> = apnsJwt,
+  now: () => number = Date.now,
+): () => Promise<string> {
+  let cachedJwt: Promise<string> | undefined;
+  let generatedAt = 0;
+
+  return async () => {
+    const currentTime = now();
+    if (
+      !cachedJwt ||
+      currentTime - generatedAt >= APNS_JWT_REFRESH_INTERVAL_MS
+    ) {
+      generatedAt = currentTime;
+      cachedJwt = generateJwt().catch((error) => {
+        cachedJwt = undefined;
+        generatedAt = 0;
+        throw error;
+      });
+    }
+    return await cachedJwt;
+  };
+}
+
+const getCachedApnsJwt = createCachedJwtProvider();
 
 export function appleReferenceDateSeconds(isoDate: string): number {
   const unixMilliseconds = Date.parse(isoDate);
@@ -134,10 +226,11 @@ export async function sendDueLiveActivities(
 export async function sendToUserDevices(
   supabase: SupabaseClient,
   row: OutboxRow,
-  deps: Pick<HandlerDeps, "fetchImpl" | "getJwt"> = {},
+  deps: Pick<HandlerDeps, "fetchImpl" | "getJwt" | "onAPNsFailure"> = {},
 ): Promise<boolean> {
   const fetchImpl = deps.fetchImpl ?? fetch;
   const getJwt = deps.getJwt ?? apnsJwt;
+  const onAPNsFailure = deps.onAPNsFailure ?? logAPNsFailure;
 
   const { data: tokens } = await supabase
     .from("device_tokens")
@@ -180,6 +273,19 @@ export async function sendToUserDevices(
         );
         continue;
       }
+      if (!backgroundResponse.ok) {
+        const failure = await reportAPNsFailure(
+          backgroundResponse,
+          onAPNsFailure,
+        );
+        if (isInvalidDeviceToken(failure)) {
+          await supabase.from("device_tokens").delete().eq(
+            "apns_token",
+            apns_token,
+          );
+          continue;
+        }
+      }
     }
 
     const res = await fetchImpl(
@@ -211,6 +317,14 @@ export async function sendToUserDevices(
         "apns_token",
         apns_token,
       );
+    } else if (!res.ok) {
+      const failure = await reportAPNsFailure(res, onAPNsFailure);
+      if (isInvalidDeviceToken(failure)) {
+        await supabase.from("device_tokens").delete().eq(
+          "apns_token",
+          apns_token,
+        );
+      }
     }
   }
 
@@ -230,6 +344,12 @@ export async function handler(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+  const providerJwt = deps.getJwt ?? getCachedApnsJwt;
+  let requestJwt: Promise<string> | undefined;
+  const requestDeps: HandlerDeps = {
+    ...deps,
+    getJwt: () => requestJwt ??= providerJwt(),
+  };
 
   const { data: pending, error } = await supabase
     .from("notification_outbox")
@@ -241,7 +361,11 @@ export async function handler(
   if (error) return new Response(error.message, { status: 500 });
   let sent = 0;
   for (const row of pending ?? []) {
-    const ok = await sendToUserDevices(supabase, row as OutboxRow, deps);
+    const ok = await sendToUserDevices(
+      supabase,
+      row as OutboxRow,
+      requestDeps,
+    );
     if (ok) {
       await supabase
         .from("notification_outbox")
@@ -253,7 +377,7 @@ export async function handler(
 
   let liveActivitiesEnded: number;
   try {
-    liveActivitiesEnded = await sendDueLiveActivities(supabase, deps);
+    liveActivitiesEnded = await sendDueLiveActivities(supabase, requestDeps);
   } catch (liveActivityError) {
     const message = liveActivityError instanceof Error
       ? liveActivityError.message

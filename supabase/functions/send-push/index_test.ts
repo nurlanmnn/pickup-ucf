@@ -1,6 +1,7 @@
 import { assertEquals, assertStringIncludes } from "jsr:@std/assert";
 import {
   apnsBaseUrl,
+  createCachedJwtProvider,
   handler,
   isAuthorized,
   type LiveActivityRow,
@@ -146,6 +147,22 @@ Deno.test("apnsBaseUrl uses sandbox host when APNS_ENV=sandbox", () => {
   assertEquals(apnsBaseUrl(), "https://api.push.apple.com");
 });
 
+Deno.test("APNs provider JWT is reused and refreshed inside Apple's safe window", async () => {
+  let now = 1_000_000;
+  let generations = 0;
+  const getJwt = createCachedJwtProvider(
+    async () => `jwt-${++generations}`,
+    () => now,
+  );
+
+  assertEquals(await getJwt(), "jwt-1");
+  now += 20 * 60 * 1000;
+  assertEquals(await getJwt(), "jwt-1");
+  now += 30 * 60 * 1000;
+  assertEquals(await getJwt(), "jwt-2");
+  assertEquals(generations, 2);
+});
+
 Deno.test("handler returns 401 without valid CRON_SECRET", async () => {
   setTestEnv();
   const res = await handler(authRequest("bad"), {});
@@ -204,6 +221,41 @@ Deno.test("handler marks outbox row sent after successful APNs delivery", async 
   );
   assertStringIncludes(fetchCalls[0].body, "Session starting soon");
   assertStringIncludes(fetchCalls[0].body, "pickupucf://session/session-1");
+});
+
+Deno.test("handler shares one APNs provider JWT across the full batch", async () => {
+  setTestEnv({ APNS_ENV: "production" });
+  const rows: OutboxRow[] = [
+    {
+      id: "outbox-batch-1",
+      user_id: "user-batch-1",
+      title: "First",
+      body: "First notification",
+    },
+    {
+      id: "outbox-batch-2",
+      user_id: "user-batch-2",
+      title: "Second",
+      body: "Second notification",
+    },
+  ];
+  const { supabase } = createMockSupabase({
+    pending: rows,
+    tokensByUser: {
+      "user-batch-1": [{ apns_token: "device-batch-1" }],
+      "user-batch-2": [{ apns_token: "device-batch-2" }],
+    },
+  });
+  let jwtGenerations = 0;
+
+  const res = await handler(authRequest(), {
+    supabase: supabase as never,
+    fetchImpl: () => Promise.resolve(new Response(null, { status: 200 })),
+    getJwt: () => Promise.resolve(`jwt-${++jwtGenerations}`),
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(jwtGenerations, 1);
 });
 
 Deno.test("handler ends due Live Activities when the notification outbox is empty", async () => {
@@ -381,6 +433,107 @@ Deno.test("sendToUserDevices deletes stale tokens on APNs 410", async () => {
 
   assertEquals(ok, true);
   assertEquals(deletedTokens, ["stale-token"]);
+});
+
+Deno.test("sendToUserDevices removes an exact token rejected as BadDeviceToken", async () => {
+  setTestEnv({ APNS_ENV: "production" });
+  const row: OutboxRow = {
+    id: "outbox-bad-token",
+    user_id: "user-bad-token",
+    title: "New chat message",
+    body: "Open PickUp UCF to view it.",
+    type: "chat_message",
+  };
+  const failures: { status: number; reason: string }[] = [];
+  const { supabase, deletedTokens } = createMockSupabase({
+    tokensByUser: {
+      "user-bad-token": [{ apns_token: "bad-device-token" }],
+    },
+  });
+
+  const ok = await sendToUserDevices(supabase as never, row, {
+    getJwt: async () => "mock-jwt",
+    fetchImpl: async () =>
+      new Response(JSON.stringify({ reason: "BadDeviceToken" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }),
+    onAPNsFailure: (failure) => failures.push(failure),
+  });
+
+  assertEquals(ok, false);
+  assertEquals(deletedTokens, ["bad-device-token"]);
+  assertEquals(failures, [{ status: 400, reason: "BadDeviceToken" }]);
+});
+
+Deno.test("sendToUserDevices reports a privacy-safe APNs rejection", async () => {
+  setTestEnv({ APNS_ENV: "production" });
+
+  const row: OutboxRow = {
+    id: "outbox-rejected",
+    user_id: "user-rejected",
+    title: "New chat message",
+    body: "Open PickUp UCF to view it.",
+    type: "chat_message",
+  };
+  const failures: { status: number; reason: string }[] = [];
+  const { supabase, markedSent } = createMockSupabase({
+    pending: [row],
+    tokensByUser: {
+      "user-rejected": [{ apns_token: "private-device-token" }],
+    },
+  });
+
+  const ok = await sendToUserDevices(supabase as never, row, {
+    getJwt: async () => "mock-jwt",
+    fetchImpl: async () =>
+      new Response(JSON.stringify({ reason: "TooManyProviderTokenUpdates" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      }),
+    onAPNsFailure: (failure) => failures.push(failure),
+  });
+
+  assertEquals(ok, false);
+  assertEquals(markedSent, []);
+  assertEquals(failures, [{
+    status: 429,
+    reason: "TooManyProviderTokenUpdates",
+  }]);
+  assertEquals(
+    JSON.stringify(failures).includes("private-device-token"),
+    false,
+  );
+});
+
+Deno.test("APNs diagnostics discard unrecognized response text", async () => {
+  setTestEnv({ APNS_ENV: "production" });
+
+  const row: OutboxRow = {
+    id: "outbox-private-error",
+    user_id: "user-private-error",
+    title: "New chat message",
+    body: "Open PickUp UCF to view it.",
+    type: "chat_message",
+  };
+  const failures: { status: number; reason: string }[] = [];
+  const { supabase } = createMockSupabase({
+    tokensByUser: {
+      "user-private-error": [{ apns_token: "private-device-token" }],
+    },
+  });
+
+  await sendToUserDevices(supabase as never, row, {
+    getJwt: async () => "mock-jwt",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({ reason: "private-device-token@example.com" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      ),
+    onAPNsFailure: (failure) => failures.push(failure),
+  });
+
+  assertEquals(failures, [{ status: 400, reason: "Unknown" }]);
 });
 
 Deno.test("sendToUserDevices marks processed when user has no device tokens", async () => {
