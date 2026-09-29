@@ -39,7 +39,37 @@ enum AppErrorMapper {
             return postgrestMessage(for: postgrestError)
         }
 
+        if let httpError = error as? HTTPError {
+            return httpMessage(for: httpError)
+        }
+
+        if error is DecodingError {
+            return "Couldn't load data — the app may need an update. Please try again."
+        }
+
         return trustedDomainMessage(for: error)
+    }
+
+    private static func httpMessage(for error: HTTPError) -> String? {
+        switch error.response.statusCode {
+        case 401, 403:
+            // Supabase surfaces auth failures as raw HTTP errors before PostgREST wraps them.
+            if let body = String(data: error.data, encoding: .utf8) {
+                let lower = body.lowercased()
+                if lower.contains("jwt") || lower.contains("token") || lower.contains("unauthorized") {
+                    return "Your session expired. Please sign in again."
+                }
+            }
+            return "You don’t have permission to do that."
+        case 500, 502, 503, 504:
+            // Cold-start / paused project / server error.
+            return "The service is temporarily unavailable. Please try again in a moment."
+        case 429:
+            return "Too many attempts. Please wait a moment and try again."
+        default:
+            // Fall through to compatibilityMessage via searchableText.
+            return nil
+        }
     }
 
     private static func authMessage(for error: AuthError) -> String? {
@@ -98,6 +128,9 @@ enum AppErrorMapper {
         }
 
         switch error.code?.uppercased() {
+        case "PGRST116":
+            // .single() returned zero rows — item no longer exists or is not visible to this user.
+            return "This item is no longer available."
         case "23505":
             return text.contains("username")
                 ? "That username is already taken."
@@ -159,6 +192,9 @@ enum AppErrorMapper {
         }
         if text.contains("timed out") || text.contains("could not connect") {
             return "Could not reach the server. Try again in a moment."
+        }
+        if text.contains("service unavailable") || text.contains("bad gateway") {
+            return "The service is temporarily unavailable. Please try again in a moment."
         }
         if text.contains("user already registered")
             || text.contains("already been registered")

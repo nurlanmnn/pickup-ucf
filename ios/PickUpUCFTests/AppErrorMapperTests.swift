@@ -247,6 +247,75 @@ final class AppErrorMapperTests: XCTestCase {
         )
     }
 
+    // MARK: - HTTPError
+
+    func testHTTPError503MapsToServiceUnavailable() {
+        let error = makeHTTPError(statusCode: 503, body: "{\"message\": \"Service Unavailable\"}")
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "The service is temporarily unavailable. Please try again in a moment."
+        )
+    }
+
+    func testHTTPError502MapsToServiceUnavailable() {
+        let error = makeHTTPError(statusCode: 502, body: "Bad Gateway")
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "The service is temporarily unavailable. Please try again in a moment."
+        )
+    }
+
+    func testHTTPError429MapsToRateLimit() {
+        let error = makeHTTPError(statusCode: 429, body: "{\"error\": \"Too Many Requests\"}")
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "Too many attempts. Please wait a moment and try again."
+        )
+    }
+
+    func testHTTPError401WithJWTBodyMapsToSessionExpired() {
+        let error = makeHTTPError(statusCode: 401, body: "{\"message\": \"JWT expired\"}")
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "Your session expired. Please sign in again."
+        )
+    }
+
+    func testHTTPError403WithoutJWTBodyMapsToPermissionDenied() {
+        let error = makeHTTPError(statusCode: 403, body: "{\"error\": \"Forbidden\"}")
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "You don’t have permission to do that."
+        )
+    }
+
+    // MARK: - DecodingError
+
+    func testDecodingErrorMapsToDataError() {
+        let error = DecodingError.dataCorrupted(
+            DecodingError.Context(codingPath: [], debugDescription: "internal schema detail")
+        )
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "Couldn't load data — the app may need an update. Please try again."
+        )
+    }
+
+    // MARK: - PGRST116
+
+    func testPostgrestPGRST116MapsToItemUnavailable() {
+        let error = PostgrestError(
+            detail: nil,
+            hint: nil,
+            code: "PGRST116",
+            message: "JSON object requested, multiple (or no) rows returned"
+        )
+        XCTAssertEqual(
+            AppErrorMapper.message(for: error),
+            "This item is no longer available."
+        )
+    }
+
     private func makeAuthError(code: ErrorCode, message: String) -> AuthError {
         .api(
             message: message,
@@ -255,6 +324,18 @@ final class AppErrorMapperTests: XCTestCase {
             underlyingResponse: HTTPURLResponse(
                 url: URL(string: "https://example.invalid/auth")!,
                 statusCode: 400,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        )
+    }
+
+    private func makeHTTPError(statusCode: Int, body: String) -> HTTPError {
+        HTTPError(
+            data: Data(body.utf8),
+            response: HTTPURLResponse(
+                url: URL(string: "https://example.invalid/rest/v1/")!,
+                statusCode: statusCode,
                 httpVersion: nil,
                 headerFields: nil
             )!
