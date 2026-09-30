@@ -67,7 +67,7 @@ enum AppConfig {
               !urlString.lowercased().contains("your_project"),
               !anonKey.lowercased().contains("placeholder"),
               !anonKey.lowercased().contains("your_anon"),
-              anonKey.hasPrefix("eyJ"),
+              anonKey.hasPrefix("eyJ") || anonKey.hasPrefix("sb_publishable_"),
               let url = URL(string: urlString),
               url.scheme?.lowercased() == "https",
               let host = url.host?.lowercased(),

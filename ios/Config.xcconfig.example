@@ -3,4 +3,4 @@
 // IMPORTANT: In .xcconfig, "//" starts a comment. Write URLs as https:/$()/project.supabase.co
 // (the /$()/ becomes "//" in the built app).
 SUPABASE_URL = https:/$()/YOUR_PROJECT.supabase.co
-SUPABASE_ANON_KEY = your_anon_key_here
+SUPABASE_ANON_KEY = sb_publishable_your_project_key_here
