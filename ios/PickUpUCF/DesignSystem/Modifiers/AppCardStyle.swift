@@ -30,7 +30,7 @@ private struct AppCardStyle: ViewModifier {
 }
 
 extension View {
-    /// Applies "Night Court" card styling: soft shadow (light) / dark inner glow (dark),
+    /// Applies shared card styling: soft shadow (light) / dark inner glow (dark),
     /// no hairline border in light mode.
     func appCardStyle(cornerRadius: CGFloat = 20) -> some View {
         modifier(AppCardStyle(cornerRadius: cornerRadius))

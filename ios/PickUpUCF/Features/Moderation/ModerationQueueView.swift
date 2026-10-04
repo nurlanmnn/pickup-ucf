@@ -90,6 +90,7 @@ struct ModerationQueueView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appScreenBackground()
         .navigationTitle("Moderation")
         .navigationBarTitleDisplayMode(.large)

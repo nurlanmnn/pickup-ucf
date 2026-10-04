@@ -7,7 +7,7 @@ enum AppColor {
     // MARK: - Base surfaces
 
     static func background(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.06) : Color(red: 0.973, green: 0.969, blue: 0.957)
+        scheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.06) : .white
     }
 
     static func surface(_ scheme: ColorScheme) -> Color {
@@ -35,11 +35,6 @@ enum AppColor {
     static func textSecondary(_ scheme: ColorScheme) -> Color {
         scheme == .dark ? Color.white.opacity(0.55) : Color.black.opacity(0.50)
     }
-
-    // MARK: - Gold glows + accents
-
-    /// Soft ambient glow — use as a radial gradient stop, not solid fill.
-    static let goldGlow = Color(red: 1.0, green: 0.788, blue: 0.016).opacity(0.18)
 
     // MARK: - Semantic state
 

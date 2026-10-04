@@ -1,23 +1,8 @@
 import SwiftUI
 
-/// Central hub for "Night Court" visual identity tokens.
+/// Central hub for shared visual tokens.
 /// Prefer the helpers here over raw `AppColor` calls when building full-screen layouts.
 enum AppTheme {
-
-    // MARK: - Screen background gradient
-
-    /// Radial gold glow layered on top of the flat background — used by `AppScreenBackground`.
-    static func backgroundGlow(_ scheme: ColorScheme) -> RadialGradient {
-        RadialGradient(
-            colors: [
-                AppColor.gold.opacity(scheme == .dark ? 0.10 : 0.06),
-                Color.clear
-            ],
-            center: .top,
-            startRadius: 0,
-            endRadius: 320
-        )
-    }
 
     // MARK: - Card shadow tokens
 

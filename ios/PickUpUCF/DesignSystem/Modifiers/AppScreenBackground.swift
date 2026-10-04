@@ -7,22 +7,12 @@ private struct AppScreenBackground: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background {
-                ZStack {
-                    AppColor.background(colorScheme)
-                        .ignoresSafeArea()
-
-                    // Subtle gold radial glow from the top — Night Court atmosphere.
-                    AppTheme.backgroundGlow(colorScheme)
-                        .ignoresSafeArea()
-                }
-            }
+            .background(AppColor.background(colorScheme).ignoresSafeArea())
     }
 }
 
 extension View {
-    /// Applies the "Night Court" warm background with a subtle top gold radial glow.
-    /// Use on the outermost `ScrollView` or `ZStack` of a full-screen view.
+    /// Applies the neutral app background to a full-screen view.
     func appScreenBackground() -> some View {
         modifier(AppScreenBackground())
     }
