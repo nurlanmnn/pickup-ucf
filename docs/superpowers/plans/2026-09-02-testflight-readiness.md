@@ -2,9 +2,9 @@
 
 > **Purpose:** Single source of truth for preparing PickUp UCF for internal TestFlight, external testers, and beta stabilization. Complete the checklist in order, update each checkbox as work lands, and create a focused step-by-step implementation plan for each workstream before changing production code.
 
-**Status:** Internal TestFlight build uploaded and processed; physical-device validation pending
+**Status:** Internal TestFlight physical-device smoke gate completed by release-owner confirmation on 2026-10-04; external Beta App Review preparation in progress
 
-**Last audited:** 2026-09-16
+**Last audited:** 2026-10-04
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -59,10 +59,10 @@
 ### Not yet verified
 
 - [x] Signed archive and App Store Connect validation.
-- [ ] Physical-device push notification and Live Activity behavior.
+- [x] Physical-device push notification and Live Activity behavior (release-owner confirmation on 2026-10-04; detailed device record not supplied in this repository).
 - [ ] Production Supabase migrations, secrets, cron jobs, email hook, and APNs configuration.
 - [x] SQL/RLS integration suite passed against a clean local Supabase reset on 2026-09-11.
-- [ ] Authenticated UI flows at runtime; audit credentials were not available.
+- [x] Authenticated UI flows at runtime (release-owner confirmation of completed physical-device smoke test on 2026-10-04).
 - [ ] External TestFlight metadata and Beta App Review submission.
 
 ---
@@ -223,12 +223,12 @@ Focused layout tests passed 4/4, the complete Debug simulator suite passed 153/1
 - [x] Create the internal TestFlight group, assign build 1.0 (2), invite the initial internal tester, and save “What to Test” instructions.
 - [ ] Confirm production configuration contains no placeholders, test endpoints, debug flags, or development credentials.
 - [x] Verify no secrets, APNs tokens, emails, message bodies, or other PII are logged.
-- [ ] Install the processed build through TestFlight on at least one physical iPhone running iOS 17 and one current-iOS device when available.
-- [ ] Smoke test launch, sign-up/sign-in, email verification, onboarding, discover, create, join, leave, chat, edit/cancel, reporting/blocking, profile editing, sign-out, and account deletion.
-- [ ] Test poor connectivity, airplane-mode relaunch, background/foreground transitions, force quit, and expired sessions.
-- [ ] Verify push notifications, deep-link routing, badge behavior, and Live Activities on physical hardware.
-- [ ] Verify calendar export and location permission denial/recovery.
-- [ ] Confirm crash-free launch and no high-severity runtime console errors.
+- [x] Install the processed build through TestFlight on physical hardware (release-owner confirmation; device/OS matrix details not supplied here).
+- [x] Smoke test launch, sign-up/sign-in, email verification, onboarding, discover, create, join, leave, chat, edit/cancel, reporting/blocking, profile editing, sign-out, and account deletion (release-owner confirmation).
+- [x] Test poor connectivity, airplane-mode relaunch, background/foreground transitions, force quit, and expired sessions (release-owner confirmation).
+- [x] Verify push notifications, deep-link routing, badge behavior, and Live Activities on physical hardware (release-owner confirmation).
+- [x] Verify calendar export and location permission denial/recovery (release-owner confirmation).
+- [x] Confirm crash-free launch and no high-severity runtime console errors (release-owner confirmation).
 - [x] Record the build number, commit SHA, environment, migration version, known issues, and tester instructions.
 
 **Evidence (2026-09-13):** TF-06 began from clean `main` at `f54880285026010be5ec5c1d48137fc41374a21e`; a fresh read-only remote check confirmed `origin/main` at the same SHA with zero divergence. The final review baseline is `7076810`, immediately before the seven candidate commits that added/fixed Live Activity delivery and then completed TF-02 through TF-05. The optimized Release-configured simulator suite passed **157/157** with `ENABLE_TESTABILITY=YES`, 0 failures, 0 skipped, on iPhone 16e / iOS 26.3.1. An initial unmodified Release test attempt failed before execution because shipping Release correctly has testability disabled while the suite uses `@testable import`; this was a test-configuration constraint, not an application build failure. The Deno suites passed **24/24** (send-push 14/14; fetch-weather 10/10). A clean local Supabase reset applied all 24 migrations, and the complete SQL/RLS suite passed all **23** phase assertions with stop-on-error enabled. The unsigned generic-device Release build and Release static analyzer passed with no emitted application warnings; the built app contains `Assets.car` and a byte-identical privacy manifest, while the widget correctly has no separate manifest. Source plists and the built app/widget report version **1.0 (1)**. The local Release configuration contains present, non-placeholder, HTTPS Supabase settings and targets the same linked project, but secret values were not displayed or recorded.
@@ -257,6 +257,8 @@ The `20260909000000_live_activity_end_pushes.sql` migration was deployed on 2026
 
 **Done when:** All automated checks pass, a processed TestFlight build completes the physical-device critical-path smoke test, and the build’s exact backend/configuration state is recorded.
 
+**Gate disposition (2026-10-04): COMPLETE by release-owner confirmation.** The user confirmed that the physical-device smoke test is complete and directed that TF-06 be treated as completed. The physical-device rows above record that attestation; no smoke test was rerun in this work. Earlier dated failure investigations remain historical evidence. The user did not provide the passing build number, device/OS matrix, timestamps, or redacted runbook results, so this repository cannot independently reconstruct those details. The separate production-configuration checkbox remains an evidence gap and is tracked with EXT-05 before external submission; do not represent it as independently verified.
+
 ---
 
 
@@ -271,7 +273,7 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 
 **Tasks:**
 
-- [ ] Publish clear community rules and prohibited-content standards.
+- [x] Publish clear community rules and prohibited-content standards.
 - [ ] Add reasonable objectionable-content filtering for session notes, display names, custom sports/locations, and chat messages.
 - [ ] Let users report an individual message, user, and session with a reason and optional context.
 - [ ] Let users block an abusive user across discovery, sessions, chat, notifications, and future interactions—not only one session.
@@ -286,7 +288,7 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 
 **Done when:** Users can filter/avoid, report, and block abusive content or users; moderators can act on reports promptly; the policy and contact path are visible; abuse tests pass.
 
-**Local implementation evidence (2026-09-16):** Source now includes client/server UGC validation, typed message/user/session reports, symmetric block enforcement, private rate-limited moderation RPCs, audited moderator actions, warning/suspension notices, in-app rules/support, and an operations runbook. A clean local migration reset and the full SQL/RLS suite pass, along with 167 iOS tests, an unsigned Release build, and static analysis. The EXT-01 migration was deployed later on 2026-09-16, but EXT-01 remains open because moderator/support ownership is not provisioned in production, the public guidelines source is not published, physical-device behavior is not verified, and the App Store age-rating/content questionnaire remains user-owned.
+**Local implementation evidence (2026-09-16):** Source now includes client/server UGC validation, typed message/user/session reports, symmetric block enforcement, private rate-limited moderation RPCs, audited moderator actions, warning/suspension notices, in-app rules/support, and an operations runbook. A clean local migration reset and the full SQL/RLS suite pass, along with 167 iOS tests, an unsigned Release build, and static analysis. The EXT-01 migration was deployed later on 2026-09-16. The Community Guidelines were published at `https://pickup-ucf-privacy.vercel.app/community-guidelines.html` on 2026-09-30 and returned HTTP 200. Nurlan Mammadli was provisioned as the production moderator on 2026-09-30; a privacy-safe verification resolved one intended profile, one moderator row, and `is_current_user_moderator() = true`, while an unrelated authenticated profile returned `false`. EXT-01 remains open because backup moderation/support coverage is not assigned, physical-device behavior is not verified, and the App Store age-rating/content questionnaire remains user-owned.
 
 ## EXT-02 — Privacy policy, terms, data disclosures, and support
 
@@ -297,10 +299,10 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 - [x] Document what is collected and why: email, profile identity, sessions, attendance, chat, reports, device tokens, location permission behavior, calendar identifiers, and notification data.
 - [x] Name relevant processors/services, including Supabase, Brevo, Open-Meteo, and Apple/APNs, and explain their roles accurately.
 - [x] Document retention, deletion, account deletion, consent withdrawal, security practices, and contact details.
-- [ ] Publish Terms of Use/community rules appropriate for a campus social/sports app.
+- [x] Publish Terms of Use/community rules appropriate for a campus social/sports app.
 - [ ] Confirm in-app account deletion removes or anonymizes data according to the published policy and any safety/legal retention needs.
 - [x] Complete and publish App Store Connect App Privacy answers from the production data-flow inventory.
-- [ ] Ensure support email, privacy contact, and response ownership are monitored.
+- [x] Ensure support email, privacy contact, and response ownership are monitored.
 
 **Evidence (2026-09-14):** The privacy policy is publicly available at
 `https://pickup-ucf-privacy.vercel.app`. The production deployment returned HTTP
@@ -313,6 +315,24 @@ saved in the English (U.S.) metadata. Settings → Privacy now includes a native
 **Privacy Policy** link in source after build 1.0 (2); it requires a future build
 and physical-device verification before external testing.
 
+**Source update (2026-09-30):** Added a publishable Terms of Use page at
+`privacy-site/terms.html`, cross-linked the Privacy Policy, Terms, and Community
+Guidelines sources, and added a Terms link to Settings. Publication of the new
+pages and verification on the external candidate build remain open.
+
+**Ownership update (2026-09-30):** The user confirmed Nurlan Mammadli as the
+public operator and confirmed that `support.roomateapp@gmail.com` is actively
+monitored. External-delivery verification and backup coverage remain open.
+
+**Publication update (2026-09-30):** Vercel production deployment
+`dpl_4Cfh4ZZDSonGyr7PEiddBhk4rkDs` published the Terms at
+`https://pickup-ucf-privacy.vercel.app/terms.html` and the Community Guidelines
+at `https://pickup-ucf-privacy.vercel.app/community-guidelines.html`. The privacy,
+Terms, and guidelines URLs each returned HTTP 200. The live Terms page identifies
+Nurlan Mammadli as the operator, displays the monitored support address, exposes
+the expected heading/link accessibility structure, and produced no browser
+console warnings or errors.
+
 **Done when:** In-app links work, policies match the shipped product and backend, App Store disclosures are consistent, and deletion/retention behavior has been tested.
 
 ## EXT-03 — Beta App Review access and reviewer notes
@@ -321,22 +341,34 @@ and physical-device verification before external testing.
 
 **Tasks:**
 
-- [ ] Create a dedicated, preverified UCF demo account for Beta App Review.
-- [ ] Seed safe sample data so Discover, My Games, session detail, chat, report/block, and profile flows can be reviewed.
-- [ ] Ensure the demo account does not expose real student data or production secrets.
-- [ ] Add credentials and exact login steps to Beta App Review Information.
-- [ ] Explain the UCF-email restriction and any one-time verification behavior.
-- [ ] Add reviewer notes for notification, location, calendar, widget, Live Activity, deep-link, reporting, and account-deletion flows.
+- [x] Create a dedicated, preverified UCF demo account for Beta App Review (email-confirmed auth record, password present, and release-owner-confirmed TestFlight sign-in).
+- [x] Seed safe sample data so Discover, My Games, session detail, chat, report/block, and profile flows can be reviewed (production rows and reviewer-scoped RLS verified; release owner reports successful app navigation).
+- [x] Ensure the seeded content uses only controlled accounts, public campus venues, neutral messages, and no production secrets (verified from the seed transaction and row counts; ordinary production content may still be discoverable under normal app policy).
+- [x] Add credentials directly in App Store Connect and exact login steps to Beta App Review Information (saved and reloaded 2026-10-04; credential values excluded from Git).
+- [x] Explain the UCF-email restriction and any one-time verification behavior in the review packet; the account's confirmed-email state was verified in production auth.
+- [x] Draft reviewer notes for notification, location, calendar, widget, Live Activity, deep-link, reporting, and account-deletion flows; confirm seeded flows before saving in App Store Connect.
 - [ ] Confirm the review account remains usable for the duration of review.
 
 **Done when:** A reviewer starting from a fresh install can access and exercise every review-relevant feature without contacting the developer.
+
+**Preparation update (2026-09-30):** `docs/testflight/external-beta-review-packet.md`
+now contains draft beta metadata, reviewer notes, seed-data requirements,
+age-rating guidance, cohort settings, and a submission checklist. Personal contact
+details and demo credentials remain intentionally outside Git and must be entered
+directly in App Store Connect.
+
+**Reviewer-packet update (2026-10-04):** The public Privacy Policy, Terms of Use, and Community Guidelines opened successfully over HTTPS and cross-link. Source inspection confirmed the Sign In form, Discover/My Games/Create/Profile navigation, Settings paths, My Games past section, and Live Activity-only widget extension. The packet now gives exact login and navigation instructions, public policy URLs, support contact, optional-permission notes, and the App Store Connect credential-entry location. A dedicated plus-addressed UCF reviewer account was created through Supabase's auto-confirmed admin form; the release owner entered its password directly. Production auth reports one matching user, confirmed email, password present, and zero moderator grants. A synthetic onboarded profile, five labeled public-venue games, three joined memberships, and four neutral messages from two controlled accounts were seeded. A transaction-scoped authenticated RLS check as the reviewer returned one own profile, five visible sample games, four visible messages, and `is_current_user_moderator() = false`. The release owner subsequently confirmed TestFlight sign-in and seeded navigation below. Refresh of the near-term Live Activity game remains open if its start time passes before review. No password, verification link, account email, token, or account identifier was written to Git.
+
+**App Store Connect update (2026-10-04):** Test Information was saved with beta description, monitored feedback email, privacy URL, reviewer contact, sign-in requirement, demo username/password, and feature/setup notes. A reload confirmed persistence and no validation banner. The release owner entered the private phone number and password; neither was copied into this repository. Candidate-specific What to Test/known issues and the external go/no-go gate remain open. No build was submitted for review.
+
+**Reviewer app check (2026-10-04):** After the saved Test Information was verified, the release owner signed in with the reviewer account in TestFlight, checked the seeded experience, and reported that everything looked good. This is owner-reported app evidence, not an independently observed screen-by-screen record. The owner did not provide a build number, device/OS, fresh-install status, or individual join/report/block/action results. The earlier reviewer-scoped RLS check and zero moderator grants remain the evidence for data access and ordinary-user role. Refresh the near-term seed before review if its start time passes.
 
 ## EXT-04 — TestFlight metadata and tester experience
 
 **Tasks:**
 
 - [ ] Add the external-beta description and final “What to Test” scope. Internal instructions for build 1.0 (2) are saved.
-- [ ] Add a monitored feedback email and contact information.
+- [x] Add a monitored feedback email and reviewer contact information (saved and reloaded in App Store Connect on 2026-10-04).
 - [x] Add the required export-compliance information for build 1.0 (2), with France excluded.
 - [ ] Prepare screenshots or annotated test notes for flows that require setup.
 - [ ] List known issues honestly and distinguish unsupported behavior from defects.
@@ -349,7 +381,7 @@ and physical-device verification before external testing.
 
 **Tasks:**
 
-- [x] Deploy every currently tracked Supabase migration to the production project in order (verified at parity 2026-09-16).
+- [x] Deploy every currently tracked Supabase migration to the production project in order (verified at parity 2026-09-16 and rechecked through `20260917192500` on 2026-09-30).
 - [ ] Verify RLS is enabled and least-privilege policies behave correctly for anonymous, authenticated, blocked, and deleted users.
 - [x] Configure `APNS_ENV=production` and verify the existing APNs key/team/bundle identifiers for TestFlight delivery (2026-09-17).
 - [ ] Complete secret ownership documentation; the dedicated push cron secret is configured, while Brevo/email-hook ownership still requires verification.
@@ -361,6 +393,12 @@ and physical-device verification before external testing.
 - [ ] Confirm production backups and restore expectations for user/session/report data.
 
 **Done when:** Production services pass an end-to-end test using the candidate build, permissions are least-privilege, scheduled work is observable, and rollback/recovery procedures are documented.
+
+**Preparation update (2026-09-30):**
+`docs/operations/external-beta-operations.md` defines named ownership, moderator
+provisioning, production RLS, email, push, deletion/retention, backup/restore,
+rollback, and incident-response evidence. The checks remain open until executed
+against production and recorded for the candidate build.
 
 ## EXT-06 — External-beta go/no-go checkpoint
 

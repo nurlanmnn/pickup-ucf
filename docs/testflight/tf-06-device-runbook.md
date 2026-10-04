@@ -1,5 +1,7 @@
 # TF-06 Physical-Device Runbook — Build 1.0 (2)
 
+**Status update (2026-10-04):** The release owner confirmed the physical-device smoke test is complete and directed that TF-06 be treated as completed. This runbook preserves the earlier build 1.0 (2) failures and remediation history; its older "open" and "required retest" statements describe the state when written. No smoke test was rerun for the Beta App Review preparation step. The passing build/device/OS evidence was not provided for this record, so obtain a redacted record before attributing the completion to a specific build or device matrix.
+
 Build 1.0 (2) is the processed internal build from source `316b29bd59f5efafcf43151f634ad55b46921b8f`. Run every row once on a physical iPhone running iOS 17 and once on a physical iPhone running the current iOS release. Record device model, iOS version, tester initials, date/time, and pass/fail. Use only controlled UCF accounts and synthetic content.
 
 Do not capture email addresses, tokens, message bodies, precise locations, or secrets in evidence. For a failure, record the step, expected result, visible symptom, timestamp, device/OS, and a redacted screenshot or Console excerpt.
