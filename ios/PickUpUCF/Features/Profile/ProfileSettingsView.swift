@@ -133,6 +133,17 @@ struct ProfileSettingsView: View {
 
                     Divider().padding(.leading, 46)
 
+                    Link(destination: URL(string: "https://pickup-ucf-privacy.vercel.app/terms.html")!) {
+                        SettingsRow(
+                            systemImage: "doc.text.fill",
+                            iconColor: Color(red: 0.18, green: 0.62, blue: 0.45),
+                            title: "Terms of Use"
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider().padding(.leading, 46)
+
                     Link(destination: URL(string: "mailto:support.roomateapp@gmail.com?subject=PickUp%20UCF%20Support")!) {
                         SettingsRow(
                             systemImage: "envelope.fill",
