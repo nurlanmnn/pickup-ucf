@@ -110,7 +110,7 @@ struct SessionCard: View {
                 CapacityIndicator(
                     playerCount: session.playerCount,
                     capacity: session.capacity,
-                    filledColor: AppColor.sportAccent(session.sport)
+                    iconColor: AppColor.sportAccent(session.sport)
                 )
 
                 SkillPill(skill: session.skillLevel)

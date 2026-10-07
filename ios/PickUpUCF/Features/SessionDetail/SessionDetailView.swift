@@ -287,9 +287,7 @@ struct SessionDetailView: View {
         CapacityIndicator(
             playerCount: session.playerCount,
             capacity: session.capacity,
-            filledColor: .white,
-            dotSize: 7,
-            emptyColor: Color.white.opacity(0.25),
+            iconColor: .white,
             labelColor: Color.white.opacity(0.85)
         )
     }
@@ -492,7 +490,7 @@ struct SessionDetailView: View {
                 CapacityIndicator(
                     playerCount: session.playerCount,
                     capacity: session.capacity,
-                    filledColor: AppColor.sportAccent(session.sport)
+                    iconColor: AppColor.sportAccent(session.sport)
                 )
             }
         } else {
@@ -502,7 +500,7 @@ struct SessionDetailView: View {
                 CapacityIndicator(
                     playerCount: session.playerCount,
                     capacity: session.capacity,
-                    filledColor: AppColor.sportAccent(session.sport)
+                    iconColor: AppColor.sportAccent(session.sport)
                 )
             }
         }

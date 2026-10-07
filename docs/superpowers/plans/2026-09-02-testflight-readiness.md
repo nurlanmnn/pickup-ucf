@@ -758,3 +758,14 @@ Every implementation plan and task is complete only when applicable items below 
 - [Apple — Privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files)
 - [Apple — Describing use of required-reason APIs](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api)
 - [Apple — Accessing the calendar with EventKit](https://developer.apple.com/documentation/eventkit/accessing-calendar-using-eventkit-and-eventkitui)
+
+## Player count clarity — 2026-10-06
+
+- [x] Replaced capacity dots with a static people icon and explicit `X/Y players`
+  text everywhere the shared indicator appears: session cards, hero, and roster.
+- [x] Debug simulator build passed; visually verified cards/hero/roster at normal
+  size and the roster at Accessibility XXXL. The accessibility tree exposes a
+  single descriptive player-count label.
+- [ ] Verify the revised player counts on the next physical-device candidate build.
+
+Focused plan: `docs/superpowers/plans/2026-10-06-player-count-clarity.md`.
