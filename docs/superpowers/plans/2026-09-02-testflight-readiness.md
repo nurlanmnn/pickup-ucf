@@ -769,3 +769,14 @@ Every implementation plan and task is complete only when applicable items below 
 - [ ] Verify the revised player counts on the next physical-device candidate build.
 
 Focused plan: `docs/superpowers/plans/2026-10-06-player-count-clarity.md`.
+
+## Clickable profile statistics — 2026-10-07
+
+- [x] Games and Streak open host-confirmed attendance history with session links.
+- [x] Sports retains the preferred-sports count and opens the existing sports editor.
+- [x] Five history tests pass; authenticated simulator navigation verified.
+- [ ] Candidate-device check of all three links and largest-text history rows.
+- [ ] Resolve or consistently verify the existing intermittent ActivityKit runtime
+  dismissal assertion before the next release gate.
+
+Focused plan: `docs/superpowers/plans/2026-10-07-profile-stat-history.md`.

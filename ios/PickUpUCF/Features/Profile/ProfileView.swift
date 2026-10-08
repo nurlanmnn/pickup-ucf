@@ -115,25 +115,42 @@ struct ProfileView: View {
 
     private var statTiles: some View {
         LazyVGrid(columns: statColumns, spacing: Spacing.s) {
-            statTile(
-                value: profile.map { "\($0.gamesPlayed)" } ?? "–",
-                label: "Games",
-                systemImage: "trophy.fill",
-                color: AppColor.gold
-            )
-            statTile(
-                value: profile.map { "\($0.showUpStreak)" } ?? "–",
-                label: "Streak",
-                systemImage: "flame.fill",
-                color: .orange
-            )
-            statTile(
-                value: profile.map { "\($0.preferredSports.count)" } ?? "–",
-                label: "Sports",
-                systemImage: "sportscourt.fill",
-                color: Color(red: 0.22, green: 0.72, blue: 0.33)
-            )
+            NavigationLink {
+                if let profile { ProfileHistoryView(profile: profile) }
+            } label: {
+                statTile(
+                    value: profile.map { "\($0.gamesPlayed)" } ?? "–",
+                    label: "Games", systemImage: "trophy.fill", color: AppColor.gold
+                )
+            }
+            .accessibilityHint("Show games you attended")
+            .accessibilityIdentifier("profile-stat-games")
+
+            NavigationLink {
+                if let profile { ProfileHistoryView(profile: profile, showsStreak: true) }
+            } label: {
+                statTile(
+                    value: profile.map { "\($0.showUpStreak)" } ?? "–",
+                    label: "Streak", systemImage: "flame.fill", color: .orange
+                )
+            }
+            .accessibilityHint("Show your attendance streak and history")
+            .accessibilityIdentifier("profile-stat-streak")
+
+            NavigationLink {
+                EditPreferredSportsView()
+            } label: {
+                statTile(
+                    value: profile.map { "\($0.preferredSports.count)" } ?? "–",
+                    label: "Sports", systemImage: "sportscourt.fill",
+                    color: Color(red: 0.22, green: 0.72, blue: 0.33)
+                )
+            }
+            .accessibilityHint("View and edit your preferred sports")
+            .accessibilityIdentifier("profile-stat-sports")
         }
+        .buttonStyle(.plain)
+        .disabled(profile == nil)
     }
 
     private var statColumns: [GridItem] {
@@ -160,11 +177,15 @@ struct ProfileView: View {
                 .foregroundStyle(AppColor.textPrimary(colorScheme))
                 .contentTransition(.numericText())
 
-            Text(label)
-                .font(AppFont.caption2(.semibold))
-                .foregroundStyle(AppColor.textSecondary(colorScheme))
-                .textCase(.uppercase)
-                .tracking(0.6)
+            HStack(spacing: Spacing.xs) {
+                Text(label)
+                    .textCase(.uppercase)
+                    .tracking(0.6)
+                Image(systemName: "chevron.right")
+                    .accessibilityHidden(true)
+            }
+            .font(AppFont.caption2(.semibold))
+            .foregroundStyle(AppColor.textSecondary(colorScheme))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Spacing.m)
