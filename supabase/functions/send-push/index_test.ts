@@ -106,7 +106,7 @@ function createMockSupabase(options: {
         return {
           select: () => ({
             is: () => ({
-              lte: () => ({
+              or: () => ({
                 order: () => ({
                   limit: () =>
                     Promise.resolve({
@@ -118,7 +118,9 @@ function createMockSupabase(options: {
             }),
           }),
           update: () => ({
-            eq: () => Promise.resolve({ data: null, error: null }),
+            eq: () => ({
+              eq: () => Promise.resolve({ data: null, error: null }),
+            }),
           }),
           delete: () => ({
             eq: () => Promise.resolve({ data: null, error: null }),
@@ -263,6 +265,7 @@ Deno.test("handler ends due Live Activities when the notification outbox is empt
   const { supabase } = createMockSupabase({
     pending: [],
     liveActivities: [{
+      updated_at: "2023-11-14T22:00:00.000Z",
       apns_token: "live-token",
       starts_at: "2023-11-14T22:13:20.000Z",
       ends_at: "2023-11-14T23:43:20.000Z",
@@ -556,4 +559,105 @@ Deno.test("sendToUserDevices marks processed when user has no device tokens", as
   });
 
   assertEquals(ok, true);
+});
+
+Deno.test("finished session cleanup sends only a silent push", async () => {
+  setTestEnv();
+  const { supabase } = createMockSupabase({
+    tokensByUser: { user: [{ apns_token: "device" }] },
+  });
+  const requests: RequestInit[] = [];
+  const ok = await sendToUserDevices(supabase as never, {
+    id: "cleanup",
+    user_id: "user",
+    type: "session_finished",
+    title: "",
+    body: "",
+    payload: { session_id: "session", session_ends_at: "2023-11-14T23:43:20Z" },
+  }, {
+    getJwt: () => Promise.resolve("jwt"),
+    fetchImpl: (_input, init) => {
+      requests.push(init!);
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+  assertEquals(ok, true);
+  assertEquals(requests.length, 1);
+  assertEquals(
+    (requests[0].headers as Record<string, string>)["apns-push-type"],
+    "background",
+  );
+  const body = JSON.parse(String(requests[0].body));
+  assertEquals(body.aps.alert, undefined);
+  assertEquals(body.aps.sound, undefined);
+  assertEquals(body.notification_type, "session_finished");
+});
+
+Deno.test("expired and far-future reminders are consumed without an alert", async () => {
+  setTestEnv();
+  const { supabase } = createMockSupabase({
+    tokensByUser: { user: [{ apns_token: "device" }] },
+  });
+  let requests = 0;
+  const now = new Date("2023-11-14T22:13:20Z");
+  for (
+    const start of [
+      now.toISOString(),
+      new Date(now.getTime() + 19 * 3600_000).toISOString(),
+    ]
+  ) {
+    assertEquals(
+      await sendToUserDevices(supabase as never, {
+        id: "reminder",
+        user_id: "user",
+        type: "session_reminder_1h",
+        title: "Game soon",
+        body: "",
+        payload: { session_id: "session", session_starts_at: start },
+      }, {
+        now: () => now,
+        getJwt: () => Promise.resolve("jwt"),
+        fetchImpl: () => {
+          requests++;
+          return Promise.resolve(new Response(null, { status: 200 }));
+        },
+      }),
+      true,
+    );
+  }
+  assertEquals(requests, 0);
+});
+
+Deno.test("reminder expires at start and carries its session end for cleanup", async () => {
+  setTestEnv();
+  const { supabase } = createMockSupabase({
+    tokensByUser: { user: [{ apns_token: "device" }] },
+  });
+  const start = "2023-11-14T23:13:20Z";
+  const end = "2023-11-15T00:43:20Z";
+  let request: RequestInit | undefined;
+  await sendToUserDevices(supabase as never, {
+    id: "reminder",
+    user_id: "user",
+    type: "session_reminder_1h",
+    title: "Game soon",
+    body: "",
+    payload: {
+      session_id: "session",
+      session_starts_at: start,
+      session_ends_at: end,
+    },
+  }, {
+    now: () => new Date("2023-11-14T22:13:20Z"),
+    getJwt: () => Promise.resolve("jwt"),
+    fetchImpl: (_input, init) => {
+      request = init;
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+  assertEquals(
+    (request!.headers as Record<string, string>)["apns-expiration"],
+    String(Date.parse(start) / 1000),
+  );
+  assertEquals(JSON.parse(String(request!.body)).session_ends_at, end);
 });

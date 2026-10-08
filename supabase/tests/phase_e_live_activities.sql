@@ -104,6 +104,84 @@ BEGIN
     RAISE EXCEPTION 'session schedule update did not sync Live Activity end';
   END IF;
 
+  -- Moving outside the final-hour window must end the current activity.
+  UPDATE public.sessions SET starts_at = now() + interval '19 hours',
+    ends_at = now() + interval '20 hours' WHERE id = v_session_id;
+  IF EXISTS (SELECT 1 FROM public.live_activity_tokens
+    WHERE session_id = v_session_id AND ends_at > now()) THEN
+    RAISE EXCEPTION 'reschedule outside final hour did not end activities';
+  END IF;
+  SET LOCAL role authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_player_id::text, true);
+  BEGIN
+    PERFORM public.register_live_activity_token(v_session_id, repeat('34', 32));
+    RAISE EXCEPTION 'allowed activity registration 19 hours early';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%live_activity_session_not_available%' THEN RAISE; END IF;
+  END;
+  RESET role;
+  UPDATE public.sessions SET starts_at = v_starts_at, ends_at = v_rescheduled_end
+  WHERE id = v_session_id;
+
+  SET LOCAL role authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_player_id::text, true);
+  PERFORM public.register_live_activity_token(v_session_id, v_player_token);
+  RESET role;
+  IF EXISTS (SELECT 1 FROM public.live_activity_tokens
+    WHERE session_id = v_session_id AND ends_at > now()) THEN
+    RAISE EXCEPTION 'schedule edit or registration revived an activity already due to end';
+  END IF;
+
+  -- A second device must not overwrite the first device's end-push token.
+  SET LOCAL role authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_player_id::text, true);
+  PERFORM public.register_live_activity_token(v_session_id, repeat('12', 32));
+  RESET role;
+  SELECT count(*) INTO v_count FROM public.live_activity_tokens
+  WHERE session_id = v_session_id AND user_id = v_player_id;
+  IF v_count <> 2 THEN RAISE EXCEPTION 'second device overwrote first activity'; END IF;
+
+  PERFORM public.enqueue_notification(v_player_id, v_session_id, 'session_reminder_1h',
+    'Game soon', 'Reminder', 'lifecycle-pending:' || v_session_id);
+  IF NOT EXISTS (SELECT 1 FROM public.notification_outbox WHERE session_id = v_session_id
+    AND payload ? 'session_ends_at' AND payload ? 'session_starts_at') THEN
+    RAISE EXCEPTION 'notification payload is missing canonical timestamps';
+  END IF;
+
+  -- Leaving on another device makes every player activity immediately due to end.
+  UPDATE public.session_participants SET status = 'left'
+  WHERE session_id = v_session_id AND user_id = v_player_id;
+  IF EXISTS (SELECT 1 FROM public.live_activity_tokens
+    WHERE session_id = v_session_id AND user_id = v_player_id AND ends_at > now()) THEN
+    RAISE EXCEPTION 'departed player activities were not ended';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.notification_outbox WHERE session_id = v_session_id
+    AND user_id = v_player_id AND type = 'session_reminder_1h' AND sent_at IS NULL) THEN
+    RAISE EXCEPTION 'leaving did not remove an unsent reminder';
+  END IF;
+
+  SET LOCAL role authenticated;
+  PERFORM set_config('request.jwt.claim.sub', v_player_id::text, true);
+  BEGIN
+    PERFORM public.register_live_activity_token(v_session_id, repeat('56', 32));
+    RAISE EXCEPTION 'allowed departed player activity registration';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%live_activity_session_not_available%' THEN RAISE; END IF;
+  END;
+  RESET role;
+
+  UPDATE public.sessions SET status = 'completed' WHERE id = v_session_id;
+  IF EXISTS (SELECT 1 FROM public.live_activity_tokens
+    WHERE session_id = v_session_id AND ends_at > now()) THEN
+    RAISE EXCEPTION 'completed session activities were not ended';
+  END IF;
+  PERFORM public.enqueue_finished_session_cleanup();
+  PERFORM public.enqueue_finished_session_cleanup();
+  SELECT count(*) INTO v_count FROM public.notification_outbox
+  WHERE session_id = v_session_id AND type = 'session_finished';
+  IF v_count <> 2 THEN RAISE EXCEPTION 'cleanup must be deduplicated per player/host'; END IF;
+
   DELETE FROM public.sessions WHERE id = v_session_id;
   DELETE FROM public.profiles
   WHERE id IN (v_host_id, v_player_id, v_outsider_id);

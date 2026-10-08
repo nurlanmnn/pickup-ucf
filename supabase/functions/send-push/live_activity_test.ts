@@ -11,6 +11,7 @@ type QueryResult<T> = { data: T | null; error: null | { message: string } };
 
 function createLiveActivitySupabase(rows: LiveActivityRow[]) {
   const markedEnded: string[] = [];
+  const updates: Record<string, unknown>[] = [];
   const deletedTokens: string[] = [];
 
   const supabase = {
@@ -22,7 +23,7 @@ function createLiveActivitySupabase(rows: LiveActivityRow[]) {
       return {
         select: () => ({
           is: () => ({
-            lte: () => ({
+            or: () => ({
               order: () => ({
                 limit: (): Promise<QueryResult<LiveActivityRow[]>> =>
                   Promise.resolve({ data: rows, error: null }),
@@ -30,11 +31,14 @@ function createLiveActivitySupabase(rows: LiveActivityRow[]) {
             }),
           }),
         }),
-        update: (_values: { ended_at: string }) => ({
-          eq: (_column: string, token: string) => {
-            markedEnded.push(token);
-            return Promise.resolve({ data: null, error: null });
-          },
+        update: (values: Record<string, unknown>) => ({
+          eq: (_column: string, token: string) => ({
+            eq: () => {
+              updates.push(values);
+              if (values.ended_at) markedEnded.push(token);
+              return Promise.resolve({ data: null, error: null });
+            },
+          }),
         }),
         delete: () => ({
           eq: (_column: string, token: string) => {
@@ -46,7 +50,7 @@ function createLiveActivitySupabase(rows: LiveActivityRow[]) {
     },
   };
 
-  return { supabase, markedEnded, deletedTokens };
+  return { supabase, markedEnded, deletedTokens, updates };
 }
 
 Deno.test("appleReferenceDateSeconds matches Swift JSONEncoder Date encoding", () => {
@@ -61,6 +65,7 @@ Deno.test("sendDueLiveActivities sends an immediate ActivityKit end event", asyn
   Deno.env.set("APNS_BUNDLE_ID", "edu.ucf.pickup");
 
   const row: LiveActivityRow = {
+    updated_at: "2023-11-14T22:00:00.000Z",
     apns_token: "live-token",
     starts_at: "2023-11-14T22:13:20.000Z",
     ends_at: "2023-11-14T23:43:20.000Z",
@@ -109,6 +114,7 @@ Deno.test("sendDueLiveActivities sends an immediate ActivityKit end event", asyn
 Deno.test("sendDueLiveActivities deletes an expired APNs token after 410", async () => {
   Deno.env.set("APNS_BUNDLE_ID", "edu.ucf.pickup");
   const row: LiveActivityRow = {
+    updated_at: "2023-11-14T22:00:00.000Z",
     apns_token: "expired-live-token",
     starts_at: "2023-11-14T22:13:20.000Z",
     ends_at: "2023-11-14T23:43:20.000Z",
@@ -123,4 +129,79 @@ Deno.test("sendDueLiveActivities deletes an expired APNs token after 410", async
 
   assertEquals(ended, 0);
   assertEquals(deletedTokens, ["expired-live-token"]);
+});
+
+Deno.test("Live Activity gets a silent update at start with canonical dates", async () => {
+  const row: LiveActivityRow = {
+    apns_token: "starting-token",
+    starts_at: "2023-11-14T22:13:20.000Z",
+    ends_at: "2023-11-14T23:43:20.000Z",
+    updated_at: "2023-11-14T22:00:00.000Z",
+  };
+  const { supabase, updates, markedEnded } = createLiveActivitySupabase([row]);
+  let body: any;
+  const count = await sendDueLiveActivities(supabase as never, {
+    now: () => new Date(row.starts_at),
+    getJwt: () => Promise.resolve("jwt"),
+    fetchImpl: (_input, init) => {
+      body = JSON.parse(String(init?.body));
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+  assertEquals(count, 0);
+  assertEquals(body.aps.event, "update");
+  assertEquals(body.aps.alert, undefined);
+  assertEquals(body.aps["stale-date"], Date.parse(row.ends_at) / 1000);
+  assertEquals(updates[0].needs_update, false);
+  assertEquals(updates[0].started_at, row.starts_at);
+  assertEquals(markedEnded, []);
+});
+
+Deno.test("failed Live Activity delivery remains retryable", async () => {
+  const row: LiveActivityRow = {
+    apns_token: "retry-token",
+    starts_at: "2023-11-14T22:13:20.000Z",
+    ends_at: "2023-11-14T23:43:20.000Z",
+    updated_at: "2023-11-14T22:00:00.000Z",
+  };
+  const { supabase, updates, deletedTokens } = createLiveActivitySupabase([
+    row,
+  ]);
+  await sendDueLiveActivities(supabase as never, {
+    now: () => new Date(row.ends_at),
+    getJwt: () => Promise.resolve("jwt"),
+    fetchImpl: () => Promise.resolve(new Response(null, { status: 503 })),
+  });
+  assertEquals(updates, []);
+  assertEquals(deletedTokens, []);
+});
+
+Deno.test("Live Activity timestamps are timezone-independent and preserve fractions", () => {
+  assertEquals(
+    appleReferenceDateSeconds("2026-11-01T01:30:00.250-04:00"),
+    appleReferenceDateSeconds("2026-11-01T05:30:00.250Z"),
+  );
+});
+
+Deno.test("one failed device does not block another activity ending", async () => {
+  const rows: LiveActivityRow[] = ["failed", "healthy"].map((apns_token) => ({
+    apns_token,
+    starts_at: "2023-11-14T22:13:20Z",
+    ends_at: "2023-11-14T23:43:20Z",
+    updated_at: "2023-11-14T22:00:00Z",
+  }));
+  const { supabase, markedEnded } = createLiveActivitySupabase(rows);
+  let requests = 0;
+  const ended = await sendDueLiveActivities(supabase as never, {
+    now: () => new Date("2023-11-15T00:00:00Z"),
+    getJwt: () => Promise.resolve("jwt"),
+    fetchImpl: () => {
+      if (++requests === 1) {
+        return Promise.reject(new Error("network unavailable"));
+      }
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+  assertEquals(ended, 1);
+  assertEquals(markedEnded, ["healthy"]);
 });

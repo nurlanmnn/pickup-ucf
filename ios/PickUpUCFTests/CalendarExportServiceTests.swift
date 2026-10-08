@@ -3,6 +3,28 @@ import XCTest
 @testable import PickUpUCF
 
 final class CalendarExportServiceTests: XCTestCase {
+    func testDeliveredSessionNotificationExpiresExactlyAtEnd() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let payload: [AnyHashable: Any] = [
+            "session_id": UUID().uuidString,
+            "session_ends_at": "2023-11-14T22:13:20.000Z"
+        ]
+        XCTAssertFalse(PushNotificationPayload.isExpired(payload, now: now.addingTimeInterval(-1)))
+        XCTAssertTrue(PushNotificationPayload.isExpired(payload, now: now))
+        XCTAssertTrue(PushNotificationPayload.isExpired(payload, now: now.addingTimeInterval(1)))
+        XCTAssertFalse(PushNotificationPayload.isExpired(["session_ends_at": "bad-date"], now: now))
+    }
+
+    func testFinishedSessionCleanupPayloadHasSessionId() {
+        let id = UUID()
+        XCTAssertEqual(PushNotificationPayload.cleanupSessionId(from: [
+            "notification_type": "session_finished", "session_id": id.uuidString
+        ]), id)
+        XCTAssertNil(PushNotificationPayload.cleanupSessionId(from: [
+            "notification_type": "chat_message", "session_id": id.uuidString
+        ]))
+    }
+
     func testStorageRoundTrip() {
         let defaults = UserDefaults(suiteName: #function)!
         defer { defaults.removePersistentDomain(forName: #function) }

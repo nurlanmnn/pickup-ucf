@@ -759,6 +759,106 @@ Every implementation plan and task is complete only when applicable items below 
 - [Apple — Describing use of required-reason APIs](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api)
 - [Apple — Accessing the calendar with EventKit](https://developer.apple.com/documentation/eventkit/accessing-calendar-using-eventkit-and-eventkitui)
 
+
+## Notification and Live Activity follow-up — 2026-10-05
+
+Physical-device testing reported a Tennis Live Activity appearing after joining a
+session approximately 19 hours away. The supplied Dynamic Island screenshot also
+showed a crowded sport/location/countdown layout. This reopens the earlier general
+physical-device sign-off for these specific behaviors.
+
+- [x] Reproduced the early-start bug with an iOS regression test: the previous
+  eligibility window was 24 hours. Cancelled/completed sessions were also eligible.
+- [x] Limited eligibility to the final hour before start and the active session;
+  cancelled/completed sessions are excluded. Previously started early activities
+  are dismissed when the app becomes active.
+- [x] Refresh confirmed-player/host eligibility on foreground activation and session
+  detail load, including opening a reminder. My Games excludes waitlisted players
+  from Live Activity selection. Reloading the same activity updates it in place.
+- [x] Changed the expanded Dynamic Island layout to place sport/location below the
+  glyph and timer. Reserved timer width, used a minutes/seconds countdown, added
+  single-line scaling, and allowed two location lines on expanded/Lock Screen views.
+- [x] Added migration `20261005140000_quiet_session_reminders.sql`: retain one
+  reminder approximately one hour before start (five-minute cron cadence), remove
+  the 15-minute job and unsent 15-minute reminders, exclude waitlisted players, and
+  avoid sending both player and host reminders to the host. Existing preferences
+  and reminder deduplication remain enforced. Updated settings wording.
+- [x] Verified the failure before the fix: 19-hour and one-hour boundary eligibility
+  tests failed; SQL reproduced three reminders for one host and one player.
+- [x] Verified the fix locally: **181/181 iOS tests**, widget compilation,
+  **19/19 send-push Deno tests**, and the complete `supabase/tests/run_all.sql`
+  suite passed against local Supabase with the new migration applied. SQL covers repeated cron calls,
+  host roster membership, waitlist exclusion, and disabled 15-minute reminders.
+- [ ] Apply the new migration to production and distribute an updated iOS build.
+- [ ] Repeat physical-device testing: join a game 19 hours away (no activity), open
+  the app/reminder during the final hour, check compact/expanded/Lock Screen layouts
+  with long sport/location names and larger text, cross the session start/end
+  boundaries, leave/cancel, and confirm one
+  reminder with preferences enabled and none with preferences disabled.
+
+**Remaining limitation:** Live Activities start from foreground app activity.
+There is no push-to-start or future-start scheduling in this implementation, so
+an activity is not guaranteed to appear automatically at the one-hour mark while
+the app stays closed. The server reminder is independent of that limitation.
+The revised visual layout is compiled but still requires device visual confirmation.
+
+
+### Full lifecycle and time audit — 2026-10-05
+
+Follow-up request: completely remove finished-session notifications/activities and
+verify that displayed times reflect the actual session schedule.
+
+Additional findings and fixes:
+
+- [x] Reproduced a multi-device bug: the `(user_id, session_id)` token key allowed
+  the second device to replace the first device's activity token. Migration
+  `20261005150000_live_activity_lifecycle.sql` now retains each activity token.
+- [x] Added silent ActivityKit updates at session start and after schedule changes.
+  End events retain a past `dismissal-date` for immediate system dismissal. Due
+  activities are processed before ordinary alerts; individual delivery failures
+  remain retryable without blocking other devices. A schedule changed during a
+  request is not acknowledged using an outdated database version.
+- [x] Server registration requires a confirmed player/host in the final-hour
+  window. Leaving, cancellation, completion, or moving outside the final hour
+  makes existing tokens due to end. Later edits cannot revive those tokens.
+  The migration also ends activities created under the old early/waitlist policy.
+- [x] Serialized local ActivityKit mutations to avoid overlapping requests and
+  cleanup. Token network registration does not block local dismissal. Opening
+  a later game's details preserves an earlier current activity; immutable sport
+  and location changes replace the activity rather than keep old attributes.
+- [x] Added delivered Notification Center cleanup using canonical session end
+  timestamps, silent `session_finished` pushes, and foreground cleanup. Existing
+  delivered alerts can resolve their session from the server. Foreground activity
+  cleanup wakes at the activity's end; ordinary alert expiry is checked at most
+  every 30 seconds. Leaving also clears local session alerts and queued reminders.
+- [x] Added timestamps to notification payloads and backfilled pending payloads.
+  Reminder APNs requests expire at session start, and the dispatcher suppresses
+  expired or far-future reminders rather than delivering stale countdown alerts.
+- [x] Timestamp verification: Swift JSONEncoder content dates match the server's
+  Apple-reference-date conversion, including fractional seconds. Equivalent UTC
+  and timezone-offset dates match, including a daylight-saving boundary.
+- [x] Local validation: **185/185 iOS tests**, including a real simulator
+  ActivityKit request followed by end-time cleanup and immediate dismissal;
+  **26/26 send-push Deno tests**; the complete SQL suite after a clean local
+  migration reset. SQL covers multiple devices, departed-player rejection,
+  queued reminder cleanup, rescheduling, terminal cleanup, and deduplication.
+- [ ] Deploy both notification migrations, then the updated `send-push` function,
+  then the updated iOS build. Verify the production minute-based dispatch/cleanup
+  jobs and APNs configuration.
+- [ ] Repeat on physical devices with the app backgrounded/closed: actual start
+  transition, schedule edits, cancellation, leaving on another device, natural
+  end, manual completion, and no residual Lock Screen/Notification Center entry.
+  Include network interruption/recovery and notification preference checks.
+
+**Delivery limits:** ActivityKit `staleDate` marks content stale; it does not end
+an activity. When the app is foregrounded it explicitly ends expired activities.
+When the app is closed the server requests immediate dismissal on its next
+minute-based dispatch. APNs delivery and silent background execution can be
+late or unavailable, especially offline; exact closed-app removal at the end
+second cannot be guaranteed. The simulator verifies local ActivityKit dismissal,
+not production APNs delivery. Automatic closed-app starts still require a
+separate push-to-start/future-start implementation.
+
 ## Player count clarity — 2026-10-06
 
 - [x] Replaced capacity dots with a static people icon and explicit `X/Y players`
@@ -776,7 +876,20 @@ Focused plan: `docs/superpowers/plans/2026-10-06-player-count-clarity.md`.
 - [x] Sports retains the preferred-sports count and opens the existing sports editor.
 - [x] Five history tests pass; authenticated simulator navigation verified.
 - [ ] Candidate-device check of all three links and largest-text history rows.
-- [ ] Resolve or consistently verify the existing intermittent ActivityKit runtime
-  dismissal assertion before the next release gate.
+- [x] ActivityKit runtime dismissal test now waits for the asynchronous system
+  state update; the complete 190-test iOS suite passed on 2026-10-07.
 
 Focused plan: `docs/superpowers/plans/2026-10-07-profile-stat-history.md`.
+
+## Notification pre-push verification — 2026-10-07
+
+- [x] Reviewed the pending iOS/widget, push function, and notification migrations.
+- [x] Fixed the runtime test race by awaiting ActivityKit's state update, with a
+  bounded two-second timeout, before asserting dismissal. No dismissal behavior
+  was relaxed in production.
+- [x] Full iOS suite: 190/190 passed. Push-function suite: 26/26 passed.
+- [x] Unsigned Release device build and Xcode static analysis passed.
+- [x] Complete SQL/RLS suite passed against local Supabase with both migrations
+  present; test mutations were rolled back.
+- [ ] Production migration/function deployment and physical-device checks remain
+  required before distributing the updated iOS candidate.

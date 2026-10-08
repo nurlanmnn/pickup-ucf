@@ -19,35 +19,33 @@ struct GameLiveActivityWidget: Widget {
                     GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 28)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    GameLiveActivityTimerText(
-                        startsAt: context.state.startsAt,
-                        endsAt: context.state.endsAt
-                    )
-                        .monospacedDigit()
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(LiveActivityTheme.gold)
-                }
-                DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.sportName)
-                        .font(.headline)
-                        .lineLimit(1)
-                }
-                DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "mappin.and.ellipse")
-                            .font(.caption2)
-                        Text(context.attributes.locationName)
-                            .font(.caption)
-                            .lineLimit(1)
-                        Spacer(minLength: 0)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        GameLiveActivityTimerText(
+                            startsAt: context.state.startsAt,
+                            endsAt: context.state.endsAt
+                        )
+                            .font(.headline.weight(.semibold))
+                            .frame(width: 76, alignment: .trailing)
                         GameLiveActivityStatusCaption(
                             startsAt: context.state.startsAt,
                             endsAt: context.state.endsAt
                         )
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(LiveActivityTheme.gold)
+                            .font(.caption2)
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(LiveActivityTheme.gold)
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(context.attributes.sportName)
+                            .font(.headline)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Label(context.attributes.locationName, systemImage: "mappin.and.ellipse")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } compactLeading: {
                 GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 16)
@@ -58,7 +56,8 @@ struct GameLiveActivityWidget: Widget {
                 )
                     .monospacedDigit()
                     .foregroundStyle(LiveActivityTheme.gold)
-                    .frame(maxWidth: 48)
+                    .font(.caption2.weight(.semibold))
+                    .frame(width: 44, alignment: .trailing)
             } minimal: {
                 GameLiveActivitySportGlyph(systemImage: context.attributes.sportSystemImage, size: 14)
             }
@@ -82,8 +81,13 @@ private struct GameLiveActivityTimerText: View {
                     now: now
                 ),
                 pauseTime: startsAt,
-                countsDown: true
+                countsDown: true,
+                showsHours: false
             )
+            .monospacedDigit()
+            .multilineTextAlignment(.trailing)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
         case .live:
             Text("LIVE")
         case .ended:
@@ -150,10 +154,10 @@ private struct GameLiveActivityLockScreenView: View {
                 Text(context.attributes.locationName)
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.7))
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
 
-            Spacer(minLength: 8)
+            Spacer(minLength: 4)
 
             VStack(alignment: .trailing, spacing: 2) {
                 GameLiveActivityTimerText(
@@ -168,6 +172,7 @@ private struct GameLiveActivityLockScreenView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white.opacity(0.65))
             }
+            .frame(width: 76, alignment: .trailing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

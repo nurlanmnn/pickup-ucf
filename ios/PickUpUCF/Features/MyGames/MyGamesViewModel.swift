@@ -52,7 +52,14 @@ final class MyGamesViewModel {
                 return
             }
             upcomingSessions = .loaded(items)
-            GameLiveActivityCoordinator.refresh(upcomingSessions: items)
+            // An optional activity lookup must not hide the successfully loaded games.
+            let statuses = try? await repository.fetchParticipantStatuses(
+                userId: userId, sessionIds: items.map(\.id)
+            )
+            guard !Task.isCancelled, let statuses else { return }
+            GameLiveActivityCoordinator.refresh(upcomingSessions: items.filter {
+                $0.hostId == userId || statuses[$0.id] == .joined
+            })
         } catch {
             if Task.isCancelled {
                 upcomingSessions = previous

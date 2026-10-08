@@ -2,6 +2,21 @@ import UIKit
 import UserNotifications
 
 enum PushNotificationPayload {
+    static func cleanupSessionId(from userInfo: [AnyHashable: Any]) -> UUID? {
+        guard let type = userInfo["notification_type"] as? String,
+              ["session_cancelled", "session_finished"].contains(type),
+              let rawId = userInfo["session_id"] as? String else { return nil }
+        return UUID(uuidString: rawId)
+    }
+
+    static func isExpired(_ userInfo: [AnyHashable: Any], now: Date) -> Bool {
+        guard let rawEnd = userInfo["session_ends_at"] as? String else { return false }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let end = formatter.date(from: rawEnd) ?? ISO8601DateFormatter().date(from: rawEnd)
+        return end.map { $0 <= now } ?? false
+    }
+
     static func cancellationSessionId(from userInfo: [AnyHashable: Any]) -> UUID? {
         guard userInfo["notification_type"] as? String == "session_cancelled",
               let rawSessionId = userInfo["session_id"] as? String else {
@@ -78,19 +93,18 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-        guard let sessionId = PushNotificationPayload.cancellationSessionId(from: userInfo) else {
+        guard let sessionId = PushNotificationPayload.cleanupSessionId(from: userInfo) else {
             completionHandler(.noData)
             return
         }
 
         GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
-            do {
-                let removed = try CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
-                completionHandler(removed ? .newData : .noData)
-            } catch {
-                completionHandler(.failed)
+            await SessionNotificationCleanup.removeDelivered(sessionId: sessionId)
+            if PushNotificationPayload.cancellationSessionId(from: userInfo) != nil {
+                _ = try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
             }
+            completionHandler(.newData)
         }
     }
 
@@ -101,11 +115,54 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
         GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
-            try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
+            await SessionNotificationCleanup.removeDelivered(sessionId: sessionId)
+            _ = try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
         }
     }
 }
 
 extension Notification.Name {
     static let pushDeepLink = Notification.Name("pushDeepLink")
+}
+
+
+/// Cleanup ordinary Notification Center alerts as well as the separate Live Activity.
+@MainActor
+enum SessionNotificationCleanup {
+    private static var canonicalEndDates: [UUID: Date] = [:]
+    static func removeDelivered(sessionId: UUID? = nil, now: Date = Date(), resolveSessions: Bool = false) async {
+        let center = UNUserNotificationCenter.current()
+        let notifications = await center.deliveredNotifications()
+        var identifiers: [String] = []
+        if resolveSessions {
+            let sessionIds = Set(notifications.compactMap { notification -> UUID? in
+                let info = notification.request.content.userInfo
+                guard let rawId = info["session_id"] as? String else { return nil }
+                return UUID(uuidString: rawId)
+            })
+            let repository = SessionRepository()
+            for id in sessionIds {
+                if let session = try? await repository.fetchSession(id: id) {
+                    let end = (session.status == .cancelled || session.status == .completed) ? now : session.endsAt
+                    canonicalEndDates[id] = end
+                }
+            }
+        }
+        for notification in notifications {
+            let info = notification.request.content.userInfo
+            let id = (info["session_id"] as? String).flatMap(UUID.init(uuidString:))
+            let isExpired = id.flatMap { canonicalEndDates[$0] }.map { $0 <= now }
+                ?? PushNotificationPayload.isExpired(info, now: now)
+            if (sessionId != nil && id == sessionId)
+                || isExpired {
+                identifiers.append(notification.request.identifier)
+            }
+        }
+        center.removeDeliveredNotifications(withIdentifiers: identifiers)
+        // Bound the cache to notifications still present on this device.
+        let remainingIds = Set(notifications.filter {
+            !identifiers.contains($0.request.identifier)
+        }.compactMap { ($0.request.content.userInfo["session_id"] as? String).flatMap(UUID.init(uuidString:)) })
+        canonicalEndDates = canonicalEndDates.filter { remainingIds.contains($0.key) }
+    }
 }

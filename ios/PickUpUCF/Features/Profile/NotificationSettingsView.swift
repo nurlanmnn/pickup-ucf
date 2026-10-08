@@ -16,7 +16,7 @@ struct NotificationSettingsView: View {
                 SettingsCardGroup(label: "Notifications") {
                     notificationRow(
                         title: "Session reminders",
-                        description: "1 hour and 15 minutes before games you're in.",
+                        description: "1 hour before games you've joined.",
                         systemImage: "clock.fill",
                         iconColor: Color(red: 0.24, green: 0.55, blue: 0.94),
                         isOn: vm.sessionReminders,

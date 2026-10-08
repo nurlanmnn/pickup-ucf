@@ -11,11 +11,18 @@ export interface OutboxRow {
   title: string;
   body: string;
   type?: string;
-  payload?: { session_id?: string; open_chat?: boolean; message_id?: string };
+  payload?: {
+    session_id?: string;
+    open_chat?: boolean;
+    message_id?: string;
+    session_starts_at?: string;
+    session_ends_at?: string;
+  };
 }
 
 export interface LiveActivityRow {
   apns_token: string;
+  updated_at: string;
   starts_at: string;
   ends_at: string;
 }
@@ -164,9 +171,11 @@ export async function sendDueLiveActivities(
 
   const { data: due, error } = await supabase
     .from("live_activity_tokens")
-    .select("apns_token, starts_at, ends_at")
+    .select("apns_token, starts_at, ends_at, updated_at")
     .is("ended_at", null)
-    .lte("ends_at", nowIso)
+    .or(
+      `ends_at.lte.${nowIso},needs_update.eq.true,and(starts_at.lte.${nowIso},started_at.is.null)`,
+    )
     .order("ends_at", { ascending: true })
     .limit(BATCH_SIZE);
 
@@ -178,45 +187,64 @@ export async function sendDueLiveActivities(
   let ended = 0;
 
   for (const row of due as LiveActivityRow[]) {
-    const response = await fetchImpl(
-      `${apnsBaseUrl()}/3/device/${row.apns_token}`,
-      {
-        method: "POST",
-        headers: {
-          authorization: `bearer ${jwt}`,
-          "apns-topic": `${Deno.env.get(
-            "APNS_BUNDLE_ID",
-          )!}.push-type.liveactivity`,
-          "apns-push-type": "liveactivity",
-          "apns-priority": "10",
-        },
-        body: JSON.stringify({
-          aps: {
-            timestamp,
-            event: "end",
-            "content-state": {
-              startsAt: appleReferenceDateSeconds(row.starts_at),
-              endsAt: appleReferenceDateSeconds(row.ends_at),
-            },
-            "dismissal-date": timestamp - 1,
+    try {
+      const isEnded = Date.parse(row.ends_at) <= now.getTime();
+      const response = await fetchImpl(
+        `${apnsBaseUrl()}/3/device/${row.apns_token}`,
+        {
+          method: "POST",
+          headers: {
+            authorization: `bearer ${jwt}`,
+            "apns-topic": `${Deno.env.get(
+              "APNS_BUNDLE_ID",
+            )!}.push-type.liveactivity`,
+            "apns-push-type": "liveactivity",
+            "apns-priority": "10",
           },
-        }),
-      },
-    );
+          body: JSON.stringify({
+            aps: {
+              timestamp,
+              event: isEnded ? "end" : "update",
+              "content-state": {
+                startsAt: appleReferenceDateSeconds(row.starts_at),
+                endsAt: appleReferenceDateSeconds(row.ends_at),
+              },
+              ...(isEnded
+                ? { "dismissal-date": timestamp - 1 }
+                : { "stale-date": Math.floor(Date.parse(row.ends_at) / 1000) }),
+            },
+          }),
+        },
+      );
 
-    if (response.ok) {
-      const { error: updateError } = await supabase
-        .from("live_activity_tokens")
-        .update({ ended_at: nowIso })
-        .eq("apns_token", row.apns_token);
-      if (updateError) throw new Error(updateError.message);
-      ended++;
-    } else if (response.status === 410) {
-      const { error: deleteError } = await supabase
-        .from("live_activity_tokens")
-        .delete()
-        .eq("apns_token", row.apns_token);
-      if (deleteError) throw new Error(deleteError.message);
+      if (response.ok) {
+        const { error: updateError } = await supabase
+          .from("live_activity_tokens")
+          .update(
+            isEnded ? { ended_at: nowIso, needs_update: false } : {
+              needs_update: false,
+              started_at: Date.parse(row.starts_at) <= now.getTime()
+                ? nowIso
+                : null,
+            },
+          )
+          .eq("apns_token", row.apns_token)
+          // Do not acknowledge a newer schedule change while APNs was in flight.
+          .eq("updated_at", row.updated_at);
+        if (updateError) throw new Error(updateError.message);
+        if (isEnded) ended++;
+      } else {
+        const failure = await reportAPNsFailure(response, logAPNsFailure);
+        if (response.status !== 410 && !isInvalidDeviceToken(failure)) continue;
+        const { error: deleteError } = await supabase
+          .from("live_activity_tokens")
+          .delete()
+          .eq("apns_token", row.apns_token);
+        if (deleteError) throw new Error(deleteError.message);
+      }
+    } catch {
+      // A transient failure for one device must not block other due activities.
+      console.warn("send-push: Live Activity dispatch failed; will retry");
     }
   }
 
@@ -226,17 +254,31 @@ export async function sendDueLiveActivities(
 export async function sendToUserDevices(
   supabase: SupabaseClient,
   row: OutboxRow,
-  deps: Pick<HandlerDeps, "fetchImpl" | "getJwt" | "onAPNsFailure"> = {},
+  deps: Pick<HandlerDeps, "fetchImpl" | "getJwt" | "onAPNsFailure" | "now"> =
+    {},
 ): Promise<boolean> {
   const fetchImpl = deps.fetchImpl ?? fetch;
   const getJwt = deps.getJwt ?? apnsJwt;
   const onAPNsFailure = deps.onAPNsFailure ?? logAPNsFailure;
 
-  const { data: tokens } = await supabase
+  const now = deps.now?.() ?? new Date();
+  const isReminder = row.type === "session_reminder_1h" ||
+    row.type === "host_session_reminder_1h";
+  const startsAt = Date.parse(row.payload?.session_starts_at ?? "");
+  if (
+    isReminder && (!Number.isFinite(startsAt) || startsAt <= now.getTime() ||
+      startsAt - now.getTime() > 3600_000)
+  ) {
+    // Expired or rescheduled reminders are consumed without bothering the user.
+    return true;
+  }
+
+  const { data: tokens, error: tokenError } = await supabase
     .from("device_tokens")
     .select("apns_token")
     .eq("user_id", row.user_id);
 
+  if (tokenError) throw new Error(tokenError.message);
   if (!tokens?.length) return true;
 
   const jwt = await getJwt();
@@ -245,12 +287,13 @@ export async function sendToUserDevices(
   const openChat = row.payload?.open_chat === true ||
     row.type === "chat_message";
   const isSessionCancellation = row.type === "session_cancelled";
+  const isCleanup = row.type === "session_finished";
 
   let anySuccess = false;
   for (const { apns_token } of tokens) {
     const endpoint = `${apnsBaseUrl()}/3/device/${apns_token}`;
 
-    if (isSessionCancellation && sessionId) {
+    if ((isSessionCancellation || isCleanup) && sessionId) {
       const backgroundResponse = await fetchImpl(endpoint, {
         method: "POST",
         headers: {
@@ -263,9 +306,13 @@ export async function sendToUserDevices(
           aps: { "content-available": 1 },
           session_id: sessionId,
           notification_type: row.type,
+          ...(row.payload?.session_ends_at
+            ? { session_ends_at: row.payload.session_ends_at }
+            : {}),
         }),
       });
 
+      if (isCleanup && backgroundResponse.ok) anySuccess = true;
       if (backgroundResponse.status === 410) {
         await supabase.from("device_tokens").delete().eq(
           "apns_token",
@@ -288,6 +335,8 @@ export async function sendToUserDevices(
       }
     }
 
+    if (isCleanup) continue;
+
     const res = await fetchImpl(
       endpoint,
       {
@@ -297,6 +346,9 @@ export async function sendToUserDevices(
           "apns-topic": Deno.env.get("APNS_BUNDLE_ID")!,
           "apns-push-type": "alert",
           "apns-priority": "10",
+          ...(isReminder
+            ? { "apns-expiration": String(Math.floor(startsAt / 1000)) }
+            : {}),
         },
         body: JSON.stringify({
           aps: {
@@ -306,6 +358,9 @@ export async function sendToUserDevices(
           ...(url ? { url } : {}),
           ...(sessionId ? { session_id: sessionId } : {}),
           ...(row.type ? { notification_type: row.type } : {}),
+          ...(row.payload?.session_ends_at
+            ? { session_ends_at: row.payload.session_ends_at }
+            : {}),
           ...(openChat ? { open_chat: true } : {}),
         }),
       },
@@ -351,6 +406,17 @@ export async function handler(
     getJwt: () => requestJwt ??= providerJwt(),
   };
 
+  // Activity dismissal must not wait behind ordinary alert delivery.
+  let liveActivitiesEnded: number;
+  try {
+    liveActivitiesEnded = await sendDueLiveActivities(supabase, requestDeps);
+  } catch (liveActivityError) {
+    const message = liveActivityError instanceof Error
+      ? liveActivityError.message
+      : "Failed to process Live Activities";
+    return new Response(message, { status: 500 });
+  }
+
   const { data: pending, error } = await supabase
     .from("notification_outbox")
     .select("id, user_id, title, body, type, payload")
@@ -373,16 +439,6 @@ export async function handler(
         .eq("id", row.id);
       sent++;
     }
-  }
-
-  let liveActivitiesEnded: number;
-  try {
-    liveActivitiesEnded = await sendDueLiveActivities(supabase, requestDeps);
-  } catch (liveActivityError) {
-    const message = liveActivityError instanceof Error
-      ? liveActivityError.message
-      : "Failed to process Live Activities";
-    return new Response(message, { status: 500 });
   }
 
   return new Response(JSON.stringify({ sent, liveActivitiesEnded }), {

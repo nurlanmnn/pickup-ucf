@@ -1,19 +1,35 @@
+import ActivityKit
 import XCTest
 @testable import PickUpUCF
 
 final class GameLiveActivitySelectionTests: XCTestCase {
-    func testEligibleSessionWithinTwentyFourHours() {
+    func testEligibleSessionExactlyOneHourBeforeStart() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let session = makeSession(startsAt: now.addingTimeInterval(3600))
 
         XCTAssertTrue(GameLiveActivitySelection.isEligible(session: session, now: now))
     }
 
-    func testIneligibleSessionBeyondTwentyFourHours() {
+    func testIneligibleSessionNineteenHoursBeforeStart() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
-        let session = makeSession(startsAt: now.addingTimeInterval(25 * 3600))
+        let session = makeSession(startsAt: now.addingTimeInterval(19 * 3600))
 
         XCTAssertFalse(GameLiveActivitySelection.isEligible(session: session, now: now))
+    }
+
+    func testIneligibleSessionJustOutsideOneHourWindow() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let session = makeSession(startsAt: now.addingTimeInterval(3601))
+        XCTAssertFalse(GameLiveActivitySelection.isEligible(session: session, now: now))
+    }
+
+    func testCancelledAndCompletedSessionsAreIneligible() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        var session = makeSession(startsAt: now.addingTimeInterval(1800))
+        for status in [SessionStatus.cancelled, .completed] {
+            session.status = status
+            XCTAssertFalse(GameLiveActivitySelection.isEligible(session: session, now: now))
+        }
     }
 
     func testSessionRemainsEligibleWhileGameIsInProgress() {
@@ -145,6 +161,56 @@ final class GameLiveActivitySelectionTests: XCTestCase {
             ),
             startsAt...startsAt
         )
+    }
+
+    func testContentStateJSONUsesAppleReferenceSeconds() throws {
+        let state = GameLiveActivityAttributes.ContentState(
+            startsAt: Date(timeIntervalSince1970: 1_700_000_000.25),
+            endsAt: Date(timeIntervalSince1970: 1_700_005_400.25)
+        )
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(state)) as? [String: Double])
+        XCTAssertEqual(json["startsAt"], 1_700_000_000.25 - 978_307_200)
+        XCTAssertEqual(json["endsAt"], 1_700_005_400.25 - 978_307_200)
+    }
+
+    @MainActor
+    func testExpiredActivityIsImmediatelyDismissedAtRuntime() async throws {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            throw XCTSkip("Live Activities are unavailable on this test destination")
+        }
+        let now = Date()
+        let session = makeSession(startsAt: now.addingTimeInterval(-60))
+        let activity: Activity<GameLiveActivityAttributes>
+        do {
+            activity = try Activity.request(
+                attributes: GameLiveActivityAttributes(
+                    sportName: "Tennis", locationName: "RWC Courts",
+                    sessionId: session.id.uuidString, sportSystemImage: "tennisball.fill"
+                ),
+                content: ActivityContent(
+                    state: .init(startsAt: session.startsAt, endsAt: session.endsAt),
+                    staleDate: session.endsAt
+                ),
+                pushType: nil
+            )
+        } catch {
+            throw XCTSkip("ActivityKit request unavailable: \(error)")
+        }
+        XCTAssertEqual(activity.activityState, .active)
+        let dismissal = expectation(description: "ActivityKit acknowledges immediate dismissal")
+        let stateUpdates = Task {
+            for await state in activity.activityStateUpdates {
+                if state == .ended || state == .dismissed {
+                    dismissal.fulfill()
+                    return
+                }
+            }
+        }
+        defer { stateUpdates.cancel() }
+        await GameLiveActivityManager.endExpired(now: session.endsAt)
+        await fulfillment(of: [dismissal], timeout: 2)
+        XCTAssertTrue(activity.activityState == .ended || activity.activityState == .dismissed)
+        XCTAssertFalse(Activity<GameLiveActivityAttributes>.activities.contains { $0.id == activity.id })
     }
 
     private func makeSession(startsAt: Date) -> PickupSession {

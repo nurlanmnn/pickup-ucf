@@ -76,6 +76,12 @@ final class SessionDetailViewModel {
                     sessionId: sessionId,
                     userId: userId
                 )
+                if (item.hostId == userId || participantStatus == .joined),
+                   GameLiveActivitySelection.isEligible(session: item, now: Date()) {
+                    GameLiveActivityCoordinator.start(for: item)
+                } else {
+                    GameLiveActivityCoordinator.end(forSessionId: item.id)
+                }
                 do {
                     let rosterItem = try await repository.fetchRoster(sessionId: sessionId)
                     roster = .loaded(rosterItem)
@@ -106,9 +112,6 @@ final class SessionDetailViewModel {
                 GameLiveActivityCoordinator.end(forSessionId: current.id)
             } else {
                 participantStatus = try await repository.joinSession(id: current.id)
-                if participantStatus == .joined {
-                    GameLiveActivityCoordinator.start(for: current)
-                }
             }
             await load()
             UIImpactFeedbackGenerator(style: .light).impactOccurred()

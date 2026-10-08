@@ -36,11 +36,23 @@ struct PickUpUCFApp: App {
                     await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
                 }
             }
+            .task(id: scenePhase) {
+                guard scenePhase == .active else { return }
+                while !Task.isCancelled {
+                    await GameLiveActivityCoordinator.endExpired()
+                    await SessionNotificationCleanup.removeDelivered()
+                    let delay = await GameLiveActivityCoordinator.nextCleanupDelay()
+                    do { try await Task.sleep(for: .seconds(delay)) }
+                    catch { return }
+                }
+            }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
                 Task {
                     await GameLiveActivityCoordinator.endExpired()
-                    guard appState.isAuthenticated else { return }
+                    await SessionNotificationCleanup.removeDelivered(resolveSessions: appState.isAuthenticated)
+                    guard appState.isAuthenticated, let userId = appState.session?.userId else { return }
+                    await GameLiveActivityCoordinator.refreshForCurrentUser(userId: userId)
                     await PushNotificationService.shared
                         .refreshRegistrationAfterAuthorizationChange()
                 }

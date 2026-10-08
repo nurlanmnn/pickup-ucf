@@ -655,6 +655,10 @@ BEGIN
   INSERT INTO public.session_participants (session_id, user_id, role, status)
   VALUES (v_session_id, v_player_id, 'player', 'joined');
 
+  -- Hosts are also roster members; they must receive only the host reminder.
+  INSERT INTO public.session_participants (session_id, user_id, role, status)
+  VALUES (v_session_id, v_host_id, 'host', 'joined');
+
   v_count := public.enqueue_session_reminders('1h');
 
   IF v_count <> 2 THEN
@@ -683,6 +687,29 @@ BEGIN
     RAISE EXCEPTION
       'enqueue_session_reminders failed: expected 1 host outbox row, got %',
       v_outbox_count;
+  END IF;
+
+  PERFORM public.enqueue_session_reminders('1h');
+  SELECT count(*) INTO v_outbox_count FROM public.notification_outbox
+  WHERE session_id = v_session_id AND type IN ('session_reminder_1h', 'host_session_reminder_1h');
+  IF v_outbox_count <> 2 THEN
+    RAISE EXCEPTION 'reminders must be deduplicated across cron runs and host membership';
+  END IF;
+
+  DELETE FROM public.notification_outbox WHERE session_id = v_session_id;
+  UPDATE public.session_participants SET status = 'waitlist'
+  WHERE session_id = v_session_id AND user_id = v_player_id;
+  PERFORM public.enqueue_session_reminders('1h');
+  IF EXISTS (SELECT 1 FROM public.notification_outbox
+             WHERE session_id = v_session_id AND user_id = v_player_id
+               AND type = 'session_reminder_1h') THEN
+    RAISE EXCEPTION 'waitlisted players must not receive confirmed-game reminders';
+  END IF;
+
+  UPDATE public.sessions SET starts_at = now() + interval '15 minutes'
+  WHERE id = v_session_id;
+  IF public.enqueue_session_reminders('15m') <> 0 THEN
+    RAISE EXCEPTION '15-minute reminders must be disabled';
   END IF;
 
   DELETE FROM public.notification_outbox WHERE session_id = v_session_id;
