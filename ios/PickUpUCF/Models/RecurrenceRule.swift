@@ -14,7 +14,9 @@ struct RecurrenceRule: Codable, Equatable {
 
     var jsonString: String {
         get throws {
-            let data = try JSONEncoder().encode(self)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            let data = try encoder.encode(self)
             guard let string = String(data: data, encoding: .utf8) else {
                 throw RecurrenceRuleError.encodingFailed
             }

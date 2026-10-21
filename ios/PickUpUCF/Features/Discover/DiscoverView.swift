@@ -20,7 +20,7 @@ struct DiscoverView: View {
             }
             .appScreenBackground()
             .toolbarBackground(.hidden, for: .navigationBar)
-            .navigationTitle("Discover")
+            .navigationTitle("Find your next game")
             .searchable(text: $viewModel.searchText, prompt: "Search sessions")
             .task(id: appState.session?.userId) {
                 viewModel.load(currentUserId: appState.session?.userId)
@@ -32,6 +32,9 @@ struct DiscoverView: View {
             .onChange(of: viewModel.selectedSkillLevel) { _, _ in
                 UISelectionFeedbackGenerator().selectionChanged()
                 viewModel.load(currentUserId: appState.session?.userId)
+            }
+            .onChange(of: appState.discoverRequestNonce) { _, _ in
+                navigationPath = NavigationPath()
             }
             .onChange(of: appState.sessionFeedRefreshNonce) { _, _ in
                 viewModel.load(currentUserId: appState.session?.userId)
@@ -51,17 +54,27 @@ struct DiscoverView: View {
 
     private var discoverBody: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: "location.fill")
+                Text("UNIVERSITY OF CENTRAL FLORIDA")
+                    .tracking(1)
+            }
+            .font(AppFont.caption2(.semibold))
+            .foregroundStyle(AppColor.textSecondary(colorScheme))
+            .padding(.horizontal, Spacing.l)
+            .accessibilityElement(children: .combine)
+
             sportChips
-                .padding(.horizontal, Spacing.m)
+                .padding(.horizontal, Spacing.l)
             filterBar
 
             if let joinError = viewModel.joinErrorMessage {
                 ErrorBanner(message: joinError)
-                    .padding(.horizontal, Spacing.m)
+                    .padding(.horizontal, Spacing.l)
             }
 
             content
-                .padding(.horizontal, Spacing.m)
+                .padding(.horizontal, Spacing.l)
         }
         .padding(.vertical, Spacing.m)
     }
@@ -88,35 +101,33 @@ struct DiscoverView: View {
                         case .list:
                             LazyVStack(spacing: Spacing.m) {
                                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, session in
-                                    NavigationLink(value: session.id) {
-                                        SessionCard(
-                                            session: session,
-                                            isJoining: viewModel.joiningSessionId == session.id
-                                                || viewModel.leavingSessionId == session.id,
-                                            actionTitle: viewModel.cardActionTitle(for: session),
-                                            isDestructiveAction: viewModel.isDestructiveCardAction(for: session),
-                                            onJoin: uid == session.hostId
-                                                ? nil
-                                                : {
-                                                    Task {
-                                                        if viewModel.isParticipating(in: session.id) {
-                                                            await viewModel.quickLeave(
-                                                                session: session,
-                                                                currentUserId: uid
-                                                            )
-                                                            appState.touchSessionFeedRefresh()
-                                                        } else {
-                                                            await viewModel.quickJoin(
-                                                                session: session,
-                                                                currentUserId: uid
-                                                            )
-                                                            appState.touchSessionFeedRefresh()
-                                                        }
+                                    SessionCard(
+                                        session: session,
+                                        isJoining: viewModel.joiningSessionId == session.id
+                                            || viewModel.leavingSessionId == session.id,
+                                        actionTitle: viewModel.cardActionTitle(for: session),
+                                        isDestructiveAction: viewModel.isDestructiveCardAction(for: session),
+                                        onJoin: uid == session.hostId
+                                            ? nil
+                                            : {
+                                                Task {
+                                                    if viewModel.isParticipating(in: session.id) {
+                                                        await viewModel.quickLeave(
+                                                            session: session,
+                                                            currentUserId: uid
+                                                        )
+                                                        appState.touchSessionFeedRefresh()
+                                                    } else {
+                                                        await viewModel.quickJoin(
+                                                            session: session,
+                                                            currentUserId: uid
+                                                        )
+                                                        appState.touchSessionFeedRefresh()
                                                     }
                                                 }
-                                        )
-                                    }
-                                    .buttonStyle(GameCardButtonStyle(sport: session.sport))
+                                            },
+                                        onOpen: { navigationPath.append(session.id) }
+                                    )
                                     .staggeredAppear(index: index)
                                 }
                             }
@@ -156,6 +167,12 @@ struct DiscoverView: View {
                     : nil
             )
 
+            if viewModel.hasActiveFilters {
+                SecondaryButton(title: "Reset filters") {
+                    viewModel.resetFilters(currentUserId: appState.session?.userId)
+                }
+            }
+
             if appState.isAuthenticated, !presets.isEmpty {
                 quickCreatePresetRow(presets)
             }
@@ -182,7 +199,7 @@ struct DiscoverView: View {
                         } label: {
                             Label(preset.sport.displayName, systemImage: preset.sport.systemImage)
                                 .font(AppFont.caption(.semibold))
-                                .padding(.horizontal, Spacing.m)
+                                .padding(.horizontal, Spacing.l)
                                 .padding(.vertical, Spacing.s)
                                 .foregroundStyle(AppColor.textPrimary(colorScheme))
                                 .background(AppColor.surface(colorScheme))
@@ -332,7 +349,7 @@ struct DiscoverView: View {
                         .accessibilityLabel("Venue filter")
                     }
                 }
-                .padding(.horizontal, Spacing.m)
+                .padding(.horizontal, Spacing.l)
             }
 
             // Divider
@@ -422,27 +439,24 @@ private struct SportChip: View {
     let isSelected: Bool
     let action: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 5) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 11, weight: .semibold))
-                }
+            VStack(spacing: Spacing.s) {
+                Image(systemName: icon ?? (title == "My sports" ? "heart" : "square.grid.2x2"))
+                    .font(.title3.weight(.medium))
                 Text(title)
                     .font(AppFont.caption(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+                Capsule()
+                    .fill(isSelected ? AppColor.accent(colorScheme) : .clear)
+                    .frame(height: 2)
             }
-            .padding(.horizontal, Spacing.m)
-            .padding(.vertical, Spacing.s)
-            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
-            .background(isSelected ? AppColor.gold : Color.clear)
-            .foregroundStyle(isSelected ? Color.black : AppColor.gold)
-            .overlay {
-                Capsule().stroke(AppColor.gold, lineWidth: isSelected ? 0 : 1.5)
-            }
-            .clipShape(Capsule())
-            .scaleEffect(isSelected ? 1.04 : 1)
+            .foregroundStyle(isSelected ? AppColor.textPrimary(colorScheme) : AppColor.textSecondary(colorScheme))
+            .frame(minWidth: 64, minHeight: AccessibilityLayout.minimumTouchTarget)
+            .padding(.horizontal, Spacing.s)
+            .padding(.top, Spacing.s)
         }
         .buttonStyle(.plain)
         .animation(reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 0.68), value: isSelected)

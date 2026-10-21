@@ -100,8 +100,9 @@ struct BlockedUsersView: View {
                                             Task { await viewModel.unblock(user: user) }
                                         }
                                         .font(AppFont.caption(.semibold))
-                                        .foregroundStyle(AppColor.gold)
-                                        .disabled(vm.unblockingUserId == user.id)
+                                        .foregroundStyle(AppColor.accent(colorScheme))
+                                        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                                        .disabled(vm.unblockingUserId != nil)
                                     }
                                     .padding(.vertical, Spacing.s + 2)
                                     .padding(.horizontal, Spacing.m)

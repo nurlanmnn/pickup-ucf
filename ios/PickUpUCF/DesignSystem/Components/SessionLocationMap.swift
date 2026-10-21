@@ -80,7 +80,7 @@ struct SessionLocationMap: View {
                 } label: {
                     Label("Open in Maps", systemImage: "map")
                         .font(AppFont.caption(.semibold))
-                        .foregroundStyle(AppColor.gold)
+                        .foregroundStyle(AppColor.accent(colorScheme))
                         .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                 }
                 .buttonStyle(.plain)

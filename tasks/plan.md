@@ -1,4 +1,10 @@
-# Implementation Plan: TF-06 Account-Transition Cleanup Failure
+# Current work — October 21, 2026
+
+Current evidence: [UI and navigation audit](../docs/design/2026-10-21-ux-audit.md), [newest-message chat](../docs/superpowers/plans/2026-10-14-local-beta-readiness.md), and [atomic creation](../docs/superpowers/plans/2026-10-21-atomic-session-creation.md). The owner approved and production received the atomic-creation migration on October 21. The owner subsequently requested pushing all current changes to main. Signed simulator verification passed 218/218 iOS tests; device/offline and other open readiness gates remain separate. No archive upload or App Store submission is included.
+
+The incident plans below are historical. The master readiness checklist records TF-06 complete by release-owner confirmation on October 4; their earlier open-gate statements do not override that disposition. The October notification changes still require separate candidate-device verification.
+
+# Historical Implementation Plan: TF-06 Account-Transition Cleanup Failure
 
 ## Objective
 

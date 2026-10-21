@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NotificationSettingsView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel = NotificationSettingsViewModel()
 
@@ -141,7 +142,7 @@ struct NotificationSettingsView: View {
                 }
             }
         }
-        .tint(AppColor.gold)
+        .tint(AppColor.accent(colorScheme))
         .disabled(isDisabled)
         .padding(.vertical, Spacing.s + 2)
         .padding(.horizontal, Spacing.m)
@@ -156,9 +157,9 @@ struct NotificationSettingsView: View {
         HStack(alignment: .top, spacing: Spacing.m) {
             Image(systemName: systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(AppColor.accent(colorScheme))
                 .frame(width: 30, height: 30)
-                .background(iconColor)
+                .background(AppColor.mutedSurface(colorScheme))
                 .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {

@@ -7,5 +7,5 @@ INSERT INTO public.venues (name, lat, lng, campus_zone, is_official) VALUES
   ('Arboretum Fields', 28.5930, -81.1850, 'Main Campus', true),
   ('Softball Complex', 28.5910, -81.1940, 'Main Campus', true),
   ('Tennis Complex', 28.6045, -81.2010, 'Main Campus', true),
-  ('Soccer Practice Fields', 28.5975, -81.1905, 'Main Campus', true),
+  ('RWC Park', 28.592627488099, -81.200138801506, 'Main Campus', true),
   ('Basketball Courts (RWC)', 28.6070, -81.1970, 'Main Campus', true);

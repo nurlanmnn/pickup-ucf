@@ -13,6 +13,7 @@ struct CreateSessionInput {
     let skillLevel: SkillLevel
     let notes: String?
     let recurrenceRule: RecurrenceRule?
+    var requestId: UUID = UUID()
 }
 
 struct UpdateSessionInput {
@@ -220,7 +221,6 @@ final class SessionRepository: SessionRepositoryProtocol {
     }
 
     func createSession(_ input: CreateSessionInput) async throws -> PickupSession {
-        let userId = try await client.auth.session.user.id
         let endsAt = Calendar.current.date(
             byAdding: .minute,
             value: input.durationMinutes,
@@ -248,9 +248,9 @@ final class SessionRepository: SessionRepositoryProtocol {
             recurrenceRuleJSON = nil
         }
 
-        let payload = SessionInsert(
-            hostId: userId,
+        let payload = SessionCreationFields(
             sport: input.sport,
+            customSportName: normalizedOther,
             venueId: resolved.venueId,
             customLocation: resolved.customLocation,
             customLat: resolved.customLat,
@@ -258,27 +258,16 @@ final class SessionRepository: SessionRepositoryProtocol {
             startsAt: input.startsAt,
             endsAt: endsAt,
             capacity: input.capacity,
-            playerCount: 1,
             skillLevel: input.skillLevel,
             notes: notesToStore,
             recurrenceRule: recurrenceRuleJSON
         )
 
-        let created: PickupSession = try await client
-            .from("sessions")
-            .insert(payload)
-            .select(sessionSelect)
-            .single()
+        let createdId: UUID = try await client
+            .rpc("create_session", params: CreateSessionRPCParams(requestId: input.requestId, input: payload))
             .execute()
             .value
-
-        let hostRow = HostParticipantInsert(
-            sessionId: created.id,
-            userId: userId,
-            role: .host,
-            status: .joined
-        )
-        try await client.from("session_participants").insert(hostRow).execute()
+        let created = try await fetchSession(id: createdId)
 
         if let withWeather = try? await attachWeatherSnapshotIfNeeded(to: created) {
             return withWeather

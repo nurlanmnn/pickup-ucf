@@ -1,12 +1,21 @@
 import SwiftUI
 
 struct SignInView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppState.self) private var appState
-    @State private var viewModel = SignInViewModel()
+    @State private var viewModel: SignInViewModel
+    let onSignUp: (String) -> Void
     @State private var showFieldHints = false
     @FocusState private var focusedField: Field?
 
     private enum Field: Hashable { case email, password }
+
+    init(email: String = "", onSignUp: @escaping (String) -> Void) {
+        let model = SignInViewModel()
+        model.email = email
+        _viewModel = State(initialValue: model)
+        self.onSignUp = onSignUp
+    }
 
     var body: some View {
         ScrollView {
@@ -17,7 +26,7 @@ struct SignInView: View {
 
                 FormCard(footer: emailFooter) {
                     FormFieldRow {
-                        TextField("UCF email", text: $viewModel.email)
+                        TextField("UCF email", text: $viewModel.email, prompt: Text("UCF email").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
@@ -31,7 +40,7 @@ struct SignInView: View {
                     }
                     Divider().padding(.leading, Spacing.m)
                     FormFieldRow {
-                        SecureField("Password", text: $viewModel.password)
+                        SecureField("Password", text: $viewModel.password, prompt: Text("Password").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.password)
                             .focused($focusedField, equals: .password)
                             .submitLabel(.go)
@@ -41,6 +50,7 @@ struct SignInView: View {
                         FieldErrorLabel(message: "Password is required").formCardInset()
                     }
                 }
+                .disabled(viewModel.isLoading)
 
                 PrimaryButton(
                     title: "Sign In",
@@ -50,11 +60,20 @@ struct SignInView: View {
                     Task { await submit() }
                 }
 
-                NavigationLink { ForgotPasswordView() } label: {
+                NavigationLink { ForgotPasswordView(email: viewModel.email) } label: {
                     Text("Forgot password?")
                         .font(AppFont.caption(.semibold))
-                        .foregroundStyle(AppColor.gold)
+                        .foregroundStyle(AppColor.accent(colorScheme))
+                        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                 }
+                .disabled(viewModel.isLoading)
+
+                AuthSwitchLink(prompt: "New to PickUp?", title: "Create an account") {
+                    focusedField = nil
+                    onSignUp(viewModel.email)
+                }
+                .disabled(viewModel.isLoading)
+                .accessibilityIdentifier("sign-in-switch-to-sign-up")
             }
             .padding(Spacing.m)
         }
@@ -96,7 +115,7 @@ struct SignInView: View {
 
 #Preview {
     NavigationStack {
-        SignInView()
+        SignInView(onSignUp: { _ in })
             .environment(AppState())
     }
 }

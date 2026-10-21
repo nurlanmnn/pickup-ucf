@@ -14,9 +14,9 @@ struct SettingsRow: View {
         HStack(spacing: Spacing.m) {
             Image(systemName: systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(isDestructive ? AppColor.destructive : AppColor.accent(colorScheme))
                 .frame(width: 30, height: 30)
-                .background(isDestructive ? AppColor.destructive : iconColor)
+                .background(isDestructive ? AppColor.destructive.opacity(0.10) : AppColor.mutedSurface(colorScheme))
                 .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             Text(title)

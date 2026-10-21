@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -16,6 +17,7 @@ struct RootView: View {
                 WelcomeView()
             }
         }
+        .tint(AppColor.accent(colorScheme))
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: appState.isAuthenticated)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: appState.needsOnboarding)
         .globalBannerOverlay(appState: appState)

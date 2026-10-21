@@ -5,6 +5,7 @@ import SwiftUI
 /// from floating over composers or bottom action bars on newer iOS versions.
 /// Source: https://developer.apple.com/videos/play/wwdc2021/10021/
 private struct FormKeyboardAccessory: View {
+    @Environment(\.colorScheme) private var colorScheme
     var canGoPrevious: Bool = false
     var canGoNext: Bool = false
     var onPrevious: () -> Void = {}
@@ -38,7 +39,7 @@ private struct FormKeyboardAccessory: View {
             .frame(maxWidth: .infinity, minHeight: 48)
         }
         .background(.ultraThinMaterial)
-        .tint(AppColor.gold)
+        .tint(AppColor.accent(colorScheme))
     }
 
     private var showsFieldNavigation: Bool {

@@ -93,20 +93,33 @@ struct EditSessionView: View {
                 .id(EditSessionScrollAnchor.schedule)
 
                 Section {
-                    if vm.venues.isEmpty {
+                    if vm.isLoadingVenues {
                         HStack(spacing: Spacing.s) {
                             ProgressView()
                             Text("Loading venues…")
                                 .foregroundStyle(.secondary)
                         }
-                    } else {
+                    }
+                    if let error = vm.venueLoadError {
+                        ErrorBanner(message: error)
+                        Button("Reload campus venues") { Task { await vm.loadVenues() } }
+                            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                    } else if !vm.isLoadingVenues && vm.venues.isEmpty {
+                        FormFieldHint(text: "No campus venues are available. Choose a custom location.")
+                    }
+                    Group {
                         Picker("Venue", selection: $vm.venuePickerOptionId) {
                             Text("Custom location").tag(EditSessionViewModel.customVenuePickerTag)
+                            if let selectedId = vm.selectedVenueId,
+                               !vm.venues.contains(where: { $0.id == selectedId }) {
+                                Text("Current venue").tag(selectedId.uuidString)
+                            }
                             ForEach(vm.venues) { venue in
                                 Text(venue.name).tag(venue.id.uuidString)
                             }
                         }
                         .pickerStyle(.menu)
+                        .disabled(vm.isLoadingVenues)
                         .onChange(of: vm.venuePickerOptionId) { _, newValue in
                             vm.markDirty()
                             if newValue != EditSessionViewModel.customVenuePickerTag {
@@ -175,6 +188,8 @@ struct EditSessionView: View {
                     .listRowBackground(Color.clear)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .appScreenBackground()
             .onChange(of: scrollToAnchor) { _, anchor in
                 guard let anchor else { return }
                 performScroll(to: anchor, proxy: proxy)

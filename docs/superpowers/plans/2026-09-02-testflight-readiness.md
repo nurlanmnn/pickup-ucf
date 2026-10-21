@@ -4,7 +4,7 @@
 
 **Status:** Internal TestFlight physical-device smoke gate completed by release-owner confirmation on 2026-10-04; external Beta App Review preparation in progress
 
-**Last audited:** 2026-10-04
+**Last audited:** 2026-10-21 (local UX/source, simulator, and test verification; production/App Store Connect not re-audited)
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -269,21 +269,23 @@ All `EXT-*` items are **P1** and must be complete before a build is submitted to
 
 ## EXT-01 — User-generated-content safety and moderation
 
-**Why this is required:** Session notes and chat are user-generated content. Current reporting/blocking is session/host oriented and does not yet provide complete content filtering, message/user reporting, broad user blocking, moderator operations, or published support contact details.
+**Why this is required:** Session notes and chat are user-generated content. Filtering, message/user/session reporting, blocking, moderator operations, and published support are implemented in source. This gate also requires production/candidate verification and operational coverage before external testing.
 
 **Tasks:**
 
 - [x] Publish clear community rules and prohibited-content standards.
-- [ ] Add reasonable objectionable-content filtering for session notes, display names, custom sports/locations, and chat messages.
-- [ ] Let users report an individual message, user, and session with a reason and optional context.
-- [ ] Let users block an abusive user across discovery, sessions, chat, notifications, and future interactions—not only one session.
-- [ ] Define what happens to existing shared sessions and chat history after a block.
-- [ ] Prevent blocked users from contacting or notifying each other through alternate app flows.
-- [ ] Build an authenticated moderation workflow for reviewing reports, removing content, warning/suspending users, and recording actions.
-- [ ] Define a response-time target and escalation path for urgent safety reports.
-- [ ] Publish an accessible support/contact method in the app and store metadata.
-- [ ] Rate-limit report creation and protect moderation functions with least-privilege RLS/RPC permissions.
-- [ ] Test abusive-content, false-report, duplicate-report, block/unblock, deleted-account, and notification edge cases.
+- [x] Add reasonable objectionable-content filtering for session notes, display names, custom sports/locations, and chat messages (source and local SQL/unit evidence).
+- [x] Let users report an individual message, user, and session with a reason and optional context (implemented; exact-candidate device check remains below).
+- [x] Let users block an abusive user across discovery, sessions, chat, notifications, and future interactions—not only one session (source and local SQL evidence).
+- [x] Define what happens to existing shared sessions and chat history after a block (membership/history retained; protected content hidden; unblock restores future access).
+- [x] Prevent blocked users from contacting or notifying each other through alternate app flows (source and local SQL evidence).
+- [x] Build an authenticated moderation workflow for reviewing reports, removing content, warning/suspending users, and recording actions (implemented; production candidate flow remains below).
+- [x] Define a response-time target and escalation path for urgent safety reports (runbook published; backup coverage remains below).
+- [x] Publish an accessible support/contact method in the app and store metadata (source plus previously saved metadata; exact-candidate check remains below).
+- [x] Rate-limit report creation and protect moderation functions with least-privilege RLS/RPC permissions (local SQL evidence).
+- [x] Test abusive-content, false-report, duplicate-report, block/unblock, deleted-account, and notification edge cases (local SQL suite; production/device evidence remains below).
+- [ ] Execute the production role/access matrix and synthetic report/moderator-action flow on the exact external candidate, including ordinary-user denial and block/notification behavior.
+- [ ] Assign backup support/moderation coverage and record private escalation ownership.
 - [ ] Complete the App Store age-rating/content questionnaire based on actual UGC behavior.
 
 **Done when:** Users can filter/avoid, report, and block abusive content or users; moderators can act on reports promptly; the policy and contact path are visible; abuse tests pass.
@@ -381,7 +383,7 @@ directly in App Store Connect.
 
 **Tasks:**
 
-- [x] Deploy every currently tracked Supabase migration to the production project in order (verified at parity 2026-09-16 and rechecked through `20260917192500` on 2026-09-30).
+- [ ] Deploy every currently tracked Supabase migration to the production project in order (last recorded parity through `20260917192500` on 2026-09-30; October notification migrations and the separate October 14 venue correction remain pending recorded production verification).
 - [ ] Verify RLS is enabled and least-privilege policies behave correctly for anonymous, authenticated, blocked, and deleted users.
 - [x] Configure `APNS_ENV=production` and verify the existing APNs key/team/bundle identifiers for TestFlight delivery (2026-09-17).
 - [ ] Complete secret ownership documentation; the dedicated push cron secret is configured, while Brevo/email-hook ownership still requires verification.
@@ -423,18 +425,20 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 ## BETA-01 — Load the newest chat messages and paginate older history (**P1**)
 
-**Problem:** The chat query orders `created_at` ascending and applies `limit(50)`, which returns the oldest 50 messages rather than the newest 50.
+**Original problem (fixed locally 2026-10-14):** The chat query ordered `created_at` ascending and applied `limit(50)`, which returned the oldest 50 messages rather than the newest 50.
 
 **Evidence:** `ios/PickUpUCF/Repositories/ChatRepository.swift`
 
 **Tasks:**
 
-- [ ] Query the newest page deterministically, then present it in chronological order.
-- [ ] Add cursor-based “load older messages” pagination.
-- [ ] Define stable ordering for identical timestamps, using a secondary unique key.
-- [ ] Preserve scroll position while prepending older messages.
-- [ ] Test conversations with 0, 1, 50, 51, and several hundred messages.
-- [ ] Test pagination while realtime inserts arrive.
+- [x] Query the newest page deterministically, then present it in chronological order.
+- [x] Add cursor-based “load older messages” pagination.
+- [x] Define stable ordering for identical timestamps, using a secondary unique key.
+- [x] Preserve scroll position while prepending older messages (actual-button simulator regression).
+- [x] Test conversations with 0, 1, 50, 51, and several hundred messages (synthetic HTTP tests, up to 301 messages).
+- [x] Test pagination while realtime inserts arrive (request-boundary and view-model tests).
+
+**Local implementation (2026-10-14):** The existing RLS-protected endpoint now queries descending `(created_at, id)` with one lookahead row, returns the newest 50 in chronological order, and retains the exact server timestamp for older-page cursors. Chat exposes loading/error/retry controls, retains loaded messages and the cursor after failure, filters blocked content, and deduplicates history/realtime/send results. An actual-button SwiftUI simulator test verifies reading-position restoration after a prepend. No migration or dependency upgrade is required for this chat change. Production/candidate verification remains separate; deployment is deferred. Focused plan: `docs/superpowers/plans/2026-10-14-local-beta-readiness.md`.
 
 **Done when:** Opening chat shows the latest conversation, older history loads without duplicates/gaps/jumps, and tests cover more than 50 messages.
 
@@ -446,12 +450,16 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Replace the client-side multi-step write with a transaction-backed RPC/database function.
-- [ ] Validate host identity and all creation invariants server-side.
-- [ ] Ensure the host participant row and count are created atomically.
-- [ ] Apply least-privilege execute grants to the function.
-- [ ] Add rollback/failure tests and duplicate-request/idempotency coverage.
-- [ ] Update client mapping for structured domain errors.
+- [x] Replace the client-side multi-step write with a transaction-backed RPC/database function.
+- [x] Validate host identity and all creation invariants server-side.
+- [x] Ensure the host participant row and count are created atomically.
+- [x] Apply least-privilege execute grants to the function.
+- [x] Add rollback/failure tests and duplicate-request/idempotency coverage.
+- [x] Update client mapping for structured domain errors.
+
+**Local implementation (2026-10-21):** Added `20261021155014_atomic_session_creation.sql`: an authenticated, least-privilege RPC creates the session, host membership, and private retry receipt in one transaction. The host comes from authoritative confirmed-UCF account data; server-side creation invariants and existing content/suspension rules are enforced. Receipts store a SHA-256 fingerprint, and concurrent matching retries return one game. The create form retains its request UUID across failures/edits, rejects conflicting committed requests, and never falls back to separate inserts. HTTP tests cover lost RPC/read responses and missing-RPC failure. SQL tests cover malformed input, unconfirmed/non-UCF/suspended accounts, rollback, matching/conflicting retries, mutable sessions, tombstones, and six concurrent requests. Focused evidence: `2026-10-21-atomic-session-creation.md`.
+
+**Backend deployment (2026-10-21):** With owner approval, applied `20261021155014_atomic_session_creation.sql` to production. Verified recorded migration version, function signatures, execute grants, private-ledger RLS, API availability, and rolled-back synthetic authenticated creation/replay/conflict/validation/tombstone checks. The local filename matches the version assigned by Supabase; SQL content is unchanged from the reviewed migration. Existing released clients retain their legacy write behavior until replaced. Exact-candidate/offline/device checks and broader beta rollout gates remain open.
 
 **Done when:** A session and its host membership either both exist correctly or neither exists, including on retry and simulated network failure.
 
@@ -477,11 +485,13 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Refactor the card so navigation and join/leave are separate, unambiguous actions.
-- [ ] Give each action a clear accessibility label, value, hint, and state.
-- [ ] Ensure joining/leaving cannot trigger navigation and vice versa.
+- [x] Refactor the card so navigation and join/leave are separate, unambiguous actions.
+- [x] Give each action a clear accessibility label, value, hint, and state.
+- [x] Ensure joining/leaving cannot trigger navigation and vice versa.
 - [ ] Verify keyboard/Switch Control/Voice Control behavior where applicable.
-- [ ] Add UI tests for tap targets and action routing.
+- [x] Add UI tests for tap targets and action routing.
+
+**Local implementation (2026-10-21):** Discover/My Games now give the illustrated details an Open button and a separate participation button. Native rendered-control tests activate both independently and verify at least 44pt targets; normal/Accessibility XXXL renders were visually checked. Device keyboard, Switch Control, Voice Control, and full VoiceOver validation remain open. Focused plan: `2026-10-21-session-card-actions.md`.
 
 **Done when:** Visual, touch, and assistive-technology users can independently open, join, or leave a session without accidental actions.
 
@@ -893,3 +903,29 @@ Focused plan: `docs/superpowers/plans/2026-10-07-profile-stat-history.md`.
   present; test mutations were rolled back.
 - [ ] Production migration/function deployment and physical-device checks remain
   required before distributing the updated iOS candidate.
+
+## Local readiness and chat follow-up — 2026-10-14
+
+- [x] Reconciled EXT-01's implemented source/local-test tasks with the separate production, candidate-device, backup-coverage, and age-rating gates. Corrected stale moderator-deployment and reviewer sign-in notes without re-auditing production.
+- [x] Completed BETA-01 locally: newest-message queries, exact-timestamp keyset pagination, retry states, block filtering, chronological deduplication, and actual-button reading-position restoration.
+- [x] Final verification: **202/202 iOS tests**, **36/36 Deno tests**, full local SQL/RLS suite with **24 phase success notices** inside explicit rollback, unsigned Release device build, static analyzer, and `git diff --check` passed. Local database head was `20261005150000`; no clean reset or venue migration was performed in this audit.
+- [x] Visually inspected synthetic chat at normal and Accessibility XXXL sizes on iPhone 16e / iOS 26.3; screenshots and scroll metrics are in ignored `docs/testflight-evidence/beta-01/`. Device and VoiceOver checks remain separate.
+- [x] Updated reviewer chat instructions and documented foreground-only Live Activity starts and APNs-dependent closed-app cleanup.
+- [ ] Deployment, new candidate distribution, production evidence, physical-device verification, and external submission remain deferred/open. No commit, push, deployment, upload, or submission was performed.
+
+Focused plan and detailed evidence: `docs/superpowers/plans/2026-10-14-local-beta-readiness.md`. The next source workstream is **BETA-02 — Make session creation atomic**; BETA-08's realtime recovery work remains separate.
+
+
+## UI, UX, and atomic creation follow-up — 2026-10-21
+
+- [x] Applied the shared visual system across screens and retained the original logo in welcome/account/onboarding headers.
+- [x] Added direct account-form switching without stacked forms, email handoff into recovery, clear recovery/back actions, readable prompts, and loading locks.
+- [x] Added sticky sport-selection actions, onboarding account escape, empty-state discovery actions, filter reset, profile retry, and venue failure/custom-location recovery.
+- [x] Completed BETA-02 in local source and SQL: atomic creation, authoritative host validation, private fingerprint receipts, rollback and concurrent retry coverage.
+- [x] Completed BETA-04 source/action tests and normal/largest-text visual inspection; assistive-technology candidate checks remain open.
+- [x] Final verification: **217/217 iOS tests**, **36/36 Deno tests**, complete local SQL/RLS suite (**25 phase notices**), six concurrent duplicate requests, schema lint, unchanged security-advisor baseline, unsigned Release build, static analysis, and `git diff --check` passed. No local database reset was performed; trial schema/fixtures were removed afterward.
+- [x] Applied the atomic-creation migration to production with owner approval; verified API availability, authorization, and rolled-back authenticated creation/retry invariants.
+- [ ] Verify exact-candidate authenticated/offline creation/retry and accessibility on physical devices.
+- [ ] Other open source/production/operations gates in this checklist, including BETA-08 realtime author/catch-up work, remain separate.
+
+Detailed UX audit: `docs/design/2026-10-21-ux-audit.md`. Production atomic-creation deployment was subsequently approved and applied at 15:50 UTC. No commit, push, archive upload, or external submission was performed.

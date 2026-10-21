@@ -20,19 +20,16 @@ private struct AppCardStyle: ViewModifier {
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(
-                        colorScheme == .dark
-                            ? Color.white.opacity(0.07)
-                            : Color.clear,
-                        lineWidth: 0.5
+                        AppColor.border(colorScheme),
+                        lineWidth: 1
                     )
             }
     }
 }
 
 extension View {
-    /// Applies shared card styling: soft shadow (light) / dark inner glow (dark),
-    /// no hairline border in light mode.
-    func appCardStyle(cornerRadius: CGFloat = 20) -> some View {
+    /// Consistent hairline border and restrained elevation in both appearances.
+    func appCardStyle(cornerRadius: CGFloat = 16) -> some View {
         modifier(AppCardStyle(cornerRadius: cornerRadius))
     }
 }

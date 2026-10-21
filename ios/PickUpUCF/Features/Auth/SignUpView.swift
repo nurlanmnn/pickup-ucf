@@ -1,22 +1,31 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @State private var viewModel = SignUpViewModel()
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var viewModel: SignUpViewModel
+    let onSignIn: (String) -> Void
     @State private var showFieldHints = false
     @FocusState private var focusedField: Field?
 
     private enum Field: Hashable { case displayName, email, password, confirm }
 
+    init(email: String = "", onSignIn: @escaping (String) -> Void) {
+        let model = SignUpViewModel()
+        model.email = email
+        _viewModel = State(initialValue: model)
+        self.onSignIn = onSignIn
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.m) {
-                AuthHeaderView(title: "Create Account")
+                AuthHeaderView(title: "Create Account", subtitle: "Join with your @ucf.edu or @knights.ucf.edu email.")
 
                 InlineFeedbackSection(error: viewModel.errorMessage)
 
                 FormCard(footer: passwordFooter) {
                     FormFieldRow {
-                        TextField("Display name", text: $viewModel.displayName)
+                        TextField("Display name", text: $viewModel.displayName, prompt: Text("Display name").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.name)
                             .focused($focusedField, equals: .displayName)
                             .submitLabel(.next)
@@ -29,7 +38,7 @@ struct SignUpView: View {
                     Divider().padding(.leading, Spacing.m)
 
                     FormFieldRow {
-                        TextField("UCF email", text: $viewModel.email)
+                        TextField("UCF email", text: $viewModel.email, prompt: Text("UCF email").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
@@ -45,7 +54,7 @@ struct SignUpView: View {
                     Divider().padding(.leading, Spacing.m)
 
                     FormFieldRow {
-                        SecureField("Password", text: $viewModel.password)
+                        SecureField("Password", text: $viewModel.password, prompt: Text("Password").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.newPassword)
                             .focused($focusedField, equals: .password)
                             .submitLabel(.next)
@@ -58,7 +67,7 @@ struct SignUpView: View {
                     Divider().padding(.leading, Spacing.m)
 
                     FormFieldRow {
-                        SecureField("Confirm password", text: $viewModel.confirmPassword)
+                        SecureField("Confirm password", text: $viewModel.confirmPassword, prompt: Text("Confirm password").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.newPassword)
                             .focused($focusedField, equals: .confirm)
                             .submitLabel(.done)
@@ -68,6 +77,7 @@ struct SignUpView: View {
                         FieldErrorLabel(message: hint).formCardInset()
                     }
                 }
+                .disabled(viewModel.isLoading)
 
                 PrimaryButton(
                     title: "Create account",
@@ -76,6 +86,12 @@ struct SignUpView: View {
                 ) {
                     Task { await submit() }
                 }
+                AuthSwitchLink(prompt: "Already have an account?", title: "Sign in") {
+                    focusedField = nil
+                    onSignIn(viewModel.email)
+                }
+                .disabled(viewModel.isLoading)
+                .accessibilityIdentifier("sign-up-switch-to-sign-in")
             }
             .padding(Spacing.m)
         }
@@ -142,5 +158,5 @@ struct SignUpView: View {
 }
 
 #Preview {
-    NavigationStack { SignUpView() }
+    NavigationStack { SignUpView(onSignIn: { _ in }) }
 }

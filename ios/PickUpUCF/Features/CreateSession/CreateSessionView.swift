@@ -193,7 +193,7 @@ struct CreateSessionView: View {
             VStack(spacing: Spacing.m) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(AppColor.gold)
+                    .foregroundStyle(AppColor.accent(colorScheme))
                 Text("Session created!")
                     .font(AppFont.headline(.semibold))
                     .foregroundStyle(.white)

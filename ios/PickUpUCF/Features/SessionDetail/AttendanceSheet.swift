@@ -118,7 +118,7 @@ struct AttendanceSheet: View {
                 }
             }
         }
-        .tint(AppColor.gold)
+        .tint(AppColor.accent(colorScheme))
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.s)
     }

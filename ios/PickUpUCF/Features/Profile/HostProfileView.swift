@@ -196,37 +196,13 @@ struct HostProfileView: View {
     }
 
     private var avatarView: some View {
-        ZStack {
-            Circle()
-                .fill(AppColor.gold.opacity(0.15))
-                .frame(width: 108, height: 108)
-
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.goldDark],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 88, height: 88)
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 40, weight: .medium))
-                .foregroundStyle(Color.black.opacity(0.60))
-        }
-        .overlay(
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.gold.opacity(0.3)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 2.5
-                )
-                .frame(width: 94, height: 94)
-        )
+        Image(systemName: "person.fill")
+            .font(.system(size: 36, weight: .medium))
+            .foregroundStyle(AppColor.courtLine)
+            .frame(width: 88, height: 88)
+            .background(AppColor.courtGreen, in: RoundedRectangle(cornerRadius: 24))
+            .padding(.vertical, Spacing.m)
+            .accessibilityHidden(true)
     }
 
     // MARK: - Stat Tiles

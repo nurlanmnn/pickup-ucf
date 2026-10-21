@@ -3,8 +3,8 @@ import SwiftUI
 import WidgetKit
 
 private enum LiveActivityTheme {
-    static let gold = Color(red: 1.0, green: 0.788, blue: 0.016)
-    static let lockScreenBackground = Color(red: 0.07, green: 0.07, blue: 0.08)
+    static let gold = Color(red: 0.96, green: 0.76, blue: 0.24)
+    static let lockScreenBackground = Color(red: 0.07, green: 0.08, blue: 0.08)
 }
 
 struct GameLiveActivityWidget: Widget {

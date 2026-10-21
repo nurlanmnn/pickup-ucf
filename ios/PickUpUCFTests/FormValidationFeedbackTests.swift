@@ -1,5 +1,70 @@
 import XCTest
+import Supabase
 @testable import PickUpUCF
+
+/// Uses the real Keychain: an unsigned simulator host must fail this check.
+final class AuthSessionPersistenceTests: XCTestCase {
+    func testSignInPersistsSessionForProfileAndAnotherClient() async throws {
+        let storage = KeychainLocalStorage(service: "pickup.auth-tests.\(UUID().uuidString)")
+        let key = UUID().uuidString
+        defer { try? storage.remove(key: key) }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PersistedAuthRequest.self]
+        func makeClient() -> SupabaseClient {
+            SupabaseClient(supabaseURL: URL(string: "https://auth-tests.invalid")!,
+                           supabaseKey: "synthetic-test-key", options: .init(
+                            auth: .init(storage: storage, storageKey: key, autoRefreshToken: false),
+                            global: .init(session: URLSession(configuration: configuration))))
+        }
+
+        let client = makeClient()
+        let signedIn = try await AuthRepository(client: client).signIn(
+            email: "synthetic@ucf.edu", password: "synthetic-password")
+        XCTAssertNotNil(try storage.retrieve(key: key), "Sign-in must reach Keychain, not just app UI state")
+        let profile = try await ProfileRepository(client: client).fetchCurrentProfile()
+        XCTAssertEqual(profile.id, signedIn.userId)
+        let restored = try await makeClient().auth.session
+        XCTAssertEqual(restored.user.id, signedIn.userId, "A new client must restore the persisted session")
+        try await client.auth.signOut(scope: .local)
+        XCTAssertNil(makeClient().auth.currentSession, "Local sign-out must remove the saved session")
+    }
+}
+
+private final class PersistedAuthRequest: URLProtocol {
+    private static let userId = "00000000-0000-0000-0000-000000000123"
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        do {
+            let payload: [String: Any]
+            if request.url?.path == "/auth/v1/token" {
+                payload = [
+                    "access_token": "synthetic-access-token", "refresh_token": "synthetic-refresh-token",
+                    "token_type": "bearer", "expires_in": 3600,
+                    "expires_at": Date().addingTimeInterval(3600).timeIntervalSince1970,
+                    "user": ["id": Self.userId, "aud": "authenticated", "role": "authenticated",
+                             "email": "synthetic@ucf.edu", "app_metadata": [:], "user_metadata": [:],
+                             "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z",
+                             "email_confirmed_at": "2026-01-01T00:00:00Z", "is_anonymous": false]
+                ]
+            } else if request.url?.path == "/rest/v1/profiles" {
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer synthetic-access-token")
+                payload = ["id": Self.userId, "display_name": "Synthetic Knight", "games_played": 0,
+                           "show_up_streak": 0, "preferred_sports": []]
+            } else if request.url?.path == "/auth/v1/logout" {
+                payload = [:]
+            } else {
+                throw URLError(.unsupportedURL)
+            }
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil,
+                                           headerFields: ["Content-Type": "application/json"])!
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: try JSONSerialization.data(withJSONObject: payload))
+            client?.urlProtocolDidFinishLoading(self)
+        } catch { client?.urlProtocol(self, didFailWithError: error) }
+    }
+    override func stopLoading() {}
+}
 
 /// Field validation belongs next to the field. `errorMessage` (the banner) is for API failures.
 final class FormValidationFeedbackTests: XCTestCase {

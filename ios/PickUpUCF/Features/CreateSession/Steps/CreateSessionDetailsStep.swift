@@ -103,7 +103,7 @@ struct CreateSessionDetailsStep: View {
                 .overlay {
                     Capsule()
                         .stroke(
-                            isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme).opacity(0.25),
+                            isSelected ? AppColor.accent(colorScheme) : AppColor.textSecondary(colorScheme).opacity(0.25),
                             lineWidth: isSelected ? 0 : 1
                         )
                 }

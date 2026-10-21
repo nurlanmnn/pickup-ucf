@@ -26,7 +26,7 @@ struct CustomLocationPickerRow: View {
                     systemImage: "map"
                 )
                 .font(AppFont.headline(.semibold))
-                .foregroundStyle(AppColor.gold)
+                .foregroundStyle(AppColor.accent(colorScheme))
             }
             .buttonStyle(.plain)
         }

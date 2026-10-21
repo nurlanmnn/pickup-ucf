@@ -48,6 +48,8 @@ final class CreateSessionViewModel {
         didSet { markDirtyIfNeeded() }
     }
     var venues: [Venue] = []
+    private(set) var isLoadingVenues = false
+    private(set) var venueLoadError: String?
     var errorMessage: String?
     var isLoading = false
     var didCreate = false
@@ -56,7 +58,9 @@ final class CreateSessionViewModel {
 
     private(set) var pendingVenueId: UUID?
     private var pendingCustomLocationLabel: String?
+    private var choseCustomLocation = false
     private var suppressDirtyTracking = false
+    private let creationRequestId = UUID()
     private let repository: SessionRepositoryProtocol
 
     init(repository: SessionRepositoryProtocol = SessionRepository()) {
@@ -265,6 +269,10 @@ final class CreateSessionViewModel {
 
     @MainActor
     func loadVenues() async {
+        guard !isLoadingVenues else { return }
+        isLoadingVenues = true
+        venueLoadError = nil
+        defer { isLoadingVenues = false }
         do {
             venues = try await repository.fetchVenues()
             suppressDirtyTracking = true
@@ -277,6 +285,7 @@ final class CreateSessionViewModel {
             self.pendingVenueId = nil
 
             if venuePickerOptionId == Self.customVenuePickerTag,
+               !choseCustomLocation,
                customLocationSelection == nil,
                pendingCustomLocationLabel == nil,
                let firstVenue = venues.first {
@@ -289,8 +298,14 @@ final class CreateSessionViewModel {
                 venuePickerOptionId = venues.first.map { $0.id.uuidString } ?? Self.customVenuePickerTag
             }
         } catch {
-            errorMessage = AppErrorMapper.message(for: error)
+            venueLoadError = AppErrorMapper.message(for: error)
         }
+    }
+
+    func selectCustomLocation() {
+        choseCustomLocation = true
+        pendingVenueId = nil
+        venuePickerOptionId = Self.customVenuePickerTag
     }
 
     /// Human-readable list of missing/invalid fields for Create session.
@@ -334,6 +349,7 @@ final class CreateSessionViewModel {
 
     @MainActor
     func create() async -> PickupSession? {
+        guard !isLoading else { return nil }
         errorMessage = nil
         revealFieldErrors()
         commitDurationFromText()
@@ -359,7 +375,8 @@ final class CreateSessionViewModel {
             capacity: capacity,
             skillLevel: skillLevel,
             notes: notes,
-            recurrenceRule: recurrenceRule
+            recurrenceRule: recurrenceRule,
+            requestId: creationRequestId
         )
 
         do {

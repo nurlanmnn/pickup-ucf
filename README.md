@@ -166,6 +166,23 @@ xcodebuild test -scheme PickUpUCF -destination 'platform=iOS Simulator,name=iPho
 
 If the iPhone 16 simulator is unavailable, try `name=iPhone 15` or `-destination 'generic/platform=iOS Simulator'`.
 
+Keep code signing enabled when running or testing the simulator app. Supabase stores sessions in Keychain;
+an unsigned host can accept a login response but fail to save or retrieve its session with Keychain error
+`-34018`. `AuthSessionPersistenceTests` checks a synthetic sign-in, authenticated profile request,
+restoration by another client, and local sign-out against the real simulator Keychain. Builds using
+`CODE_SIGNING_ALLOWED=NO` are suitable for compilation/static analysis only; do not install those builds
+for interactive testing. To rebuild for a running simulator, use its ID from `xcrun simctl list devices booted`:
+
+```bash
+xcodebuild -project ios/PickUpUCF.xcodeproj -scheme PickUpUCF -configuration Debug \
+  -destination 'platform=iOS Simulator,id=SIMULATOR_ID' \
+  -derivedDataPath /tmp/pickup-simulator build CODE_SIGNING_ALLOWED=YES
+xcrun simctl install SIMULATOR_ID /tmp/pickup-simulator/Build/Products/Debug-iphonesimulator/PickUpUCF.app
+xcrun simctl launch SIMULATOR_ID edu.ucf.pickup
+```
+
+Run these commands from the repository root. Replace `SIMULATOR_ID` with the booted simulator's UUID.
+
 ## Project structure
 
 ```

@@ -7,6 +7,8 @@ private struct AppScreenBackground: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .tint(AppColor.accent(colorScheme))
+            .foregroundStyle(AppColor.textPrimary(colorScheme))
             .background(AppColor.background(colorScheme).ignoresSafeArea())
     }
 }

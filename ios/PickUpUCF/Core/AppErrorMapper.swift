@@ -118,6 +118,29 @@ enum AppErrorMapper {
     }
 
     private static func postgrestMessage(for error: PostgrestError) -> String? {
+        switch error.message {
+        case "creation_request_conflict":
+            return "A previous attempt may already have created this game. Check My Games before starting a new one."
+        case "creation_no_longer_available":
+            return "The game from this request is no longer available. Start a new session to create another."
+        case "creation_forbidden":
+            return "Sign in with a verified UCF account to host a game."
+        case "invalid_session_input":
+            return "Check the sport, time, capacity, and location, then try again."
+        case "schedule_in_past":
+            return "Choose a start time in the future."
+        case "schedule_too_far_ahead":
+            return "Choose a start time within the next 7 days."
+        case "location_required", "invalid_session_location", "custom_location_pin_required":
+            return "Choose a campus venue or select a valid location on the map."
+        case "custom_sport_required":
+            return "Enter the name of the sport you’re hosting."
+        default: break
+        }
+        if error.code == "PGRST202", error.message.contains("create_session") {
+            return "Game creation is being updated. Please try again later."
+        }
+
         let text = [error.code, error.message, error.detail, error.hint]
             .compactMap { $0 }
             .joined(separator: " ")

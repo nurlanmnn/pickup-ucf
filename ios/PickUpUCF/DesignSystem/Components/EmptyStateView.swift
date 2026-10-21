@@ -12,8 +12,10 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: Spacing.m) {
             Image(systemName: symbol)
-                .font(.system(size: 48))
-                .foregroundStyle(AppColor.gold)
+                .font(.system(size: 32, weight: .light))
+                .foregroundStyle(AppColor.accent(colorScheme))
+                .frame(width: 80, height: 80)
+                .background(AppColor.mutedSurface(colorScheme), in: RoundedRectangle(cornerRadius: 24))
                 .accessibilityHidden(true)
             Text(title)
                 .font(AppFont.title())

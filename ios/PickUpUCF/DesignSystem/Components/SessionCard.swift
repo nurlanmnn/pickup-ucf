@@ -7,6 +7,7 @@ struct SessionCard: View {
     var actionTitle: String?
     var isDestructiveAction: Bool = false
     var onJoin: (() -> Void)?
+    var onOpen: (() -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -14,81 +15,51 @@ struct SessionCard: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            // Card surface
-            AppColor.elevatedSurface(colorScheme)
-
-            // Watermark sport icon — large, low-opacity, trailing-bottom
-            watermarkIcon
-
-            VStack(alignment: .leading, spacing: 0) {
-                // Sport gradient top strip
-                sportStrip
-
-                // Main content area
-                contentArea
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .appCardStyle(cornerRadius: 20)
-        .accessibilityElement(children: onJoin == nil ? .combine : .contain)
-        .accessibilityHint(onJoin == nil ? "" : "Opens session details; use the action button for quick join or leave")
-    }
-
-    // MARK: - Sub-views
-
-    /// 4pt sport-coloured gradient strip across the top of the card.
-    private var sportStrip: some View {
-        AppTheme.sportCardGradient(session.sport, scheme: colorScheme)
-            .frame(height: 4)
-    }
-
-    /// Large semi-transparent sport icon watermark at trailing edge.
-    private var watermarkIcon: some View {
-        Image(systemName: session.sport.systemImage)
-            .font(.system(size: 80, weight: .black))
-            .foregroundStyle(AppColor.sportAccent(session.sport).opacity(0.10))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(.trailing, 12)
-            .padding(.bottom, 8)
-    }
-
-    /// Main info + actions.
-    private var contentArea: some View {
-        Group {
-            if AccessibilityLayout.usesVerticalActions(at: dynamicTypeSize) {
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    sessionDetails
-                    if let onJoin {
-                        joinButton(action: onJoin)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            if let onOpen {
+                Button(action: onOpen) { cardContent }
+                    .buttonStyle(GameCardButtonStyle(sport: session.sport))
+                    .accessibilityLabel("\(session.sportDisplayName) at \(session.locationName)")
+                    .accessibilityValue("\(session.startsAt.formatted(date: .abbreviated, time: .shortened)), \(session.playerCount) of \(session.capacity) players, \(session.skillLevel.displayName) skill level")
+                    .accessibilityHint("Opens game details")
+                    .accessibilityIdentifier("session-open-\(session.id.uuidString)")
             } else {
-                HStack(alignment: .top, spacing: Spacing.m) {
-                    sessionDetails
-                    if let onJoin {
-                        joinButton(action: onJoin)
-                    }
-                }
+                cardContent
+                    .accessibilityElement(children: .combine)
+            }
+            if let onJoin {
+                joinButton(action: onJoin)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.bottom, Spacing.m)
             }
         }
-        .padding(Spacing.m)
-        .padding(.top, Spacing.xs)
+        .background(AppColor.elevatedSurface(colorScheme))
+        .appCardStyle(cornerRadius: 20)
+        .accessibilityElement(children: .contain)
+    }
+
+    private var cardContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack(alignment: .topTrailing) {
+                CourtArtwork(sport: session.sport)
+                    .frame(height: 128)
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    relativeBadge(at: context.date)
+                }
+                .padding(Spacing.m)
+            }
+            sessionDetails
+                .padding(Spacing.m)
+        }
+        .contentShape(Rectangle())
     }
 
     private var sessionDetails: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            // Sport name + relative badge on same row
-            HStack(alignment: .center, spacing: Spacing.s) {
-                Text(session.sportDisplayName)
-                    .font(AppFont.headline(.bold))
-                    .foregroundStyle(AppColor.textPrimary(colorScheme))
-
-                TimelineView(.periodic(from: .now, by: 30)) { context in
-                    relativeBadge(at: context.date)
-                }
-            }
+            Text(session.sportDisplayName)
+                .font(AppFont.headline(.semibold))
+                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                .fixedSize(horizontal: false, vertical: true)
 
             // Location
             Label(session.locationName, systemImage: "mappin.and.ellipse")
@@ -106,11 +77,14 @@ struct SessionCard: View {
             Spacer(minLength: Spacing.s)
 
             // Capacity indicator + skill pill
-            HStack(spacing: Spacing.s) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.s))
+                : AnyLayout(HStackLayout(spacing: Spacing.s))
+            layout {
                 CapacityIndicator(
                     playerCount: session.playerCount,
                     capacity: session.capacity,
-                    iconColor: AppColor.sportAccent(session.sport)
+                    iconColor: AppColor.accent(colorScheme)
                 )
 
                 SkillPill(skill: session.skillLevel)
@@ -160,10 +134,10 @@ struct SessionCard: View {
                         .tint(isDestructiveAction ? AppColor.destructive : .black)
                 } else {
                     Text(buttonLabel)
-                        .font(AppFont.caption(.bold))
+                        .font(AppFont.caption(.semibold))
                 }
             }
-            .frame(minWidth: 72, minHeight: AccessibilityLayout.minimumTouchTarget)
+            .frame(maxWidth: .infinity, minHeight: AccessibilityLayout.minimumTouchTarget)
             .padding(.horizontal, Spacing.s)
             .foregroundStyle(isDestructiveAction ? AppColor.destructive : buttonForeground)
             .background(buttonBackground)
@@ -177,16 +151,12 @@ struct SessionCard: View {
                 }
             }
             .clipShape(Capsule())
-            .shadow(
-                color: (session.isFull || isDestructiveAction)
-                    ? Color.clear
-                    : AppColor.sportAccent(session.sport).opacity(0.30),
-                radius: 6, x: 0, y: 2
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppPressStyle())
         .disabled(isJoining)
-        .accessibilityLabel(accessibilityActionLabel)
+        .accessibilityLabel("\(accessibilityActionLabel), \(session.sportDisplayName) at \(session.locationName)")
+        .accessibilityHint("Changes your participation without opening game details")
+        .accessibilityIdentifier("session-action-\(session.id.uuidString)")
     }
 
     private var buttonLabel: String {

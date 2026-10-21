@@ -28,6 +28,8 @@ final class EditSessionViewModel {
     var skillLevel: SkillLevel = .intermediate
     var notes = ""
     var venues: [Venue] = []
+    private(set) var isLoadingVenues = false
+    private(set) var venueLoadError: String?
     var errorMessage: String?
     var isLoading = false
     var isDirty = false
@@ -51,8 +53,7 @@ final class EditSessionViewModel {
     }
 
     var showsCustomLocationField: Bool {
-        guard !venues.isEmpty else { return false }
-        return venuePickerOptionId == Self.customVenuePickerTag
+        venuePickerOptionId == Self.customVenuePickerTag
     }
 
     var canSubmit: Bool {
@@ -139,6 +140,10 @@ final class EditSessionViewModel {
 
     @MainActor
     func loadVenues() async {
+        guard !isLoadingVenues else { return }
+        isLoadingVenues = true
+        venueLoadError = nil
+        defer { isLoadingVenues = false }
         do {
             venues = try await repository.fetchVenues()
             suppressDirtyTracking = true
@@ -158,12 +163,11 @@ final class EditSessionViewModel {
             }
 
             if venuePickerOptionId != Self.customVenuePickerTag,
-               UUID(uuidString: venuePickerOptionId) == nil
-                   || !venues.contains(where: { $0.id.uuidString == venuePickerOptionId }) {
+               UUID(uuidString: venuePickerOptionId) == nil {
                 venuePickerOptionId = Self.customVenuePickerTag
             }
         } catch {
-            errorMessage = AppErrorMapper.message(for: error)
+            venueLoadError = AppErrorMapper.message(for: error)
         }
     }
 
@@ -215,7 +219,7 @@ final class EditSessionViewModel {
         notes = parsed.userNotes ?? ""
         if let vid = session.venueId {
             pendingVenueId = vid
-            venuePickerOptionId = Self.customVenuePickerTag
+            venuePickerOptionId = vid.uuidString
         } else {
             pendingVenueId = nil
             venuePickerOptionId = Self.customVenuePickerTag

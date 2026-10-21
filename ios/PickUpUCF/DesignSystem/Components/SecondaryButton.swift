@@ -28,10 +28,11 @@ struct SecondaryButton: View {
                 .background(backgroundFill)
                 .overlay {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(AppColor.gold, lineWidth: 2)
+                        .stroke(variant == .onDark ? Color.white.opacity(0.5) : AppColor.border(colorScheme), lineWidth: 1)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
+        .buttonStyle(AppPressStyle())
         .accessibilityLabel(title)
         .accessibilityIdentifier("secondary-button-\(title)")
     }
@@ -48,7 +49,7 @@ struct SecondaryButton: View {
     private var backgroundFill: Color {
         switch variant {
         case .adaptive:
-            return Color.clear
+            return AppColor.surface(colorScheme)
         case .onDark:
             return Color.white.opacity(0.08)
         }

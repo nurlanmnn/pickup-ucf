@@ -18,7 +18,9 @@ struct ProfileView: View {
                 }
             }
             .appScreenBackground()
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .refreshable { await loadProfile() }
             .scrollContentBackground(.hidden)
         }
         .task(id: appState.session?.userId) { await loadProfile() }
@@ -30,6 +32,10 @@ struct ProfileView: View {
     private var heroHeader: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: Spacing.s) {
+                Text("Your corner of campus")
+                    .font(AppFont.caption(.semibold))
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    .padding(.top, Spacing.l)
                 avatarView
                     .padding(.top, Spacing.xl)
 
@@ -55,6 +61,9 @@ struct ProfileView: View {
                         .font(AppFont.caption())
                         .foregroundStyle(AppColor.destructive)
                         .padding(.top, 2)
+                    Button("Try again") { Task { await loadProfile() } }
+                        .font(AppFont.body(.semibold))
+                        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
                 }
             }
             .padding(.bottom, Spacing.l)
@@ -62,39 +71,20 @@ struct ProfileView: View {
     }
 
     private var avatarView: some View {
-        ZStack {
-            // Soft glow halo
-            Circle()
-                .fill(AppColor.gold.opacity(0.15))
-                .frame(width: 108, height: 108)
-
-            // Avatar fill
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.goldDark],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 88, height: 88)
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 40, weight: .medium))
-                .foregroundStyle(Color.black.opacity(0.60))
-        }
-        .overlay(
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.gold.opacity(0.3)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 2.5
-                )
-                .frame(width: 94, height: 94)
-        )
+        Image(systemName: "person.fill")
+            .font(.system(size: 36, weight: .medium))
+            .foregroundStyle(AppColor.courtLine)
+            .frame(width: 88, height: 88)
+            .background(AppColor.courtGreen, in: Circle())
+            .overlay(alignment: .bottomTrailing) {
+                Image(systemName: "checkmark")
+                    .font(.caption.bold())
+                    .foregroundStyle(.black)
+                    .frame(width: 28, height: 28)
+                    .background(AppColor.gold, in: Circle())
+                    .overlay { Circle().stroke(AppColor.background(colorScheme), lineWidth: 3) }
+            }
+            .accessibilityHidden(true)
     }
 
     // MARK: - Main content
@@ -120,7 +110,7 @@ struct ProfileView: View {
             } label: {
                 statTile(
                     value: profile.map { "\($0.gamesPlayed)" } ?? "–",
-                    label: "Games", systemImage: "trophy.fill", color: AppColor.gold
+                    label: "Games", systemImage: "trophy", color: AppColor.accent(colorScheme)
                 )
             }
             .accessibilityHint("Show games you attended")

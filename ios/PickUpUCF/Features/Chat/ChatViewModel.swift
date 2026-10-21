@@ -11,6 +11,9 @@ final class ChatViewModel {
     var draftText = ""
     var isSending = false
     var sendError: String?
+    var isLoadingOlder = false
+    var historyError: String?
+    var hasOlderMessages: Bool { nextCursor != nil }
 
     private let repository: ChatRepositoryProtocol
     private let blockRepository: BlockRepositoryProtocol
@@ -19,6 +22,7 @@ final class ChatViewModel {
     private var realtimeChannel: RealtimeChannelV2?
     private var realtimeTask: Task<Void, Never>?
     private var blockedUserIds: Set<UUID> = []
+    private var nextCursor: ChatMessageCursor?
 
     init(
         sessionId: UUID,
@@ -36,21 +40,39 @@ final class ChatViewModel {
 
     @MainActor
     func load() async {
+        guard !messages.isLoading, !isLoadingOlder else { return }
         messages = .loading
+        nextCursor = nil
+        historyError = nil
         do {
-            async let fetchedMessages = repository.fetchMessages(sessionId: sessionId, limit: AppPagination.chatMessageLimit)
+            async let fetchedMessages = repository.fetchMessages(sessionId: sessionId, before: nil, limit: AppPagination.chatMessageLimit)
             async let fetchedBlockedIds = blockRepository.fetchBlockedUserIds()
-            let (items, blockedIds) = try await (fetchedMessages, fetchedBlockedIds)
+            let (page, blockedIds) = try await (fetchedMessages, fetchedBlockedIds)
             blockedUserIds = blockedIds
-            messages = .loaded(
-                BlockedMessageFilter.visibleMessages(
-                    items,
-                    currentUserId: currentUserId,
-                    blockedUserIds: blockedIds
-                )
-            )
+            nextCursor = page.nextCursor
+            messages = .loaded(merged(page.messages, into: []))
         } catch {
             messages = .failed(AppErrorMapper.message(for: error))
+        }
+    }
+
+    @MainActor
+    func loadOlder() async {
+        guard let cursor = nextCursor, !isLoadingOlder, case .loaded = messages else { return }
+        isLoadingOlder = true
+        historyError = nil
+        defer { isLoadingOlder = false }
+        do {
+            let page = try await repository.fetchMessages(
+                sessionId: sessionId, before: cursor, limit: AppPagination.chatMessageLimit
+            )
+            // Re-read current state after the await: realtime or a send may have
+            // added messages, or blocking may have removed them in the meantime.
+            guard case let .loaded(current) = messages else { return }
+            messages = .loaded(merged(page.messages, into: current))
+            nextCursor = page.nextCursor
+        } catch {
+            historyError = AppErrorMapper.message(for: error)
         }
     }
 
@@ -80,7 +102,7 @@ final class ChatViewModel {
     @MainActor
     func send() async {
         let trimmed = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, !isSending else { return }
+        guard !trimmed.isEmpty, !isSending, case .loaded = messages else { return }
 
         sendError = nil
         isSending = true
@@ -171,9 +193,13 @@ final class ChatViewModel {
             createdAt: createdAt,
             author: nil
         )
-        guard row.userId == currentUserId || !blockedUserIds.contains(row.userId) else { return }
-        guard !containsMessage(id: row.id) else { return }
-        appendMessage(row)
+        receive(row)
+    }
+
+    @MainActor
+    func receive(_ message: SessionMessage) {
+        guard message.sessionId == sessionId else { return }
+        appendMessage(message)
     }
 
     private func uuid(from json: AnyJSON?) -> UUID? {
@@ -203,20 +229,13 @@ final class ChatViewModel {
     @MainActor
     private func appendMessage(_ message: SessionMessage) {
         guard case let .loaded(current) = messages else { return }
-        guard !containsMessage(id: message.id) else { return }
-        messages = .loaded(current + [message])
+        messages = .loaded(merged([message], into: current))
     }
 
     @MainActor
     private func replaceMessage(id: UUID, with message: SessionMessage) {
         guard case let .loaded(current) = messages else { return }
-        if let index = current.firstIndex(where: { $0.id == id }) {
-            var next = current
-            next[index] = message
-            messages = .loaded(next)
-        } else if !containsMessage(id: message.id) {
-            messages = .loaded(current + [message])
-        }
+        messages = .loaded(merged([message], into: current.filter { $0.id != id && $0.id != message.id }))
     }
 
     @MainActor
@@ -225,7 +244,14 @@ final class ChatViewModel {
         messages = .loaded(current.filter { $0.id != id })
     }
 
-    private func containsMessage(id: UUID) -> Bool {
-        messages.value?.contains(where: { $0.id == id }) ?? false
+    private func merged(_ incoming: [SessionMessage], into current: [SessionMessage]) -> [SessionMessage] {
+        var byId = Dictionary(current.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        for message in incoming where byId[message.id] == nil { byId[message.id] = message }
+        return BlockedMessageFilter.visibleMessages(
+            Array(byId.values), currentUserId: currentUserId, blockedUserIds: blockedUserIds
+        ).sorted {
+            if $0.createdAt != $1.createdAt { return $0.createdAt < $1.createdAt }
+            return $0.id.uuidString < $1.id.uuidString
+        }
     }
 }

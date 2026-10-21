@@ -38,9 +38,15 @@ struct SportPickerChip: View {
             VStack(spacing: Spacing.s) {
                 Image(systemName: sport.systemImage)
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.black : AppColor.sportAccent(sport))
+                    .foregroundStyle(isSelected ? Color.black : AppColor.accent(colorScheme))
 
-                Text(sport.displayName)
+                HStack(spacing: Spacing.xs) {
+                    Text(sport.displayName)
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .accessibilityHidden(true)
+                    }
+                }
                     .font(AppFont.caption(.semibold))
                     .foregroundStyle(isSelected ? Color.black : AppColor.textPrimary(colorScheme))
                     .multilineTextAlignment(.center)
@@ -54,13 +60,13 @@ struct SportPickerChip: View {
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
-                        isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme).opacity(0.25),
+                        isSelected ? AppColor.accent(colorScheme) : AppColor.textSecondary(colorScheme).opacity(0.25),
                         lineWidth: isSelected ? 0 : 1
                     )
             }
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppPressStyle())
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityLabel(sport.displayName)
     }

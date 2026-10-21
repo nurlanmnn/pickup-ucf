@@ -195,13 +195,23 @@ final class DiscoverViewModel {
         return sports.map { QuickCreatePreset(sport: $0, venueId: venueId) }
     }
 
+    var hasActiveFilters: Bool {
+        selectedVenueId != nil || filterMode != .single(nil)
+            || selectedSkillLevel != .any || selectedTimeWindow != .next48h
+            || !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    @MainActor
+    func resetFilters(currentUserId: UUID?) {
+        searchText = ""
+        selectedVenueId = nil
+        selectedSkillLevel = .any
+        selectedTimeWindow = .next48h
+        setFilterMode(.single(nil), currentUserId: currentUserId)
+    }
+
     func emptyStateContent(serverItemsAreEmpty: Bool) -> DiscoverEmptyStateContent {
-        let hasSearch = !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        let hasActiveFilter = selectedVenueId != nil
-            || filterMode != .single(nil)
-            || selectedSkillLevel != .any
-            || selectedTimeWindow != .next48h
-            || hasSearch
+        let hasActiveFilter = hasActiveFilters
 
         if serverItemsAreEmpty, !hasActiveFilter {
             return DiscoverEmptyStateContent(

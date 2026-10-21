@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileHistoryView: View {
     let profile: Profile
     var showsStreak = false
+    @Environment(AppState.self) private var appState
     @Environment(\.colorScheme) private var colorScheme
     @State private var viewModel = ProfileHistoryViewModel()
 
@@ -42,7 +43,9 @@ struct ProfileHistoryView: View {
                     EmptyStateView(
                         symbol: "trophy",
                         title: "No recorded games yet",
-                        message: "Games appear here after the host marks your attendance."
+                        message: "Games appear here after the host marks your attendance.",
+                        actionTitle: "Find a game",
+                        action: { appState.requestDiscover() }
                     )
                 } else if viewModel.hasLoaded, viewModel.hasMore, viewModel.errorMessage == nil {
                     SecondaryButton(title: "Load more") {

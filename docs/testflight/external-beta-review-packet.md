@@ -31,7 +31,7 @@ Please focus on these flows:
 2. Browse Discover in list and map views, including filters and location-permission denial.
 3. Create a synthetic game, then edit and cancel it.
 4. Join and leave a game and confirm the participant count remains correct.
-5. Exchange synthetic chat messages and check ordering after reopening the chat.
+5. Exchange synthetic chat messages and check ordering after reopening the chat. For a longer conversation, confirm the latest messages appear first and **Load older messages** preserves your reading position; retry after a connection failure.
 6. Verify game and chat notifications in the background and after force quit; tap them to check routing.
 7. Report a synthetic message, user, or session; block and unblock a test account.
 8. Add a game to Calendar, including permission denial and recovery.
@@ -42,9 +42,11 @@ When reporting a problem, include the build number, device model, iOS version, t
 
 ## Known Issues
 
-Replace this section after the final internal run. Do not list a release-blocking issue as an accepted known issue.
+Recheck these source-confirmed limits on the exact candidate after the final internal run. Do not list a release-blocking issue as an accepted known issue.
 
-- `TBD — confirm whether any non-blocking limitation remains in the candidate build.`
+- Live Activities start when the app is opened during the final hour before a game or while it is active. A Live Activity does not automatically start at the one-hour mark while the app stays closed. The server reminder operates separately.
+- When the app is closed, Live Activity removal depends on the server dispatcher and APNs delivery; immediate removal at the exact end second cannot be guaranteed, especially offline.
+- Verify reminder count, background cleanup, and updated layouts on the new candidate before accepting these limits. The October notification migrations and updated function/build still have pending deployment/device gates in the readiness checklist.
 
 ## Beta App Review Contact
 

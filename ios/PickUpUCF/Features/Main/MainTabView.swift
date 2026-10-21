@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct MainTabView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectedTab = 0
@@ -14,7 +15,7 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             DiscoverView()
                 .tabItem {
-                    Label("Discover", systemImage: "sportscourt")
+                    Label("Discover", systemImage: "magnifyingglass")
                 }
                 .tag(0)
 
@@ -36,11 +37,13 @@ struct MainTabView: View {
 
             ProfileView()
                 .tabItem {
-                    Label("Profile", systemImage: "person.circle")
+                    Label("Profile", systemImage: "person.crop.circle")
                 }
                 .tag(3)
         }
-        .tint(AppColor.gold)
+        .tint(AppColor.accent(colorScheme))
+        .toolbarBackground(AppColor.surface(colorScheme), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .onChange(of: appState.sessionDetailDeepLink) { _, id in
             guard id != nil else { return }
             switch appState.sessionDetailDeepLinkTarget {
@@ -63,6 +66,9 @@ struct MainTabView: View {
             } else {
                 previousNonCreateTab = newValue
             }
+        }
+        .onChange(of: appState.discoverRequestNonce) { _, _ in
+            selectedTab = 0
         }
         .onChange(of: appState.createSessionRequestNonce) { _, _ in
             createPrefill = appState.consumePendingCreateSessionPrefill()

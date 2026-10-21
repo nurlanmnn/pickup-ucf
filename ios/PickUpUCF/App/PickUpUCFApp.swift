@@ -114,6 +114,7 @@ final class AppState {
     var needsOnboarding = false
     /// Incremented to request presenting Create session from tabs (e.g. Discover host nudge).
     private(set) var createSessionRequestNonce = 0
+    private(set) var discoverRequestNonce = 0
     var pendingCreateSessionPrefill: CreateSessionPrefill?
 
     var isAuthenticated: Bool {
@@ -126,6 +127,10 @@ final class AppState {
 
     func touchSessionFeedRefresh() {
         sessionFeedRefreshNonce += 1
+    }
+
+    func requestDiscover() {
+        discoverRequestNonce += 1
     }
 
     func requestCreateSession(prefill: CreateSessionPrefill? = nil) {

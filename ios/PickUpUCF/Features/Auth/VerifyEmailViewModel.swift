@@ -19,11 +19,11 @@ final class VerifyEmailViewModel {
     }
 
     var canVerify: Bool {
-        otpCode.count == 6 && !isVerifying
+        otpCode.count == 6 && !isVerifying && !isResending
     }
 
     var canResend: Bool {
-        resendCooldown == 0 && !isResending
+        resendCooldown == 0 && !isResending && !isVerifying
     }
 
     var resendTitle: String {
@@ -38,6 +38,7 @@ final class VerifyEmailViewModel {
 
     @MainActor
     func verify() async -> AppSession? {
+        guard !isVerifying && !isResending else { return nil }
         errorMessage = nil
         successMessage = nil
 
@@ -59,6 +60,7 @@ final class VerifyEmailViewModel {
 
     @MainActor
     func resend() async {
+        guard canResend else { return }
         errorMessage = nil
         successMessage = nil
         isResending = true

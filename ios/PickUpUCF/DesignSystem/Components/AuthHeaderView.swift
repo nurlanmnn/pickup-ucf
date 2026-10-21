@@ -1,69 +1,77 @@
 import SwiftUI
 
-/// Compact brand header shown at the top of every pushed auth screen.
-/// Displays a sport icon strip, the page title in display font, and an optional subtitle.
+/// Shared editorial header for every account flow.
 struct AuthHeaderView: View {
     let title: String
     var subtitle: String? = nil
-
-    private let sports: [SportType] = [.basketball, .soccer, .volleyball]
-
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        VStack(spacing: Spacing.m) {
-            // Sport icon strip
-            HStack(spacing: Spacing.s) {
-                ForEach(sports) { sport in
-                    Image(systemName: sport.systemImage)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(AppColor.sportAccent(sport))
-                        .frame(width: 32, height: 32)
-                        .background(AppColor.sportAccent(sport).opacity(0.10))
-                        .clipShape(Circle())
-                        .overlay {
-                            Circle()
-                                .stroke(AppColor.sportAccent(sport).opacity(0.25), lineWidth: 1)
-                        }
-                }
-
-                // PickUp badge
-                Text("PickUp")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppColor.gold)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(AppColor.gold.opacity(0.10))
-                    .overlay {
-                        Capsule().stroke(AppColor.gold.opacity(0.30), lineWidth: 1)
-                    }
-                    .clipShape(Capsule())
-            }
-            .accessibilityHidden(true)
-
-            VStack(spacing: 6) {
-                Text(title)
-                    .font(AppFont.display(.bold))
-                    .foregroundStyle(AppColor.textPrimary(colorScheme))
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(AppFont.body())
-                        .foregroundStyle(AppColor.textSecondary(colorScheme))
-                        .multilineTextAlignment(.center)
-                }
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            AppBrandLockup()
+                .padding(.bottom, Spacing.m)
+            Text(title)
+                .font(AppFont.display())
+                .tracking(-1)
+                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            if let subtitle {
+                Text(subtitle)
+                    .font(AppFont.body())
+                    .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, Spacing.s)
-        .padding(.bottom, Spacing.xs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, Spacing.l)
+        .padding(.bottom, Spacing.m)
     }
 }
 
-#Preview {
-    VStack(spacing: 32) {
-        AuthHeaderView(title: "Sign In")
-        AuthHeaderView(title: "Verify Email", subtitle: "We sent a code to your UCF address.")
+/// The original PickUp logo, reused unchanged from the app icon artwork.
+struct AppBrandLockup: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        HStack(spacing: Spacing.s) {
+            Image("BrandLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 44, height: 44)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .accessibilityHidden(true)
+            Text("PickUp")
+                .font(AppFont.title(.bold))
+                .tracking(-0.8)
+                .foregroundStyle(AppColor.textPrimary(colorScheme))
+            Text("UCF")
+                .font(AppFont.caption2(.bold))
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("PickUp UCF")
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
-    .padding()
+}
+
+/// A full touch target that wraps naturally with larger text.
+struct AuthSwitchLink: View {
+    let prompt: String
+    let title: String
+    let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Button(action: action) {
+            (Text(prompt + " ").foregroundColor(AppColor.textSecondary(colorScheme))
+             + Text(title).bold().underline())
+                .font(AppFont.body())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: AccessibilityLayout.minimumTouchTarget)
+        }
+        .buttonStyle(AppPressStyle())
+        .accessibilityLabel(prompt + " " + title)
+    }
 }

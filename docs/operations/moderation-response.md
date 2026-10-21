@@ -20,6 +20,8 @@ These are operating targets, not emergency-response guarantees. The in-app rules
 
 Moderator membership is stored in `public.moderator_accounts`. Authenticated clients cannot read or write that table. Provisioning or revocation requires a separately authorized production operation using a privileged administrative path and a named owner. Never grant moderator access by changing client metadata or a user-controlled profile field.
 
-## Deployment limitation
+## Deployment and verification record
 
-The EXT-01 schema and RLS changes are local source until production deployment is explicitly authorized. Before deployment, obtain recoverable backup/rollback readiness, review the migration in order after the three already deferred migrations, run the full clean-reset suite, and provision the first moderator only after the access-control checks pass in production.
+The master readiness checklist records deployment of migration `20260916090000_ugc_safety_and_moderation.sql` on September 16, 2026 and production moderator provisioning on September 30. These are historical deployment records, not a fresh production audit. Do not treat a passing local SQL suite as proof of candidate-build moderation behavior.
+
+Before external testing, run the production role/access matrix and synthetic report/action flow in [external-beta-operations.md](external-beta-operations.md), verify the candidate's moderator and ordinary-user screens, and assign backup support/moderation coverage. New migrations or function revisions require their own deployment evidence. Deployment remains deferred for the October 14 local work.

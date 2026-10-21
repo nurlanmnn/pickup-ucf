@@ -81,6 +81,8 @@ struct MapLocationPickerView: View {
                         .foregroundStyle(AppColor.textSecondary(colorScheme))
                 }
                 .buttonStyle(.plain)
+                .frame(minWidth: AccessibilityLayout.minimumTouchTarget, minHeight: AccessibilityLayout.minimumTouchTarget)
+                .accessibilityLabel("Clear location search")
             }
         }
         .padding(Spacing.m)
@@ -146,7 +148,7 @@ struct MapLocationPickerView: View {
                     confirmSelectionEmbedded()
                 }
                 .font(AppFont.headline(.semibold))
-                .foregroundStyle(AppColor.gold)
+                .foregroundStyle(AppColor.accent(colorScheme))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }

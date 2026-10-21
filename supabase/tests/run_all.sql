@@ -10,3 +10,4 @@
 \ir phase_e_live_activities.sql
 \ir phase_f_device_token_ownership.sql
 \ir phase_g_moderation.sql
+\ir phase_h_atomic_creation.sql

@@ -9,12 +9,19 @@ struct ChatView: View {
     @State private var viewModel: ChatViewModel
     @State private var reportMessage: SessionMessage?
     @State private var userToBlock: UUID?
+    @State private var visibleMessageId: UUID?
+    @State private var historyScrollAnchor: UUID?
+    @State private var historyScrollRequest = 0
     @FocusState private var composerFocused: Bool
 
     init(sessionId: UUID, currentUserId: UUID) {
-        self.sessionId = sessionId
-        self.currentUserId = currentUserId
-        _viewModel = State(initialValue: ChatViewModel(sessionId: sessionId, currentUserId: currentUserId))
+        self.init(viewModel: ChatViewModel(sessionId: sessionId, currentUserId: currentUserId))
+    }
+
+    init(viewModel: ChatViewModel) {
+        sessionId = viewModel.sessionId
+        currentUserId = viewModel.currentUserId
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {
@@ -78,61 +85,89 @@ struct ChatView: View {
             VStack(spacing: Spacing.m) {
                 ErrorBanner(message: message)
                 PrimaryButton(title: "Try again") {
-                    Task { await viewModel.load() }
+                    Task {
+                        await viewModel.load()
+                        await viewModel.startRealtime()
+                    }
                 }
                 .padding(.horizontal, Spacing.m)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .loaded(let items):
-            if items.isEmpty {
+            ScrollViewReader { proxy in
                 ScrollView {
-                    EmptyStateView(
-                        symbol: "bubble.left.and.bubble.right",
-                        title: "No messages yet",
-                        message: "Say hi and coordinate meetup details with your group."
-                    )
-                }
-            } else {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: Spacing.s) {
-                            ForEach(items) { message in
-                                ChatBubble(
-                                    message: message,
-                                    currentUserId: currentUserId,
-                                    colorScheme: colorScheme
-                                )
-                                .id(message.id)
-                                .contextMenu {
-                                    if message.userId != currentUserId {
-                                        Button {
-                                            reportMessage = message
-                                        } label: {
-                                            Label("Report message", systemImage: "exclamationmark.bubble")
-                                        }
-                                        Button(role: .destructive) {
-                                            userToBlock = message.userId
-                                        } label: {
-                                            Label("Block user", systemImage: "hand.raised")
-                                        }
+                    LazyVStack(spacing: Spacing.s) {
+                        if viewModel.hasOlderMessages {
+                            if let error = viewModel.historyError {
+                                ErrorBanner(message: error)
+                            }
+                            Button {
+                                let anchor = visibleMessageId ?? items.first?.id
+                                Task {
+                                    await viewModel.loadOlder()
+                                    historyScrollAnchor = anchor
+                                    historyScrollRequest += 1
+                                }
+                            } label: {
+                                HStack {
+                                    if viewModel.isLoadingOlder { ProgressView() }
+                                    Text(viewModel.historyError == nil ? "Load older messages" : "Retry older messages")
+                                }
+                                .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                                .frame(maxWidth: .infinity)
+                            }
+                            .disabled(viewModel.isLoadingOlder)
+                            .accessibilityIdentifier("chat.loadOlder")
+                        }
+                        if items.isEmpty {
+                            EmptyStateView(
+                                symbol: "bubble.left.and.bubble.right",
+                                title: "No messages yet",
+                                message: "Say hi and coordinate meetup details with your group."
+                            )
+                        }
+                        ForEach(items) { message in
+                            ChatBubble(
+                                message: message,
+                                currentUserId: currentUserId,
+                                colorScheme: colorScheme
+                            )
+                            .id(message.id)
+                            .contextMenu {
+                                if message.userId != currentUserId {
+                                    Button {
+                                        reportMessage = message
+                                    } label: {
+                                        Label("Report message", systemImage: "exclamationmark.bubble")
+                                    }
+                                    Button(role: .destructive) {
+                                        userToBlock = message.userId
+                                    } label: {
+                                        Label("Block user", systemImage: "hand.raised")
                                     }
                                 }
                             }
                         }
-                        .padding(Spacing.m)
                     }
-                    .scrollDismissesKeyboard(.interactively)
-                    .onChange(of: items.count) { _, _ in
-                        if let last = items.last {
-                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-                                proxy.scrollTo(last.id, anchor: .bottom)
-                            }
-                        }
-                    }
-                    .onAppear {
-                        if let last = items.last {
+                    .scrollTargetLayout()
+                    .padding(Spacing.m)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .scrollPosition(id: $visibleMessageId, anchor: .top)
+                .onChange(of: historyScrollRequest) { _, _ in
+                    // Restore after SwiftUI has received the prepended rows.
+                    if let historyScrollAnchor { proxy.scrollTo(historyScrollAnchor, anchor: .top) }
+                }
+                .onChange(of: items.last?.id) { _, _ in
+                    if let last = items.last {
+                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
                             proxy.scrollTo(last.id, anchor: .bottom)
                         }
+                    }
+                }
+                .onAppear {
+                    if let last = items.last {
+                        proxy.scrollTo(last.id, anchor: .bottom)
                     }
                 }
             }

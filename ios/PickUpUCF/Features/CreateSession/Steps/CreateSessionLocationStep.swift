@@ -9,20 +9,27 @@ struct CreateSessionLocationStep: View {
             sectionHeader("Where")
                 .id(CreateSessionScrollAnchor.location)
 
-            if viewModel.venues.isEmpty {
+            if viewModel.isLoadingVenues {
                 HStack(spacing: Spacing.s) {
                     ProgressView()
                     Text("Loading venues…")
                         .font(AppFont.body())
                         .foregroundStyle(AppColor.textSecondary(colorScheme))
                 }
-            } else {
-                VStack(spacing: Spacing.s) {
-                    ForEach(viewModel.venues) { venue in
-                        venueCard(venue)
-                    }
-                    customLocationCard
+            }
+            if let error = viewModel.venueLoadError {
+                ErrorBanner(message: error)
+                SecondaryButton(title: "Reload campus venues") {
+                    Task { await viewModel.loadVenues() }
                 }
+            } else if !viewModel.isLoadingVenues && viewModel.venues.isEmpty {
+                FormFieldHint(text: "No campus venues are available. Choose a custom location below.")
+            }
+            VStack(spacing: Spacing.s) {
+                ForEach(viewModel.venues) { venue in
+                    venueCard(venue)
+                }
+                customLocationCard
             }
 
             if let error = viewModel.locationError {
@@ -77,7 +84,7 @@ struct CreateSessionLocationStep: View {
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppColor.gold)
+                        .foregroundStyle(AppColor.accent(colorScheme))
                 }
             }
             .padding(Spacing.m)
@@ -85,7 +92,7 @@ struct CreateSessionLocationStep: View {
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
-                        isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme).opacity(0.2),
+                        isSelected ? AppColor.accent(colorScheme) : AppColor.textSecondary(colorScheme).opacity(0.2),
                         lineWidth: isSelected ? 2 : 1
                     )
             }
@@ -99,12 +106,12 @@ struct CreateSessionLocationStep: View {
         let isSelected = viewModel.venuePickerOptionId == CreateSessionViewModel.customVenuePickerTag
 
         return Button {
-            viewModel.venuePickerOptionId = CreateSessionViewModel.customVenuePickerTag
+            viewModel.selectCustomLocation()
         } label: {
             HStack(spacing: Spacing.m) {
                 Image(systemName: "mappin.and.ellipse")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme))
+                    .foregroundStyle(isSelected ? AppColor.accent(colorScheme) : AppColor.textSecondary(colorScheme))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Custom location")
@@ -117,7 +124,7 @@ struct CreateSessionLocationStep: View {
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppColor.gold)
+                        .foregroundStyle(AppColor.accent(colorScheme))
                 }
             }
             .padding(Spacing.m)
@@ -125,7 +132,7 @@ struct CreateSessionLocationStep: View {
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
-                        isSelected ? AppColor.gold : AppColor.textSecondary(colorScheme).opacity(0.2),
+                        isSelected ? AppColor.accent(colorScheme) : AppColor.textSecondary(colorScheme).opacity(0.2),
                         lineWidth: isSelected ? 2 : 1
                     )
             }
@@ -138,7 +145,7 @@ struct CreateSessionLocationStep: View {
     private func selectedVenueSummary(_ venue: Venue) -> some View {
         HStack(spacing: Spacing.s) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(AppColor.gold)
+                .foregroundStyle(AppColor.accent(colorScheme))
             Text(venue.name)
                 .font(AppFont.caption(.semibold))
                 .foregroundStyle(AppColor.textSecondary(colorScheme))

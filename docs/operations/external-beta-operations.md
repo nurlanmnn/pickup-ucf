@@ -137,7 +137,7 @@ Stop external expansion for any crash loop, authentication outage, cross-account
 | Support mailbox ownership | This runbook | `CONFIRMED` | Nurlan Mammadli, September 30, 2026 |
 | Remaining named ownership | Private operations record | `OPEN` | `TBD` |
 | Moderator provisioning | Production `moderator_accounts` grant; identifiers excluded from Git | `CONFIRMED` | September 30, 2026 |
-| Reviewer account and synthetic content | This runbook and review packet; no identifiers in Git | `RLS VERIFIED; APP SIGN-IN OPEN` | October 4, 2026 |
+| Reviewer account and synthetic content | This runbook and review packet; no identifiers in Git | `RLS VERIFIED; APP SIGN-IN OWNER-CONFIRMED; CANDIDATE RECHECK OPEN` | October 4, 2026 |
 | RLS/role matrix | Redacted release evidence | `OPEN` | `TBD` |
 | Email flows | Redacted release evidence | `OPEN` | `TBD` |
 | Push/scheduler | Redacted release evidence | `OPEN` | `TBD` |

@@ -220,14 +220,9 @@ struct SessionDetailView: View {
 
     private func heroSection(_ session: PickupSession) -> some View {
         ZStack(alignment: .bottomLeading) {
-            AppTheme.sportCardGradient(session.sport, scheme: colorScheme)
-
-            Image(systemName: session.sport.systemImage)
-                .font(.system(size: 110, weight: .black))
-                .foregroundStyle(Color.white.opacity(0.12))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                .padding(.trailing, Spacing.m)
-                .accessibilityHidden(true)
+            CourtArtwork(sport: session.sport)
+            LinearGradient(colors: [.black.opacity(0.1), .black.opacity(0.75)],
+                           startPoint: .top, endPoint: .bottom)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
@@ -250,7 +245,7 @@ struct SessionDetailView: View {
             }
             .padding(Spacing.m)
         }
-        .frame(minHeight: 148)
+        .frame(minHeight: 216)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .appCardStyle(cornerRadius: 20)
     }
@@ -469,7 +464,7 @@ struct SessionDetailView: View {
                     Divider()
                     HStack(spacing: Spacing.s) {
                         Image(systemName: "clock")
-                            .foregroundStyle(AppColor.gold)
+                            .foregroundStyle(AppColor.accent(colorScheme))
                         Text(waitlistLabel)
                             .font(AppFont.caption(.semibold))
                             .foregroundStyle(AppColor.textSecondary(colorScheme))
@@ -536,7 +531,7 @@ struct SessionDetailView: View {
                 if member.role == .host {
                     Text("Host")
                         .font(AppFont.caption2(.semibold))
-                        .foregroundStyle(AppColor.gold)
+                        .foregroundStyle(AppColor.accent(colorScheme))
                 }
             }
 
@@ -545,7 +540,7 @@ struct SessionDetailView: View {
             if member.role == .host {
                 Image(systemName: "star.fill")
                     .font(.system(size: 12))
-                    .foregroundStyle(AppColor.gold)
+                    .foregroundStyle(AppColor.accent(colorScheme))
                     .accessibilityHidden(true)
             }
         }

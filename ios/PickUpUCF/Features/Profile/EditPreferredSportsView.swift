@@ -18,8 +18,13 @@ struct EditPreferredSportsView: View {
                         onToggle: { vm.toggleSport($0) }
                     )
                     .padding(Spacing.m)
+                    .disabled(vm.isLoading)
                 }
-
+            }
+            .padding(Spacing.m)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: Spacing.s) {
                 PrimaryButton(
                     title: "Save",
                     isLoading: vm.isLoading,
@@ -35,6 +40,8 @@ struct EditPreferredSportsView: View {
                 }
             }
             .padding(Spacing.m)
+            .appScreenBackground()
+            .overlay(alignment: .top) { Divider() }
         }
         .appScreenBackground()
         .navigationTitle("Edit sports")

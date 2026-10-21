@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct ForgotPasswordView: View {
-    @State private var email = ""
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
+    @State private var email: String
     @State private var isLoading = false
     @State private var didSend = false
     @State private var errorMessage: String?
@@ -9,6 +11,10 @@ struct ForgotPasswordView: View {
     @FocusState private var isEmailFocused: Bool
 
     private let repository: AuthRepositoryProtocol = AuthRepository()
+
+    init(email: String = "") {
+        _email = State(initialValue: email)
+    }
 
     var body: some View {
         ScrollView {
@@ -26,7 +32,7 @@ struct ForgotPasswordView: View {
 
                 FormCard {
                     FormFieldRow {
-                        TextField("UCF email", text: $email)
+                        TextField("UCF email", text: $email, prompt: Text("UCF email").foregroundColor(AppColor.textSecondary(colorScheme)))
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
@@ -40,9 +46,14 @@ struct ForgotPasswordView: View {
                     }
                 }
 
-                PrimaryButton(title: "Send reset link", isLoading: isLoading, isEnabled: !isLoading) {
+                .disabled(isLoading)
+
+                PrimaryButton(title: didSend ? "Send another link" : "Send reset link", isLoading: isLoading, isEnabled: !isLoading) {
                     Task { await sendReset() }
                 }
+                SecondaryButton(title: "Back to sign in") { dismiss() }
+                    .disabled(isLoading)
+                    .accessibilityIdentifier("reset-back-to-sign-in")
             }
             .padding(Spacing.m)
         }
@@ -50,6 +61,10 @@ struct ForgotPasswordView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnBackgroundTap()
+        .onChange(of: email) { _, _ in
+            didSend = false
+            errorMessage = nil
+        }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .formKeyboardAccessory(
@@ -60,6 +75,7 @@ struct ForgotPasswordView: View {
 
     @MainActor
     private func sendReset() async {
+        guard !isLoading else { return }
         errorMessage = nil
         showValidationHints = true
         isEmailFocused = false

@@ -92,7 +92,9 @@ struct MyGamesView: View {
                     EmptyStateView(
                         symbol: "calendar",
                         title: "No upcoming games",
-                        message: "Join a session from Discover or host your own from the Create tab."
+                        message: "Find a campus game and make it part of your week.",
+                        actionTitle: "Find a game",
+                        action: { appState.requestDiscover() }
                     )
                 } else {
                     sessionCards(items, vm: vm, currentUserId: currentUserId, showsLeave: true)
@@ -205,16 +207,9 @@ struct MyGamesView: View {
                     .clipShape(Capsule())
             }
 
-            // Gold accent line
             Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppColor.gold.opacity(0.5), AppColor.gold.opacity(0)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(height: 1.5)
+                .fill(AppColor.border(colorScheme))
+                .frame(height: 1)
         }
     }
 
@@ -227,18 +222,16 @@ struct MyGamesView: View {
     ) -> some View {
         LazyVStack(spacing: Spacing.m) {
             ForEach(items) { session in
-                NavigationLink(value: session.id) {
-                    SessionCard(
-                        session: session,
-                        isJoining: showsLeave && vm.leavingSessionId == session.id,
-                        actionTitle: showsLeave ? "Leave" : nil,
-                        isDestructiveAction: showsLeave,
-                        onJoin: showsLeave && session.hostId != currentUserId
-                            ? { Task { await vm.leave(session: session) } }
-                            : nil
-                    )
-                }
-                .buttonStyle(GameCardButtonStyle(sport: session.sport))
+                SessionCard(
+                    session: session,
+                    isJoining: showsLeave && vm.leavingSessionId == session.id,
+                    actionTitle: showsLeave ? "Leave" : nil,
+                    isDestructiveAction: showsLeave,
+                    onJoin: showsLeave && session.hostId != currentUserId
+                        ? { Task { await vm.leave(session: session) } }
+                        : nil,
+                    onOpen: { navigationPath.append(session.id) }
+                )
             }
         }
     }

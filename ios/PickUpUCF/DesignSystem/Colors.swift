@@ -1,42 +1,47 @@
 import SwiftUI
 
 enum AppColor {
-    static let gold = Color(red: 1.0, green: 0.788, blue: 0.016)
-    static let goldDark = Color(red: 0.9, green: 0.7, blue: 0.0)
-
-    // MARK: - Base surfaces
+    // Gold is reserved for filled actions and highlights; use accent for readable links.
+    static let gold = Color(red: 0.96, green: 0.76, blue: 0.24)
+    static let goldDark = Color(red: 0.77, green: 0.57, blue: 0.12)
+    static let courtGreen = Color(red: 0.16, green: 0.32, blue: 0.28)
+    static let courtClay = Color(red: 0.67, green: 0.32, blue: 0.23)
+    static let courtBlue = Color(red: 0.22, green: 0.37, blue: 0.48)
+    static let courtLine = Color(red: 0.96, green: 0.93, blue: 0.83)
 
     static func background(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.06) : .white
+        scheme == .dark ? Color(red: 0.07, green: 0.08, blue: 0.08)
+            : Color(red: 0.985, green: 0.978, blue: 0.96)
     }
 
     static func surface(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : .white
+        scheme == .dark ? Color(red: 0.115, green: 0.125, blue: 0.12) : .white
     }
 
-    // MARK: - Semantic elevation tokens
+    static func elevatedSurface(_ scheme: ColorScheme) -> Color { surface(scheme) }
 
-    /// Slightly raised surface — cards on a coloured background (light: pure white, dark: mid-grey).
-    static func elevatedSurface(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(red: 0.14, green: 0.14, blue: 0.15) : Color.white
-    }
-
-    /// Toned-down fill for secondary areas, tag backgrounds, skeleton placeholders.
     static func mutedSurface(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(red: 0.09, green: 0.09, blue: 0.10) : Color(red: 0.94, green: 0.94, blue: 0.93)
+        scheme == .dark ? Color(red: 0.16, green: 0.17, blue: 0.165)
+            : Color(red: 0.945, green: 0.935, blue: 0.91)
     }
 
-    // MARK: - Text
+    static func border(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.white.opacity(0.14) : Color.black.opacity(0.12)
+    }
 
     static func textPrimary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? .white : Color(red: 0.05, green: 0.05, blue: 0.05)
+        scheme == .dark ? Color(red: 0.96, green: 0.96, blue: 0.94)
+            : Color(red: 0.13, green: 0.15, blue: 0.14)
     }
 
     static func textSecondary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.55) : Color.black.opacity(0.50)
+        scheme == .dark ? Color(red: 0.69, green: 0.71, blue: 0.69)
+            : Color(red: 0.39, green: 0.41, blue: 0.39)
     }
 
-    // MARK: - Semantic state
+    static func accent(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? gold : textPrimary(scheme)
+    }
 
     static let destructive = Color.red
     static let success = Color.green

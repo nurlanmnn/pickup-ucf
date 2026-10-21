@@ -87,6 +87,7 @@ struct ModerationQueueView: View {
                         }
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
             }
         }
@@ -153,6 +154,8 @@ private struct ModerationReportView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .appScreenBackground()
         .navigationTitle("Review report")
         .navigationBarTitleDisplayMode(.inline)
     }

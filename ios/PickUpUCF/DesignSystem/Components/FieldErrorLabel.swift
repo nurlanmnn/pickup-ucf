@@ -6,6 +6,8 @@ struct FieldErrorLabel: View {
     var body: some View {
         Text(message)
             .font(AppFont.caption())
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
             .foregroundStyle(AppColor.destructive)
             .accessibilityLabel("Error: \(message)")
     }

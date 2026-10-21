@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct VerifyEmailView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -25,7 +26,7 @@ struct VerifyEmailView: View {
                         .font(AppFont.display(.bold))
                         .foregroundStyle(AppColor.textPrimary(colorScheme))
 
-                    Text("We sent a 6-digit code to")
+                    Text("Enter the 6-digit code for")
                         .font(AppFont.body())
                         .foregroundStyle(AppColor.textSecondary(colorScheme))
 
@@ -80,6 +81,7 @@ struct VerifyEmailView: View {
                             viewModel.otpCode = viewModel.normalizeOTP(newValue)
                         }
                         .accessibilityLabel("Verification code")
+                        .disabled(viewModel.isVerifying || viewModel.isResending)
                 }
 
                 PrimaryButton(
@@ -95,6 +97,14 @@ struct VerifyEmailView: View {
                 }
                 .disabled(!viewModel.canResend)
                 .opacity(viewModel.canResend ? 1 : 0.5)
+
+                Button("Use a different email") {
+                    isOTPFocused = false
+                    dismiss()
+                }
+                .font(AppFont.body(.semibold))
+                .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                .disabled(viewModel.isVerifying || viewModel.isResending)
             }
             .padding(Spacing.m)
         }
@@ -117,40 +127,13 @@ struct VerifyEmailView: View {
     }
 
     private var envelopeHero: some View {
-        ZStack {
-            // Soft gold glow halo
-            Circle()
-                .fill(AppColor.gold.opacity(0.12))
-                .frame(width: 116, height: 116)
-
-            // Gold gradient circle
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.goldDark],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 88, height: 88)
-
-            Image(systemName: "envelope.fill")
-                .font(.system(size: 38, weight: .medium))
-                .foregroundStyle(Color.black.opacity(0.65))
-        }
-        .overlay(
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        colors: [AppColor.gold, AppColor.gold.opacity(0.3)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 2.5
-                )
-                .frame(width: 94, height: 94)
-        )
-        .padding(.top, Spacing.m)
+        Image(systemName: "envelope")
+            .font(.system(size: 36, weight: .medium))
+            .foregroundStyle(AppColor.courtLine)
+            .frame(width: 88, height: 88)
+            .background(AppColor.courtGreen, in: RoundedRectangle(cornerRadius: 24))
+            .padding(.vertical, Spacing.m)
+            .accessibilityHidden(true)
     }
 
     @MainActor

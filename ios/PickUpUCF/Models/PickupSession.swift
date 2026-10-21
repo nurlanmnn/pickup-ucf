@@ -113,9 +113,19 @@ struct PickupSession: Codable, Identifiable, Equatable {
     }
 }
 
-struct SessionInsert: Encodable {
-    let hostId: UUID
+struct CreateSessionRPCParams: Encodable {
+    let requestId: UUID
+    let input: SessionCreationFields
+
+    enum CodingKeys: String, CodingKey {
+        case requestId = "p_request_id"
+        case input = "p_input"
+    }
+}
+
+struct SessionCreationFields: Encodable {
     let sport: SportType
+    let customSportName: String?
     let venueId: UUID?
     let customLocation: String?
     let customLat: Double?
@@ -123,14 +133,13 @@ struct SessionInsert: Encodable {
     let startsAt: Date
     let endsAt: Date
     let capacity: Int
-    let playerCount: Int
     let skillLevel: SkillLevel
     let notes: String?
     let recurrenceRule: String?
 
     enum CodingKeys: String, CodingKey {
-        case hostId = "host_id"
         case sport
+        case customSportName = "custom_sport_name"
         case venueId = "venue_id"
         case customLocation = "custom_location"
         case customLat = "custom_lat"
@@ -138,23 +147,9 @@ struct SessionInsert: Encodable {
         case startsAt = "starts_at"
         case endsAt = "ends_at"
         case capacity
-        case playerCount = "player_count"
         case skillLevel = "skill_level"
         case notes
         case recurrenceRule = "recurrence_rule"
-    }
-}
-
-struct HostParticipantInsert: Encodable {
-    let sessionId: UUID
-    let userId: UUID
-    let role: ParticipantRole
-    let status: ParticipantStatus
-
-    enum CodingKeys: String, CodingKey {
-        case sessionId = "session_id"
-        case userId = "user_id"
-        case role, status
     }
 }
 

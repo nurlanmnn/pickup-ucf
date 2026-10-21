@@ -213,7 +213,7 @@ private enum DiscoverMapPinRenderer {
         let size = CGSize(width: 40, height: 40)
         let image = UIGraphicsImageRenderer(size: size).image { _ in
             let rect = CGRect(origin: .zero, size: size)
-            let gold = UIColor(red: 1.0, green: 0.788, blue: 0.016, alpha: 1.0)
+            let gold = UIColor(AppColor.gold)
 
             gold.setFill()
             UIBezierPath(ovalIn: rect.insetBy(dx: 1, dy: 1)).fill()
