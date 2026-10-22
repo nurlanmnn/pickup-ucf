@@ -6,7 +6,7 @@ This file contains TestFlight metadata for the first external beta. Verify candi
 
 - App: PickUp UCF
 - Bundle ID: `edu.ucf.pickup`
-- Prepared version/build: `1.0 (5)` — local candidate; upload/processing and device acceptance pending
+- Candidate version/build: `1.0 (5)` — processed and Testing internally; device acceptance pending
 - Candidate source commit: `53ac5c7a197955f606afdcc06a0f1029a8a0e455`
 - Production migration head: `20261022170532` verified in the October 22 rollout; recheck if the backend changes
 - Submitted by/date: `TBD`
@@ -162,3 +162,12 @@ behavior before saving these as candidate-specific What to Test. Vercel/AASA/CDN
 hosted allowlists and the email hook were deployed and checked October 22. Local
 build 1.0 (5) replaces build 4 metadata; no upload or device pass is implied. See
 [build 5 evidence and acceptance](2026-10-22-build-5.md).
+
+
+## Build 5 internal distribution update
+
+The owner authorized upload for internal testing. Build 5 is processed and Testing
+in the existing Internal Testers group. Export compliance was saved following an
+OS-cryptography source/build check. Internal What to Test is saved. No external
+submission/invitation occurred; external readiness and exact-candidate device gates
+remain open. See the [build 5 record](2026-10-22-build-5.md).

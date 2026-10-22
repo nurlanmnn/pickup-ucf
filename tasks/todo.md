@@ -23,8 +23,11 @@ Local signed Release archive and App Store IPA export passed for version 1.0 (5)
 source `53ac5c7`. Exported app/widget signatures and App Store profiles verify;
 production APNs and Associated Domains are present. See
 [build 5 provenance and acceptance](../docs/testflight/2026-10-22-build-5.md).
-Upload authorization, Apple validation/processing, internal installation and all
-exact-candidate physical/provider checks remain open. The paired iPhone is unavailable.
+Owner subsequently approved upload for internal testing. Upload succeeded at
+2:48 PM America/New_York; Apple processing is Complete, export compliance saved,
+and build 5 is Testing in the existing one-tester Internal Testers group. What to
+Test is saved. Internal installation and exact-candidate physical/provider checks
+remain open. No external invitation or Beta App Review submission occurred.
 
 # Previous work — October 22, 2026
 

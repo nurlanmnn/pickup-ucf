@@ -1002,3 +1002,14 @@ build-number/archive/provisioning preparation gap. See
 [build 5 record](../../testflight/2026-10-22-build-5.md). No upload or Apple server
 validation/processing occurred. Device/provider acceptance and release gates remain
 open; historical owner attestation does not establish this candidate's acceptance.
+
+
+## October 22 — Build 5 internal distribution
+
+The owner approved upload. Xcode upload succeeded at 2:48 PM America/New_York.
+App Store Connect independently confirms build 1.0 (5) processing Complete,
+export compliance saved, and Testing status in the existing Internal Testers group
+(one existing tester). Candidate-specific What to Test is saved. Build ID:
+`1d97439c-57b6-487f-841b-f75ee1c371f2`. This supersedes the prior no-upload status.
+See the build 5 record for encryption evidence. No Beta App Review submission,
+new tester invitation or physical/provider acceptance was performed.
