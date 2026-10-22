@@ -1,6 +1,22 @@
-# Current work — October 22, 2026
+# Current work — Calendar and secure HTTPS links
 
-Continue with [input boundaries and launch gates](../docs/superpowers/plans/2026-10-22-input-boundaries-and-launch-gates.md). BETA-08 changes are preserved on `codex/realtime-chat-recovery`. BETA-03, explicit RPC/mutation grants, serialized leave, contextual notification consent and account-local cleanup now have local implementation. Production exposed RPC grants and missing October notification migrations were confirmed read-only. The owner chose anonymized retained games; deletion, null-host UI, chat reconciliation and relaunch cleanup now have local coverage. Production/device/App Store gates remain open. No commit, push or deployment was performed. Earlier test-host bootstrap refreshed one existing production profile/token registration; the incident and the now-enforced synthetic test isolation are recorded in the focused plan.
+The reviewed chat/input/security/account lifecycle snapshot is on `origin/main` at `c18ef78`. Continue [BETA-05 calendar write-only](../docs/superpowers/plans/2026-10-22-calendar-write-only.md) on `codex/calendar-write-only`. Calendar exports are independent saved copies with local duplicate receipts, explicit replacement confirmation and Settings recovery. Physical EventKit and production/device release gates remain separate.
+
+Local BETA-07 preparation uses the existing free Vercel host; see
+[secure auth links](../docs/superpowers/plans/2026-10-22-secure-auth-links.md).
+HTTPS routes, AASA/entitlements, safe fallback pages, exact callback validation,
+provider recovery-link correction and new-password completion are prepared.
+They remain uncommitted and require coordinated Vercel/auth configuration,
+email-function deployment, signing and device acceptance. A fresh read-only
+production check still finds nine pending migrations and exposed enqueue grants.
+No production mutation, publication, commit, push or upload was performed.
+Final local validation: 261/261 isolated signed simulator tests, 39/39 Edge
+Function tests, unsigned Release build/analyzer and diff checks passed. Evidence
+and exact external gates are recorded in the secure-auth-links plan.
+
+# Previous work — October 22, 2026
+
+Continue with [input boundaries and launch gates](../docs/superpowers/plans/2026-10-22-input-boundaries-and-launch-gates.md). BETA-08 changes are preserved on `codex/realtime-chat-recovery`. BETA-03, explicit RPC/mutation grants, serialized leave, contextual notification consent and account-local cleanup now have local implementation. Production exposed RPC grants and missing October notification migrations were confirmed read-only. The owner chose anonymized retained games; deletion, null-host UI, chat reconciliation and relaunch cleanup now have local coverage. Production/device/App Store gates remain open. This source snapshot was committed and pushed to main as `c18ef78` on October 22; production deployment remains open. Earlier test-host bootstrap refreshed one existing production profile/token registration; the incident and the now-enforced synthetic test isolation are recorded in the focused plan.
 
 # Previous work — October 21, 2026
 

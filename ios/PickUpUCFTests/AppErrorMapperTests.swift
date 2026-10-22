@@ -224,10 +224,11 @@ final class AppErrorMapperTests: XCTestCase {
             (ReportRepositoryError.invalidTarget, "This item can’t be reported or is no longer available."),
             (ProfileRepositoryError.missingDisplayName, "Display name is required for your profile."),
             (ProfileRepositoryError.preferredSportsRequired, "Select at least one sport."),
-            (CalendarExportError.accessDenied, "Calendar access is required to save this game."),
-            (CalendarExportError.alreadyAdded, "This game is already in your calendar."),
+            (CalendarExportError.accessDenied, "Allow adding events in Settings to save this game to Calendar."),
+            (CalendarExportError.alreadyAdded, "This game was previously added to Calendar."),
             (CalendarExportError.saveFailed, "Could not save this game to your calendar."),
-            (CalendarExportError.removeFailed, "Could not remove this cancelled game from your calendar."),
+            (CalendarExportError.accessRestricted, "Calendar access is restricted on this device. Check with your device administrator or parental controls."),
+            (CalendarExportError.noWritableCalendar, "Set up a writable calendar in Calendar, then try again."),
         ]
 
         for (error, expected) in cases {

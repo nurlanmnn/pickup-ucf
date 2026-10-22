@@ -83,7 +83,7 @@ After sign-in, the primary tabs are Discover, My Games, Create, and Profile:
 - **Notifications:** Notification permission is requested in context. Notification settings are under Profile → Settings. Background delivery depends on APNs and may take up to 90 seconds during the beta test.
 - **Live Activity and widget extension:** Join an eligible near-term seeded game, then view its Live Activity on the Lock Screen or Dynamic Island on a supported iPhone. The widget extension provides this Live Activity; there is no separate Home Screen widget. It ends when the game ends, is cancelled, or the user leaves.
 - **Deep links:** Tap a session or chat notification to open the authorized destination. Notification delivery requires permission and a second controlled account to trigger an event; the seeded content remains browsable without notifications.
-- **Calendar:** Open a game detail and tap **Add to Calendar**. Calendar access is requested only after this action.
+- **Calendar:** Open a game detail and tap **Add to Calendar**. Write-only access is requested only after this action. Saved copies are independent: game edits/cancellations do not update them. Edit/remove copies in Calendar. Adding another copy requires confirmation.
 - **Privacy and support:** Profile → Settings contains Community rules, Privacy Policy, Terms of Use, blocked users, and Contact support. Public pages: Privacy Policy https://pickup-ucf-privacy.vercel.app/ ; Terms of Use https://pickup-ucf-privacy.vercel.app/terms.html ; Community Guidelines https://pickup-ucf-privacy.vercel.app/community-guidelines.html . Support: support.roomateapp@gmail.com .
 - **Account deletion:** Profile → Settings → Delete account shows the irreversible-action confirmation and deletes the disposable account. Please avoid deleting the shared reviewer account; contact us if this flow must be tested so we can provide a separate disposable account.
 
@@ -147,3 +147,16 @@ Do not select the Kids category. Record App Store Connect’s calculated rating 
 **App Store Connect save verification (2026-10-04):** After an initial validation failure caused by incomplete contact information, the release owner entered the private phone number and reviewer password directly in App Store Connect. A reload of **TestFlight → Test Information** showed the beta description, feedback email, privacy URL, contact fields, sign-in requirement, username, password field, and review notes persisted, with no validation banner and Save disabled because there were no pending edits. No review submission was made. The phone number and password are intentionally absent from this file.
 
 **Reviewer app check (2026-10-04):** The release owner reported signing in with the dedicated reviewer account in TestFlight and checking the seeded experience successfully. The report did not include the build, device/OS, fresh-install status, or a separate result for each join, chat, report, block, Live Activity, and account-deletion action. Production reviewer-scoped RLS previously confirmed the seeded rows were accessible and the reviewer was not a moderator. Refresh the near-term game before submission if its start time has passed.
+
+
+## Pending October 22 candidate notes
+
+These notes describe local source, not a processed TestFlight build. Calendar uses
+write-only permission with Settings recovery and local export receipts. HTTPS game
+and password-reset links use the existing Vercel host after association/auth rollout.
+Password recovery must be requested and completed on the same app installation;
+a successful link exchange opens a new-password form. Expired/replayed/wrong-install
+links require a fresh request. Custom-scheme auth callbacks are rejected. Verify
+Vercel AASA/CDN, hosted allowlists, email hook, signed entitlements and physical-device
+behavior before saving these as candidate-specific What to Test. Build 1.0 (4) is
+still existing local metadata; no new upload is implied.

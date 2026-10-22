@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [{
+      "appIDs": ["AS53KCG63V.edu.ucf.pickup"],
+      "components": [
+        { "/": "/auth/reset-password", "comment": "PKCE password recovery" },
+        { "/": "/auth/confirm", "comment": "Email confirmation callback" },
+        { "/": "/session/*", "comment": "Game details, subject to app authentication and server authorization" }
+      ]
+    }]
+  }
+}

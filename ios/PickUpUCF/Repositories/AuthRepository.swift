@@ -89,7 +89,7 @@ final class AuthRepository: AuthRepositoryProtocol {
     func requestPasswordReset(email: String) async throws {
         try await client.auth.resetPasswordForEmail(
             email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines),
-            redirectTo: URL(string: "pickupucf://auth/reset-password")
+            redirectTo: DeepLinkRouter.passwordResetURL
         )
     }
 
@@ -104,6 +104,12 @@ final class AuthRepository: AuthRepositoryProtocol {
     }
 
     func handleAuthDeepLink(url: URL) async throws {
+        switch DeepLinkRouter.destination(from: url) {
+        case .confirmEmail, .resetPassword:
+            break
+        default:
+            throw AuthRepositoryError.invalidCallback
+        }
         try await client.auth.session(from: url)
     }
 
@@ -149,11 +155,13 @@ final class AuthRepository: AuthRepositoryProtocol {
 }
 
 enum AuthRepositoryError: LocalizedError {
+    case invalidCallback
     case missingEmail
     case emailNotConfirmed
 
     var errorDescription: String? {
         switch self {
+        case .invalidCallback: return "This sign-in link is invalid. Request a new link from the app."
         case .missingEmail: return "Account email is missing."
         case .emailNotConfirmed: return "Please verify your email before signing in."
         }

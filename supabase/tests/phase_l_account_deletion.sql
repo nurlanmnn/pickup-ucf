@@ -102,6 +102,13 @@ BEGIN
   IF public.spawn_next_recurring_session(v_completed) IS NOT NULL THEN
     RAISE EXCEPTION 'deleted host spawned another game';
   END IF;
+  -- Scheduled cleanup must tolerate null-host games and still reach surviving players.
+  PERFORM public.enqueue_finished_session_cleanup();
+  PERFORM public.enqueue_finished_session_cleanup();
+  IF NOT EXISTS(SELECT 1 FROM public.notification_outbox WHERE user_id=v_other
+      AND session_id=v_hosted AND type='session_finished') THEN
+    RAISE EXCEPTION 'anonymized-game cleanup missed surviving player';
+  END IF;
   RAISE NOTICE 'phase_l_account_deletion: anonymized history, counts, tokens, previews and retry OK';
 END; $$;
 

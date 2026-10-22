@@ -42,48 +42,164 @@ final class CalendarExportServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testRemoveFromCalendarDeletesStoredEventAndIdentifier() throws {
+    func testWriteOnlyRetainsReceiptWithoutReadingEvent() {
         let sessionId = UUID()
         let storage = CalendarExportEventStorageSpy()
-        storage.setEventIdentifier("event-123", for: sessionId)
-        let eventStore = CalendarEventStoreSpy()
-        eventStore.eventsByIdentifier["event-123"] = eventStore.makeEvent()
-        let service = CalendarExportService(eventStore: eventStore, storage: storage)
-
-        let removed = try service.removeFromCalendar(sessionId: sessionId)
-
-        XCTAssertTrue(removed)
-        XCTAssertEqual(eventStore.removedEventCount, 1)
-        XCTAssertNil(storage.eventIdentifier(for: sessionId))
+        storage.setEventIdentifier("legacy-export", for: sessionId)
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .writeOnly
+        let service = CalendarExportService(eventStore: store, storage: storage)
+        XCTAssertTrue(service.hasExportReceipt(sessionId: sessionId))
+        XCTAssertEqual(storage.eventIdentifier(for: sessionId), "legacy-export")
     }
 
     @MainActor
-    func testRemoveFromCalendarClearsIdentifierWhenEventNoLongerExists() throws {
-        let sessionId = UUID()
-        let storage = CalendarExportEventStorageSpy()
-        storage.setEventIdentifier("missing-event", for: sessionId)
-        let eventStore = CalendarEventStoreSpy()
-        let service = CalendarExportService(eventStore: eventStore, storage: storage)
-
-        let removed = try service.removeFromCalendar(sessionId: sessionId)
-
-        XCTAssertTrue(removed)
-        XCTAssertEqual(eventStore.removedEventCount, 0)
-        XCTAssertNil(storage.eventIdentifier(for: sessionId))
+    func testDeniedDoesNotRequestPermissionAgain() async {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .denied
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        do {
+            try await service.addToCalendar(session: makeSession())
+            XCTFail("Expected denial")
+        } catch {}
+        XCTAssertEqual(store.permissionRequestCount, 0)
+        XCTAssertEqual(store.saveCount, 0)
     }
 
     @MainActor
-    func testRemoveFromCalendarKeepsIdentifierWhenDeletionFails() {
-        let sessionId = UUID()
-        let storage = CalendarExportEventStorageSpy()
-        storage.setEventIdentifier("event-123", for: sessionId)
-        let eventStore = CalendarEventStoreSpy()
-        eventStore.eventsByIdentifier["event-123"] = eventStore.makeEvent()
-        eventStore.removeError = CalendarEventStoreSpy.TestError.removeFailed
-        let service = CalendarExportService(eventStore: eventStore, storage: storage)
+    func testSuccessfulSaveWithoutReadableIdentifierPreventsDuplicate() async throws {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .writeOnly
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        let session = makeSession()
+        try await service.addToCalendar(session: session)
+        do {
+            try await service.addToCalendar(session: session)
+            XCTFail("Expected duplicate rejection")
+        } catch CalendarExportError.alreadyAdded {} catch { XCTFail("Wrong failure") }
+        XCTAssertEqual(store.saveCount, 1)
+        XCTAssertEqual(store.permissionRequestCount, 0)
+    }
 
-        XCTAssertThrowsError(try service.removeFromCalendar(sessionId: sessionId))
-        XCTAssertEqual(storage.eventIdentifier(for: sessionId), "event-123")
+    @MainActor
+    func testInitialAllowRequestsWriteOnlyAndSavesExpectedFields() async throws {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .notDetermined
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        let session = makeSession()
+        try await service.addToCalendar(session: session)
+        XCTAssertEqual(store.permissionRequestCount, 1)
+        XCTAssertEqual(store.authorizationStatus, .writeOnly)
+        XCTAssertEqual(store.savedEvent?.title, "Basketball · Campus court")
+        XCTAssertEqual(store.savedEvent?.startDate, session.startsAt)
+        XCTAssertEqual(store.savedEvent?.endDate, session.endsAt)
+        XCTAssertEqual(store.savedEvent?.location, session.locationName)
+        XCTAssertTrue(store.savedEvent?.notes?.contains("Bring water") == true)
+        XCTAssertTrue(store.savedEvent?.notes?.contains(SessionShareLink.url(for: session.id).absoluteString) == true)
+    }
+
+    @MainActor
+    func testInitialDenialAndSettingsRecovery() async throws {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .notDetermined
+        store.permissionGranted = false
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        let session = makeSession()
+        do {
+            try await service.addToCalendar(session: session)
+            XCTFail("Expected denial")
+        } catch CalendarExportError.accessDenied {} catch { XCTFail("Wrong failure") }
+        XCTAssertFalse(service.hasExportReceipt(sessionId: session.id))
+        XCTAssertEqual(store.saveCount, 0)
+        store.authorizationStatus = .writeOnly // User enables access in Settings.
+        try await service.addToCalendar(session: session)
+        XCTAssertEqual(store.permissionRequestCount, 1)
+        XCTAssertEqual(store.saveCount, 1)
+    }
+
+    @MainActor
+    func testRestrictedDoesNotPromptOrSave() async {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .restricted
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        do {
+            try await service.addToCalendar(session: makeSession())
+            XCTFail("Expected restriction")
+        } catch CalendarExportError.accessRestricted {} catch { XCTFail("Wrong failure") }
+        XCTAssertEqual(store.permissionRequestCount, 0)
+        XCTAssertEqual(store.saveCount, 0)
+    }
+
+    @MainActor
+    func testMissingCalendarDoesNotRecordExportAndCanRetry() async throws {
+        let store = CalendarEventStoreSpy()
+        store.hasCalendar = false
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        let session = makeSession()
+        do {
+            try await service.addToCalendar(session: session)
+            XCTFail("Expected no writable destination")
+        } catch CalendarExportError.noWritableCalendar {} catch { XCTFail("Wrong failure") }
+        XCTAssertFalse(service.hasExportReceipt(sessionId: session.id))
+        store.hasCalendar = true
+        try await service.addToCalendar(session: session)
+        XCTAssertEqual(store.saveCount, 1)
+    }
+
+    @MainActor
+    func testExplicitReplacementAfterExternalDeletionAndFailedSaveKeepsReceipt() async throws {
+        let session = makeSession()
+        let storage = CalendarExportEventStorageSpy()
+        storage.setEventIdentifier("legacy-export", for: session.id)
+        let store = CalendarEventStoreSpy() // External Calendar event is absent.
+        let service = CalendarExportService(eventStore: store, storage: storage)
+        store.saveError = CalendarEventStoreSpy.TestError.saveFailed
+        do {
+            try await service.addToCalendar(session: session, allowAnotherCopy: true)
+            XCTFail("Expected save failure")
+        } catch CalendarExportError.saveFailed {} catch { XCTFail("Wrong failure") }
+        XCTAssertEqual(storage.eventIdentifier(for: session.id), "legacy-export")
+        store.saveError = nil
+        try await service.addToCalendar(session: session, allowAnotherCopy: true)
+        XCTAssertTrue(service.hasExportReceipt(sessionId: session.id))
+        XCTAssertEqual(store.saveCount, 1)
+    }
+
+    @MainActor
+    func testRevokedPermissionKeepsPriorExportReceipt() {
+        let session = makeSession()
+        let storage = CalendarExportEventStorageSpy()
+        storage.setEventIdentifier("legacy-export", for: session.id)
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .denied
+        let service = CalendarExportService(eventStore: store, storage: storage)
+        XCTAssertTrue(service.hasExportReceipt(sessionId: session.id))
+    }
+
+    @MainActor
+    func testCancelledTaskDoesNotSaveOrRecordExport() async {
+        let store = CalendarEventStoreSpy()
+        store.authorizationStatus = .notDetermined
+        let service = CalendarExportService(eventStore: store, storage: CalendarExportEventStorageSpy())
+        let session = makeSession()
+        let task = Task { @MainActor in
+            withUnsafeCurrentTask { $0?.cancel() }
+            do {
+                try await service.addToCalendar(session: session)
+                XCTFail("Expected cancellation")
+            } catch is CancellationError {} catch { XCTFail("Wrong failure") }
+        }
+        await task.value
+        XCTAssertEqual(store.saveCount, 0)
+        XCTAssertFalse(service.hasExportReceipt(sessionId: session.id))
+        XCTAssertEqual(store.permissionRequestCount, 0)
+    }
+
+    private func makeSession() -> PickupSession {
+        PickupSession(id: UUID(), hostId: UUID(), sport: .basketball,
+                      customLocation: "Campus court", startsAt: Date(timeIntervalSince1970: 1_800_000_000),
+                      endsAt: Date(timeIntervalSince1970: 1_800_003_600), capacity: 10,
+                      playerCount: 1, skillLevel: .any, notes: "Bring water", status: .open)
     }
 
     func testCancellationSessionIdRequiresCancellationTypeAndValidSessionId() {
@@ -122,34 +238,36 @@ private final class CalendarExportEventStorageSpy: CalendarExportEventStoragePro
 @MainActor
 private final class CalendarEventStoreSpy: CalendarEventStoreProtocol {
     enum TestError: Error {
-        case removeFailed
+        case saveFailed
     }
 
     var authorizationStatus: EKAuthorizationStatus = .fullAccess
-    var eventsByIdentifier: [String: EKEvent] = [:]
-    var removedEventCount = 0
-    var removeError: Error?
+    var permissionRequestCount = 0
+    var saveCount = 0
+    var permissionGranted = true
+    var saveError: Error?
+    var hasCalendar = true
+    var savedEvent: EKEvent?
 
     private let backingStore = EKEventStore()
 
-    var defaultCalendarForNewEvents: EKCalendar? { nil }
+    var defaultCalendarForNewEvents: EKCalendar? {
+        hasCalendar ? EKCalendar(for: .event, eventStore: backingStore) : nil
+    }
 
     func makeEvent() -> EKEvent {
         EKEvent(eventStore: backingStore)
     }
 
-    func event(withIdentifier identifier: String) -> EKEvent? {
-        eventsByIdentifier[identifier]
+    func save(_ event: EKEvent, span: EKSpan) throws {
+        if let saveError { throw saveError }
+        savedEvent = event
+        saveCount += 1
     }
 
-    func save(_ event: EKEvent, span: EKSpan) throws {}
-
-    func remove(_ event: EKEvent, span: EKSpan) throws {
-        if let removeError { throw removeError }
-        removedEventCount += 1
-    }
-
-    func requestFullAccessToEvents() async throws -> Bool {
-        true
+    func requestWriteOnlyAccessToEvents() async throws -> Bool {
+        permissionRequestCount += 1
+        authorizationStatus = permissionGranted ? .writeOnly : .denied
+        return permissionGranted
     }
 }

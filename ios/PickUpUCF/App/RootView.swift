@@ -8,7 +8,10 @@ struct RootView: View {
     var body: some View {
         Group {
             if appState.isAuthenticated {
-                if appState.needsOnboarding {
+                if let recoveryId = appState.passwordRecoveryUserId,
+                   recoveryId == appState.session?.userId {
+                    NavigationStack { ResetPasswordView(userId: recoveryId) }
+                } else if appState.needsOnboarding {
                     OnboardingView()
                 } else {
                     MainTabView()

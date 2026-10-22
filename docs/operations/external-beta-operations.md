@@ -75,7 +75,7 @@ Record the candidate build, migration parity timestamp, disposable account ident
 2. Confirm an invalid or expired verification link fails with safe recovery guidance.
 3. Request a password reset and confirm the reset email arrives once.
 4. Confirm a used or expired reset link cannot be reused.
-5. Confirm the app returns to an authorized screen after a successful reset.
+5. Confirm the HTTPS callback exchanges a PKCE code only on the requesting installation, presents the new-password form, saves the new password, and permits subsequent sign-in. Test wrong-install, replay/expiry, relaunch and error recovery.
 6. Confirm Brevo/email-hook failures are visible to the operations owner without leaking message content or credentials.
 
 Record timestamps, delivery latency, build number, and pass/fail.

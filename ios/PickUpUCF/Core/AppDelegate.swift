@@ -67,7 +67,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     ) {
         defer { completionHandler() }
         let userInfo = response.notification.request.content.userInfo
-        removeCalendarEventIfCancelled(userInfo)
+        cleanUpCancelledSessionNotification(userInfo)
         guard let urlString = userInfo["url"] as? String,
               let url = URL(string: urlString),
               case .session(let id) = DeepLinkRouter.destination(from: url) else { return }
@@ -83,7 +83,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        removeCalendarEventIfCancelled(notification.request.content.userInfo)
+        cleanUpCancelledSessionNotification(notification.request.content.userInfo)
         // Preserve the existing behavior of suppressing banners while foregrounded.
         completionHandler([])
     }
@@ -101,14 +101,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
             await SessionNotificationCleanup.removeDelivered(sessionId: sessionId)
-            if PushNotificationPayload.cancellationSessionId(from: userInfo) != nil {
-                _ = try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
-            }
             completionHandler(.newData)
         }
     }
 
-    private func removeCalendarEventIfCancelled(_ userInfo: [AnyHashable: Any]) {
+    private func cleanUpCancelledSessionNotification(_ userInfo: [AnyHashable: Any]) {
         guard let sessionId = PushNotificationPayload.cancellationSessionId(from: userInfo) else {
             return
         }
@@ -116,7 +113,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         GameLiveActivityCoordinator.end(forSessionId: sessionId)
         Task { @MainActor in
             await SessionNotificationCleanup.removeDelivered(sessionId: sessionId)
-            _ = try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)
         }
     }
 }

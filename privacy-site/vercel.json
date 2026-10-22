@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/auth/reset-password", "destination": "/auth-fallback.html" },
+    { "source": "/auth/confirm", "destination": "/auth-fallback.html" },
+    { "source": "/session/:id", "destination": "/session-fallback.html" }
+  ],
+  "headers": [
+    { "source": "/.well-known/apple-app-site-association", "headers": [
+      { "key": "Content-Type", "value": "application/json" }
+    ]},
+    { "source": "/(.*)", "headers": [
+      { "key": "Referrer-Policy", "value": "no-referrer" },
+      { "key": "X-Content-Type-Options", "value": "nosniff" }
+    ]},
+    { "source": "/auth/:path*", "headers": [
+      { "key": "Cache-Control", "value": "no-store" },
+      { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+      { "key": "Content-Security-Policy", "value": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }
+    ]}
+  ]
+}

@@ -25,6 +25,9 @@ struct PickUpUCFApp: App {
             .onOpenURL { url in
                 handleDeepLink(url)
             }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                if let url = activity.webpageURL { handleDeepLink(url) }
+            }
             .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
                 guard let target = note.object as? PushNavigationTarget else { return }
                 appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
@@ -75,6 +78,10 @@ struct PickUpUCFApp: App {
                     try await AuthRepository().handleAuthDeepLink(url: url)
                     if let session = await AuthRepository().currentSession() {
                         await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
+                        if case .resetPassword = destination,
+                           appState.session?.userId == session.userId {
+                            appState.passwordRecoveryUserId = session.userId
+                        }
                     }
                 } catch {
                     appState.showError(error)
@@ -123,6 +130,7 @@ final class AppState {
     private var sessionDetailOpenChatId: UUID?
     /// True when the signed-in user has not finished first-run onboarding.
     var needsOnboarding = false
+    var passwordRecoveryUserId: UUID?
     /// Incremented to request presenting Create session from tabs (e.g. Discover host nudge).
     private(set) var createSessionRequestNonce = 0
     private(set) var discoverRequestNonce = 0
@@ -132,6 +140,7 @@ final class AppState {
         AccountLocalDataCleanup.clear()
         clearBanner()
         needsOnboarding = false
+        passwordRecoveryUserId = nil
         sessionDetailDeepLink = nil
         sessionDetailDeepLinkTarget = .discover
         pendingSessionDeepLink = nil

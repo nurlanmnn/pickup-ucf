@@ -63,7 +63,10 @@ function verifyPayload(body: string, req: Request): SendEmailHookPayload {
   }
 
   const headers = webhookHeaders(req);
-  return new Webhook(signingSecret).verify(body, headers) as SendEmailHookPayload;
+  return new Webhook(signingSecret).verify(
+    body,
+    headers,
+  ) as SendEmailHookPayload;
 }
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
@@ -73,7 +76,7 @@ function jsonResponse(body: Record<string, unknown>, status: number): Response {
   });
 }
 
-Deno.serve(async (req) => {
+export async function handler(req: Request): Promise<Response> {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
@@ -83,7 +86,9 @@ Deno.serve(async (req) => {
   const senderName = Deno.env.get("BREVO_SENDER_NAME") ?? "PickUp UCF";
 
   if (!apiKey || !senderEmail) {
-    console.error("send-auth-email: missing BREVO_API_KEY or BREVO_SENDER_EMAIL");
+    console.error(
+      "send-auth-email: missing BREVO_API_KEY or BREVO_SENDER_EMAIL",
+    );
     return jsonResponse({ error: "Email service not configured" }, 500);
   }
 
@@ -141,17 +146,46 @@ Deno.serve(async (req) => {
     textContent =
       `Your PickUp UCF verification code is ${otp}. It expires in ${expiryMinutes} minutes.`;
   } else if (action === "recovery") {
-    const confirmUrl =
-      data.redirect_to ||
-      `${data.site_url}?token=${data.token_hash}&type=${action}`;
+    // redirect_to is a destination, not a provider verification link. Verify the
+    // hash at GoTrue so the requesting install receives its PKCE exchange code.
+    let confirmUrl: string;
+    try {
+      const expectedRedirect =
+        "https://pickup-ucf-privacy.vercel.app/auth/reset-password";
+      if (data.redirect_to !== expectedRedirect || !data.token_hash?.trim()) {
+        throw new Error("Invalid recovery configuration");
+      }
+      const base = new URL(Deno.env.get("SUPABASE_URL") ?? "");
+      if (
+        base.protocol !== "https:" || base.username || base.password ||
+        base.search || base.hash || base.pathname !== "/"
+      ) {
+        throw new Error("Invalid auth service origin");
+      }
+      const verify = new URL("/auth/v1/verify", base);
+      verify.search = new URLSearchParams({
+        token: data.token_hash,
+        type: "recovery",
+        redirect_to: expectedRedirect,
+      }).toString();
+      confirmUrl = verify.toString();
+    } catch {
+      console.error("send-auth-email: invalid recovery link configuration");
+      return jsonResponse({ error: "Recovery email unavailable" }, 500);
+    }
+    const escapedConfirmUrl = confirmUrl.replaceAll("&", "&amp;").replaceAll(
+      '"',
+      "&quot;",
+    );
     subject = "Reset your PickUp UCF password";
     htmlContent = `
       <p>Reset your PickUp UCF password using this link:</p>
-      <p><a href="${confirmUrl}">Reset password</a></p>
-      <p>Or enter this code in the app if prompted: <strong>${otp}</strong></p>
-      <p>This link/code expires in <strong>${expiryMinutes} minutes</strong>.</p>
+      <p><a href="${escapedConfirmUrl}">Reset password</a></p>
+      <p>Open this link on the device where you requested the reset.</p>
+      <p>This link expires in <strong>${expiryMinutes} minutes</strong>.</p>
     `;
-    textContent = `Reset your password: ${confirmUrl}\nCode: ${otp}`;
+    textContent =
+      `Reset your password: ${confirmUrl}\nOpen this link on the device where you requested the reset.`;
   } else {
     subject = "Your PickUp UCF verification code";
     htmlContent = `
@@ -191,4 +225,8 @@ Deno.serve(async (req) => {
 
   console.log("send-auth-email: sent via Brevo", { action });
   return jsonResponse({}, 200);
-});
+}
+
+if (import.meta.main) {
+  Deno.serve(handler);
+}

@@ -199,7 +199,7 @@ values. The final 248-test run uses this isolated configuration.
 | Notification parity | Verify schema/function versions, cron policy, APNs environment/invalid-token handling, auth email/reset hooks and monitoring | Oct 5 migrations absent; old 15-minute cron active in read-only audit |
 | Device matrix | Two accounts/devices on iOS 17 and current iOS, exact build and backend recorded | Open |
 | Safety and privacy | Production ordinary-user/moderator/blocked/deleted-user matrix, support coverage, publish matching privacy copy | Local tests/copy ready; live checks/publication open |
-| Auth links/calendar | Resolve sensitive custom-scheme reset-link and calendar full-access gates (BETA-07/BETA-05) against actual distribution configuration | Open, separate focused workstreams |
+| Auth links/calendar | Verify BETA-07 HTTPS association/auth configuration and BETA-05 write-only Calendar on the exact candidate | Both prepared locally; Vercel/auth publication and device acceptance open |
 | External release | Critical-path/accessibility acceptance, age rating/reviewer access/What to Test, Beta App Review and small cohort | Open; no submission/invitation performed |
 
 ## Exact-candidate device record
@@ -250,3 +250,17 @@ subsequently authorized the current source push to main. No schema/function
 deployment, privacy-site publish, archive upload, external invitation or App Review
 submission was performed. Production bootstrap
 side effects are recorded separately above. Optional polish was deferred.
+
+
+## Continuation — Calendar and secure links
+
+The calendar follow-up was reviewed without a new blocker; its existing 255-test
+and Release evidence is retained in the focused plan. Local HTTPS auth/share work
+and the recovery email/form corrections are recorded in
+[secure auth links](2026-10-22-secure-auth-links.md). The existing free Vercel host
+is used; publication and hosted configuration remain unauthorized/unperformed.
+A fresh SELECT-only production refresh still confirms the same nine missing
+migrations and anon/authenticated execution on both notification enqueue RPCs.
+No account, session, token, provider or configuration write was made. The paired
+iPhone is unavailable, so the physical-device matrix remains open. Build 1.0 (4)
+is unchanged; unique candidate numbering/signing/upload remain separate gates.

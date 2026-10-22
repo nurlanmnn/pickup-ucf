@@ -509,12 +509,14 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] On iOS 17+, request EventKit write-only access.
-- [ ] Add `NSCalendarsWriteOnlyAccessUsageDescription` with clear user-facing copy.
-- [ ] Remove full-access usage/configuration unless a documented feature truly needs calendar reads.
-- [ ] Revisit storage of event identifiers when read access is unavailable.
+- [x] On iOS 17+, request EventKit write-only access.
+- [x] Add `NSCalendarsWriteOnlyAccessUsageDescription` with clear user-facing copy.
+- [x] Remove full-access usage/configuration unless a documented feature truly needs calendar reads.
+- [x] Revisit storage of event identifiers when read access is unavailable.
 - [ ] Test first request, allow, deny, restricted, Settings recovery, duplicate export, and deleted calendar/event cases.
 - [ ] Update the privacy policy and App Store privacy answers if the data flow changes.
+
+**Local source update (2026-10-22):** See [focused implementation/device plan](2026-10-22-calendar-write-only.md). The adapter only creates/saves events and requests write-only permission. Prior exports are local receipts, not verified Calendar presence. Replacement requires duplicate confirmation; game edits/cancellation require managing the independent copy in Calendar. Denied access offers Settings; restrictions and missing destinations have separate guidance. The isolated simulator suite passed **255/255**, and the unsigned Release build/analyzer passed. Local privacy copy is updated; public-site/App Store review and actual iOS 17/current-iOS EventKit acceptance remain open.
 
 **Done when:** Calendar export works with the minimum permission necessary and denial/recovery paths are clear.
 
@@ -541,7 +543,7 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Choose stable HTTPS routes for password reset and session sharing.
+- [x] Choose stable HTTPS routes for password reset and session sharing (local source uses the existing free Vercel host).
 - [ ] Configure Associated Domains and host a valid `apple-app-site-association` file.
 - [ ] Configure Supabase/auth redirect allowlists for the HTTPS callback.
 - [ ] Add a web/App Store fallback for recipients without the app.
@@ -550,6 +552,17 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 - [ ] Test installed/not-installed, signed-in/signed-out, expired reset, deleted session, revoked access, and malicious-link cases.
 
 **Done when:** Auth and share links use verified HTTPS association, have a useful fallback, and reject malformed or unauthorized routing.
+
+**Local follow-up (2026-10-22):** See [secure auth links](2026-10-22-secure-auth-links.md).
+Prepared AASA, matching entitlements/XcodeGen, HTTPS routing/share/reset generation,
+credential-free web fallbacks and strict PKCE callback boundaries. Repaired the
+recovery hook's bare-redirect email defect and added new-password completion after
+successful exchange. The previous signed archive confirms the association App ID.
+Production AASA currently returns 404; Vercel publication, hosted auth allowlists,
+email-function deployment, Associated Domains provisioning and exact device matrix
+remain open. Sensitive custom-scheme callbacks are rejected locally; legacy session
+notification links remain supported. No deployment or new archive/upload occurred.
+
 
 ## BETA-08 — Show the correct author for realtime chat inserts (**P1**)
 

@@ -31,7 +31,7 @@ final class CalendarEventFormattingTests: XCTestCase {
         let notes = CalendarEventFormatting.notes(for: session)
 
         XCTAssertTrue(notes.contains("Host: @knight"))
-        XCTAssertTrue(notes.contains("pickupucf://session/\(sessionId.uuidString)"))
+        XCTAssertTrue(notes.contains("https://pickup-ucf-privacy.vercel.app/session/\(sessionId.uuidString)"))
         XCTAssertTrue(notes.contains("Cleats optional"))
     }
 

@@ -5,18 +5,21 @@ enum CalendarExportError: LocalizedError {
     case accessDenied
     case alreadyAdded
     case saveFailed
-    case removeFailed
+    case accessRestricted
+    case noWritableCalendar
 
     var errorDescription: String? {
         switch self {
         case .accessDenied:
-            return "Calendar access is required to save this game."
+            return "Allow adding events in Settings to save this game to Calendar."
         case .alreadyAdded:
-            return "This game is already in your calendar."
+            return "This game was previously added to Calendar."
         case .saveFailed:
             return "Could not save this game to your calendar."
-        case .removeFailed:
-            return "Could not remove this cancelled game from your calendar."
+        case .accessRestricted:
+            return "Calendar access is restricted on this device. Check with your device administrator or parental controls."
+        case .noWritableCalendar:
+            return "Set up a writable calendar in Calendar, then try again."
         }
     }
 }
@@ -27,10 +30,8 @@ protocol CalendarEventStoreProtocol: AnyObject {
     var defaultCalendarForNewEvents: EKCalendar? { get }
 
     func makeEvent() -> EKEvent
-    func event(withIdentifier identifier: String) -> EKEvent?
     func save(_ event: EKEvent, span: EKSpan) throws
-    func remove(_ event: EKEvent, span: EKSpan) throws
-    func requestFullAccessToEvents() async throws -> Bool
+    func requestWriteOnlyAccessToEvents() async throws -> Bool
 }
 
 @MainActor
@@ -49,22 +50,12 @@ private final class EventKitCalendarEventStore: CalendarEventStoreProtocol {
         EKEvent(eventStore: eventStore)
     }
 
-    func event(withIdentifier identifier: String) -> EKEvent? {
-        eventStore.event(withIdentifier: identifier)
-    }
-
     func save(_ event: EKEvent, span: EKSpan) throws {
         try eventStore.save(event, span: span, commit: true)
     }
 
-    func remove(_ event: EKEvent, span: EKSpan) throws {
-        // Apple documents commit: true as an immediate, rollback-safe removal.
-        // https://developer.apple.com/documentation/eventkit/ekeventstore/remove(_:span:commit:)
-        try eventStore.remove(event, span: span, commit: true)
-    }
-
-    func requestFullAccessToEvents() async throws -> Bool {
-        try await eventStore.requestFullAccessToEvents()
+    func requestWriteOnlyAccessToEvents() async throws -> Bool {
+        try await eventStore.requestWriteOnlyAccessToEvents()
     }
 }
 
@@ -128,37 +119,35 @@ final class CalendarExportService {
         self.storage = storage
     }
 
-    func isSessionInCalendar(sessionId: UUID) -> Bool {
-        guard let storedEventId = storage.eventIdentifier(for: sessionId) else { return false }
-
-        switch eventStore.authorizationStatus {
-        case .fullAccess, .writeOnly:
-            if eventStore.event(withIdentifier: storedEventId) != nil {
-                return true
-            }
-            storage.setEventIdentifier(nil, for: sessionId)
-            return false
-        default:
-            // Added before but calendar access is unavailable — assume still present.
-            return true
-        }
+    /// Local receipt only: write-only access cannot verify even our own events.
+    /// Keep legacy identifiers opaque so upgrading does not create duplicates.
+    func hasExportReceipt(sessionId: UUID) -> Bool {
+        storage.eventIdentifier(for: sessionId) != nil
     }
 
-    func addToCalendar(session: PickupSession) async throws {
+    func addToCalendar(session: PickupSession, allowAnotherCopy: Bool = false) async throws {
+        try Task.checkCancellation()
+        if !allowAnotherCopy && hasExportReceipt(sessionId: session.id) {
+            throw CalendarExportError.alreadyAdded
+        }
         let granted = try await requestAccess()
         guard granted else { throw CalendarExportError.accessDenied }
 
-        if isSessionInCalendar(sessionId: session.id) {
+        try Task.checkCancellation()
+        if !allowAnotherCopy && hasExportReceipt(sessionId: session.id) {
             throw CalendarExportError.alreadyAdded
         }
 
+        guard let calendar = eventStore.defaultCalendarForNewEvents else {
+            throw CalendarExportError.noWritableCalendar
+        }
         let event = eventStore.makeEvent()
         event.title = CalendarEventFormatting.title(for: session)
         event.notes = CalendarEventFormatting.notes(for: session)
         event.startDate = session.startsAt
         event.endDate = session.endsAt
         event.location = session.locationName
-        event.calendar = eventStore.defaultCalendarForNewEvents
+        event.calendar = calendar
 
         do {
             try eventStore.save(event, span: .thisEvent)
@@ -166,41 +155,22 @@ final class CalendarExportService {
             throw CalendarExportError.saveFailed
         }
 
-        guard let eventIdentifier = event.eventIdentifier else {
-            throw CalendarExportError.saveFailed
-        }
-        storage.setEventIdentifier(eventIdentifier, for: session.id)
-    }
-
-    /// Removes an app-created event after its session is cancelled.
-    /// Returns true when a stored export was removed or was already absent.
-    func removeFromCalendar(sessionId: UUID) throws -> Bool {
-        guard let storedEventId = storage.eventIdentifier(for: sessionId) else {
-            return false
-        }
-
-        // Write-only access cannot reliably fetch a previously-created event by identifier.
-        // Keep the identifier so cleanup can be retried if full access is restored.
-        guard eventStore.authorizationStatus == .fullAccess else {
-            return false
-        }
-
-        guard let event = eventStore.event(withIdentifier: storedEventId) else {
-            storage.setEventIdentifier(nil, for: sessionId)
-            return true
-        }
-
-        do {
-            try eventStore.remove(event, span: .thisEvent)
-        } catch {
-            throw CalendarExportError.removeFailed
-        }
-
-        storage.setEventIdentifier(nil, for: sessionId)
-        return true
+        // Saving can succeed without a readable identifier under write-only access.
+        storage.setEventIdentifier(event.eventIdentifier ?? "saved", for: session.id)
     }
 
     private func requestAccess() async throws -> Bool {
-        try await eventStore.requestFullAccessToEvents()
+        switch eventStore.authorizationStatus {
+        case .fullAccess, .writeOnly:
+            return true
+        case .notDetermined:
+            return try await eventStore.requestWriteOnlyAccessToEvents()
+        case .restricted:
+            throw CalendarExportError.accessRestricted
+        case .denied:
+            return false
+        @unknown default:
+            return false
+        }
     }
 }

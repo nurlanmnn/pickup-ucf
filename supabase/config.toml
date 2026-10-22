@@ -21,8 +21,8 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "pickupucf://auth/confirm"
-additional_redirect_urls = ["pickupucf://auth/reset-password"]
+site_url = "https://pickup-ucf-privacy.vercel.app/auth/confirm"
+additional_redirect_urls = ["https://pickup-ucf-privacy.vercel.app/auth/reset-password"]
 
 [auth.email]
 enable_signup = true

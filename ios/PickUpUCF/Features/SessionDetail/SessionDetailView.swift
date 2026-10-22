@@ -6,6 +6,7 @@ struct SessionDetailView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @Environment(AppState.self) private var appState
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var viewModel: SessionDetailViewModel
@@ -17,7 +18,9 @@ struct SessionDetailView: View {
     @State private var showRunItBackSheet = false
     @State private var showChat = false
     @State private var isAddingToCalendar = false
-    @State private var isSessionInCalendar = false
+    @State private var hasCalendarExport = false
+    @State private var showCalendarCopyConfirm = false
+    @State private var showCalendarSettings = false
 
     init(sessionId: UUID) {
         self.sessionId = sessionId
@@ -89,7 +92,7 @@ struct SessionDetailView: View {
                 userId: appState.session?.userId
             )
             await viewModel.load()
-            removeCancelledCalendarExportIfNeeded()
+            refreshCalendarExportReceipt()
             if appState.consumeSessionDetailOpenChat(for: sessionId), viewModel.canAccessChat {
                 showChat = true
             }
@@ -104,12 +107,12 @@ struct SessionDetailView: View {
         }
         .onChange(of: viewModel.session.value?.status) { _, status in
             if status == .cancelled {
-                removeCancelledCalendarExportIfNeeded()
+                refreshCalendarExportReceipt()
             }
         }
         .refreshable {
             await viewModel.load()
-            removeCancelledCalendarExportIfNeeded()
+            refreshCalendarExportReceipt()
         }
         .sheet(isPresented: $showEditSheet) {
             if let session = viewModel.session.value {
@@ -154,7 +157,7 @@ struct SessionDetailView: View {
             Button("Cancel session", role: .destructive) {
                 Task {
                     if await viewModel.cancelHostedSession() {
-                        removeCancelledCalendarExportIfNeeded()
+                        refreshCalendarExportReceipt()
                         appState.touchSessionFeedRefresh()
                         dismiss()
                     }
@@ -162,7 +165,7 @@ struct SessionDetailView: View {
             }
             Button("Keep session", role: .cancel) {}
         } message: {
-            Text("Players will no longer see this game.")
+            Text("Players will no longer see this game. Saved calendar copies must be removed in Calendar.")
         }
         .confirmationDialog(
             "Block this host?",
@@ -205,7 +208,7 @@ struct SessionDetailView: View {
 
                     chatCard(session)
 
-                    if viewModel.canAddToCalendar {
+                    if viewModel.canAddToCalendar || hasCalendarExport {
                         calendarCard(session)
                     }
                 }
@@ -662,31 +665,58 @@ struct SessionDetailView: View {
 
     @ViewBuilder
     private func calendarCard(_ session: PickupSession) -> some View {
-        Button {
-            Task { await addToCalendar(session) }
-        } label: {
-            HStack(spacing: Spacing.m) {
-                Image(systemName: isSessionInCalendar ? "checkmark.circle.fill" : "calendar.badge.plus")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(isSessionInCalendar ? AppColor.success : .black)
-                    .frame(width: 36, height: 36)
-                    .background(isSessionInCalendar ? AppColor.success.opacity(0.15) : AppColor.gold)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Button {
+                if hasCalendarExport {
+                    showCalendarCopyConfirm = true
+                } else {
+                    Task { await addToCalendar(session) }
+                }
+            } label: {
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: hasCalendarExport ? "checkmark.circle.fill" : "calendar.badge.plus")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(hasCalendarExport ? AppColor.success : .black)
+                        .frame(width: 36, height: 36)
+                        .background(hasCalendarExport ? AppColor.success.opacity(0.15) : AppColor.gold)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
-                Text(calendarButtonTitle)
-                    .font(AppFont.body(.semibold))
-                    .foregroundStyle(AppColor.textPrimary(colorScheme))
+                    Text(calendarButtonTitle)
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
 
-                Spacer()
+                    Spacer()
+                }
+                .padding(Spacing.m)
+                .background(AppColor.elevatedSurface(colorScheme))
+                .appCardStyle(cornerRadius: 16)
             }
-            .padding(Spacing.m)
-            .background(AppColor.elevatedSurface(colorScheme))
-            .appCardStyle(cornerRadius: 16)
+            .buttonStyle(.plain)
+            .disabled(isAddingToCalendar || !viewModel.canAddToCalendar)
+            Text(session.status == .cancelled
+                 ? "This game was cancelled. Remove its saved copy in Calendar."
+                 : "Saves a separate copy. Game changes and cancellations won't update it. Edit or remove it in Calendar.")
+                .font(AppFont.caption())
+                .foregroundStyle(AppColor.textSecondary(colorScheme))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, Spacing.s)
         }
-        .buttonStyle(.plain)
-        .disabled(isAddingToCalendar)
-        .task(id: session.id) {
-            isSessionInCalendar = CalendarExportService.shared.isSessionInCalendar(sessionId: session.id)
+        .task(id: session.id) { refreshCalendarExportReceipt() }
+        .confirmationDialog("Add another calendar copy?", isPresented: $showCalendarCopyConfirm, titleVisibility: .visible) {
+            Button("Add another copy") {
+                Task { await addToCalendar(session, allowAnotherCopy: true) }
+            }
+            Button("Keep previous copy", role: .cancel) {}
+        } message: {
+            Text("This game was previously added. If you deleted the event or calendar, you can add a new copy. Otherwise, this will create a duplicate.")
+        }
+        .alert("Calendar access is off", isPresented: $showCalendarSettings) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Allow PickUp UCF to add events in Settings, then return and try again.")
         }
     }
 
@@ -796,32 +826,32 @@ struct SessionDetailView: View {
 
     private var calendarButtonTitle: String {
         if isAddingToCalendar { return "Adding…" }
-        if isSessionInCalendar { return "In Calendar" }
+        if hasCalendarExport { return "Previously added to Calendar" }
         return "Add to Calendar"
     }
 
     @MainActor
-    private func removeCancelledCalendarExportIfNeeded() {
-        guard viewModel.session.value?.status == .cancelled else { return }
-        if (try? CalendarExportService.shared.removeFromCalendar(sessionId: sessionId)) == true {
-            isSessionInCalendar = false
-        }
+    private func refreshCalendarExportReceipt() {
+        hasCalendarExport = CalendarExportService.shared.hasExportReceipt(sessionId: sessionId)
     }
 
     @MainActor
-    private func addToCalendar(_ session: PickupSession) async {
+    private func addToCalendar(_ session: PickupSession, allowAnotherCopy: Bool = false) async {
+        guard viewModel.canAddToCalendar else { return }
         isAddingToCalendar = true
         defer { isAddingToCalendar = false }
 
         do {
-            try await CalendarExportService.shared.addToCalendar(session: session)
-            isSessionInCalendar = true
+            try await CalendarExportService.shared.addToCalendar(session: session, allowAnotherCopy: allowAnotherCopy)
+            hasCalendarExport = true
             appState.showSuccess("Added to Calendar")
         } catch CalendarExportError.alreadyAdded {
-            isSessionInCalendar = true
-            appState.showSuccess("Already in Calendar")
+            hasCalendarExport = true
+            appState.showSuccess("Previously added to Calendar")
         } catch CalendarExportError.accessDenied {
-            viewModel.actionError = "Calendar access is required to save this game."
+            showCalendarSettings = true
+        } catch is CancellationError {
+            return
         } catch {
             viewModel.actionError = AppErrorMapper.message(for: error)
         }

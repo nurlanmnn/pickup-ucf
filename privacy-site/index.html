@@ -271,7 +271,7 @@
         <h2 id="permissions-heading">Device permissions</h2>
         <ul>
           <li><strong>Location:</strong> used when you ask to center the map on your position. A custom game location you submit is stored with that session.</li>
-          <li><strong>Calendar:</strong> used only when you choose to add or remove a game in your device calendar. The app stores the identifier of an event it created on your device so it can avoid duplicates and remove that event if the game is cancelled.</li>
+          <li><strong>Calendar:</strong> write-only access is used when you choose to save a game to your device calendar. The app does not read calendar events or upload calendar data. It keeps a local record of successful exports to help avoid duplicates. Saved copies do not update when games change or are cancelled; edit or remove them in Calendar. Reinstalling or signing out clears the local record, so it cannot guarantee an event is absent.</li>
           <li><strong>Notifications and Live Activities:</strong> used when enabled to provide session updates and reminders.</li>
         </ul>
         <p>You can change these permissions at any time in iOS Settings.</p>

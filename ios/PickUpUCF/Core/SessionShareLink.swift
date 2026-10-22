@@ -2,7 +2,7 @@ import Foundation
 
 enum SessionShareLink {
     static func url(for sessionId: UUID) -> URL {
-        URL(string: "pickupucf://session/\(sessionId.uuidString)")!
+        URL(string: "https://\(DeepLinkRouter.webHost)/session/\(sessionId.uuidString)")!
     }
 
     static func message(for session: PickupSession) -> String {
