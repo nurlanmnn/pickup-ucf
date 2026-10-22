@@ -194,12 +194,12 @@ values. The final 248-test run uses this isolated configuration.
 | Gate | Required evidence/action | Current state |
 | --- | --- | --- |
 | Candidate provenance | Review/commit source, choose a unique build number, signed archive/validation and internal distribution | Source reviewed for the user-authorized main push; unique build/archive/upload remain open |
-| Backend rollout | Backup/restore expectations; review and authorize missing Oct 5 migrations, seven Oct 22 migrations, and current send-push deployment | Open; explicit grants remain exposed in production |
+| Backend rollout | Backup/restore expectations; review and authorize missing Oct 5 migrations, seven Oct 22 migrations, and current send-push deployment | Deployed ten pending migrations and matching functions October 22; grants closed, restricted recovery snapshots captured; restore exercise remains open |
 | Compatibility | Distribute the nullable-host / atomic-RPC client before enabling retained null-host rows or revoking legacy direct inserts | Open; older builds can fail those paths |
-| Notification parity | Verify schema/function versions, cron policy, APNs environment/invalid-token handling, auth email/reset hooks and monitoring | Oct 5 migrations absent; old 15-minute cron active in read-only audit |
+| Notification parity | Verify schema/function versions, cron policy, APNs environment/invalid-token handling, auth email/reset hooks and monitoring | Oct 5 migrations deployed; 15-minute cron removed and cleanup cron succeeds; device/provider acceptance remains open |
 | Device matrix | Two accounts/devices on iOS 17 and current iOS, exact build and backend recorded | Open |
-| Safety and privacy | Production ordinary-user/moderator/blocked/deleted-user matrix, support coverage, publish matching privacy copy | Local tests/copy ready; live checks/publication open |
-| Auth links/calendar | Verify BETA-07 HTTPS association/auth configuration and BETA-05 write-only Calendar on the exact candidate | Both prepared locally; Vercel/auth publication and device acceptance open |
+| Safety and privacy | Production ordinary-user/moderator/blocked/deleted-user matrix, support coverage, publish matching privacy copy | Matching privacy copy published; live two-account safety/deletion acceptance remains open |
+| Auth links/calendar | Verify BETA-07 HTTPS association/auth configuration and BETA-05 write-only Calendar on the exact candidate | Vercel/auth configuration and functions deployed; signed app/device acceptance open |
 | External release | Critical-path/accessibility acceptance, age rating/reviewer access/What to Test, Beta App Review and small cohort | Open; no submission/invitation performed |
 
 ## Exact-candidate device record
@@ -264,3 +264,16 @@ migrations and anon/authenticated execution on both notification enqueue RPCs.
 No account, session, token, provider or configuration write was made. The paired
 iPhone is unavailable, so the physical-device matrix remains open. Build 1.0 (4)
 is unchanged; unique candidate numbering/signing/upload remain separate gates.
+
+
+## Authorized rollout completed
+
+The subsequent owner instruction authorized Git and production deployment. See
+[production rollout](../../operations/2026-10-22-production-rollout.md). All ten
+pending migrations (including the null-host cleanup preflight fix), send-push v18,
+send-auth-email v23, Vercel policies/AASA/fallbacks and exact hosted HTTPS auth
+redirects are deployed and verified. This supersedes earlier missing-migration,
+exposed-grant and unpublished-policy status. The source is on main at b8349d2.
+Legacy direct-write/custom-scheme-reset builds are retired by these boundaries;
+a compatible new signed/distributed iOS candidate is still required. Device,
+provider, restore exercise, reviewer refresh and App Store gates remain open.

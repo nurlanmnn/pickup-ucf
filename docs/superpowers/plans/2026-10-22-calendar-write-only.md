@@ -70,3 +70,11 @@ receipt keys remain compatible with the old app.
   write-only Calendar usage key and preserves version **1.0 (4)**.
 - `git diff --check` passed. This follow-up remains uncommitted locally; the
   previously requested snapshot is verified on origin/main at `c18ef78`.
+
+
+## Subsequent publication
+
+The owner authorized source push and deployments. Source b8349d2 is on main and
+matching Calendar privacy copy is published on Vercel. See the October 22 production
+rollout record. A new iOS candidate, real EventKit/device accessibility acceptance
+and candidate App Store privacy review remain open; build 1.0 (4) is unchanged.

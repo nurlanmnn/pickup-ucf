@@ -164,3 +164,14 @@ The hardened backend requires the atomic/nullable-host client. Legacy direct-wri
 creation and custom-scheme password-reset requests are intentionally retired by
 this rollout. Do not widen testing with old builds. Candidate signing, a unique
 build number, distribution and the physical-device matrix remain release gates.
+
+
+## Deployment result
+
+The authorized rollout completed; see the
+[production record](../../operations/2026-10-22-production-rollout.md). All ten
+migrations, both functions (email v23/push v18), Vercel AASA/fallback/privacy source,
+and exact hosted HTTPS auth fields are deployed. Origin and Apple CDN return matching
+AASA JSON, deployed function sources match, unauthorized requests reject safely,
+and cron cleanup has succeeded. Source b8349d2 is verified on main. Signed iOS
+candidate/device/provider acceptance and App Store actions remain separate/open.

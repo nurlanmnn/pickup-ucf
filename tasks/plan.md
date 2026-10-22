@@ -1,18 +1,21 @@
-# Current work — Calendar and secure HTTPS links
+# Current work — Production deployed; iOS candidate acceptance next
 
-The reviewed chat/input/security/account lifecycle snapshot is on `origin/main` at `c18ef78`. Continue [BETA-05 calendar write-only](../docs/superpowers/plans/2026-10-22-calendar-write-only.md) on `codex/calendar-write-only`. Calendar exports are independent saved copies with local duplicate receipts, explicit replacement confirmation and Settings recovery. Physical EventKit and production/device release gates remain separate.
+The owner authorized pushing current source and deploying required changes on
+October 22. Source `b8349d2` is verified on origin/main. See the
+[production rollout record](../docs/operations/2026-10-22-production-rollout.md).
 
-Local BETA-07 preparation uses the existing free Vercel host; see
-[secure auth links](../docs/superpowers/plans/2026-10-22-secure-auth-links.md).
-HTTPS routes, AASA/entitlements, safe fallback pages, exact callback validation,
-provider recovery-link correction and new-password completion are prepared.
-They remain uncommitted and require coordinated Vercel/auth configuration,
-email-function deployment, signing and device acceptance. A fresh read-only
-production check still finds nine pending migrations and exposed enqueue grants.
-No production mutation, publication, commit, push or upload was performed.
-Final local validation: 261/261 isolated signed simulator tests, 39/39 Edge
-Function tests, unsigned Release build/analyzer and diff checks passed. Evidence
-and exact external gates are recorded in the secure-auth-links plan.
+- Deployed all ten pending migrations, including the null-host cleanup preflight fix.
+- Deployed send-auth-email v23 and send-push v18; downloaded source matches local.
+- Published Vercel privacy/AASA/fallback routes and set exact hosted HTTPS redirects.
+- Verified origin/Apple CDN AASA, public routes, grants/schema, migration parity,
+  rejection of unsigned function requests, and successful cleanup/dispatch cron runs.
+- Preserved isolated 261-test iOS and 39-test Edge Function evidence. The new SQL
+  regression first failed, then the complete local candidate SQL/RLS suite passed.
+
+Remaining: replace older TestFlight builds with the atomic/nullable-host/HTTPS
+candidate; Associated Domains provisioning, unique build number, signed archive,
+distribution, iOS 17/current-iOS two-account/device and provider acceptance, restore
+exercise and external Beta App Review. No new iOS upload or invitation occurred.
 
 # Previous work — October 22, 2026
 

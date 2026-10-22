@@ -4,7 +4,7 @@
 
 **Status:** Internal TestFlight physical-device smoke gate completed by release-owner confirmation on 2026-10-04; external Beta App Review preparation in progress
 
-**Last audited:** 2026-10-22 (local source/simulator/SQL review plus read-only production migration, RPC-grant, host-FK and cron checks; physical devices and App Store Connect not re-audited)
+**Last audited:** 2026-10-22 (authorized source push and production database/function/Vercel/auth rollout verified; physical devices and App Store Connect not re-audited)
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -383,7 +383,7 @@ directly in App Store Connect.
 
 **Tasks:**
 
-- [ ] Deploy the missing October 5 notification migrations and the seven October 22 candidate migrations in reviewed dependency order. Read-only October 22 history confirms the venue correction and atomic creation are recorded; candidate deployment remains open.
+- [x] Deploy the two missing October 5 migrations, seven October 22 hardening/deletion migrations and the additional null-host scheduled-cleanup fix. All ten applied October 22; remote dry run reports up to date.
 - [ ] Verify RLS is enabled and least-privilege policies behave correctly for anonymous, authenticated, blocked, and deleted users.
 - [x] Configure `APNS_ENV=production` and verify the existing APNs key/team/bundle identifiers for TestFlight delivery (2026-09-17).
 - [ ] Complete secret ownership documentation; the dedicated push cron secret is configured, while Brevo/email-hook ownership still requires verification.
@@ -545,8 +545,8 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 - [x] Choose stable HTTPS routes for password reset and session sharing (local source uses the existing free Vercel host).
 - [ ] Configure Associated Domains and host a valid `apple-app-site-association` file.
-- [ ] Configure Supabase/auth redirect allowlists for the HTTPS callback.
-- [ ] Add a web/App Store fallback for recipients without the app.
+- [x] Configure Supabase/auth redirect allowlists for the HTTPS callback (hosted fields patched and re-read October 22).
+- [x] Add a web fallback for recipients without the app (published October 22; accurately explains invitation-only TestFlight access while public App Store availability is pending).
 - [ ] Keep the custom scheme only as a documented transition fallback if needed.
 - [ ] Validate incoming paths, identifiers, authentication state, and authorization before navigation.
 - [ ] Test installed/not-installed, signed-in/signed-out, expired reset, deleted session, revoked access, and malicious-link cases.
@@ -599,7 +599,7 @@ notification links remain supported. No deployment or new archive/upload occurre
 
 **Local source evidence (2026-10-22):** The owner chose retained games with an anonymized host. `20261022152043_anonymize_hosted_games_on_deletion.sql` cancels active hosted games, preserves game rows with null host references and other players' chat, removes the deleted account's ordinary messages/tokens/memberships/authored notification previews, reconciles counts/promotions, disables future recurrence, and makes retries idempotent. Attendance uses null-safe host authorization. Source UI shows Deleted host without a profile/block link; local privacy copy explains retained history and limited safety records. SQL tests prove forced-failure rollback and preserve other-user cancellation/activity cleanup. The account-before-session locks in `20261022155106_serialize_account_mutations_with_deletion.sql` prevent new joins/creation racing past deletion cleanup.
 
-Account changes clear navigation, create prefills, banners and account-linked defaults/calendar identifiers; APNs quarantine remains available for recovery. A missing session at launch clears local references/notifications and quarantines the retained token. Real-Keychain synthetic tests cover deleted-account relaunch, offline restore and remote logout failure. Chat recovery revalidates older loaded rows so deleted messages disappear on successful refresh; failures retain history for retry. Exported calendar events are not removed by local identifier cleanup, and immediate deletion propagation to another open device is not claimed. **Production remains blocked:** the hosted-account FK failure is still deployed until the candidate migration is authorized/applied. Exact-candidate two-account/device deletion, offline/relaunch and notification isolation remain open.
+Account changes clear navigation, create prefills, banners and account-linked defaults/calendar identifiers; APNs quarantine remains available for recovery. A missing session at launch clears local references/notifications and quarantines the retained token. Real-Keychain synthetic tests cover deleted-account relaunch, offline restore and remote logout failure. Chat recovery revalidates older loaded rows so deleted messages disappear on successful refresh; failures retain history for retry. Exported calendar events are not removed by local identifier cleanup, and immediate deletion propagation to another open device is not claimed. **Production schema deployed October 22:** the nullable-host SET NULL FK and deletion functions are now applied and metadata-verified. Exact-candidate two-account/device deletion, offline/relaunch and notification isolation remain open.
 
 ## BETA-10 — Add privacy-safe observability (**P1**)
 
@@ -969,3 +969,24 @@ Detailed UX audit: `docs/design/2026-10-21-ux-audit.md`. Production atomic-creat
 Earlier unit-test hosts executed the existing startup path against production. Request-ID-paired SDK diagnostics confirm existing-profile upserts and device-token registration refreshes, plus auth-session refreshes. These requests involved one profile and one stored APNs token; read-only verification confirms that token currently belongs to that profile. Previous field values/ownership were not captured, so they cannot be reconstructed or safely restored. No migration, account deletion or session-content mutation was issued. This is an unintended production side effect, not device/integration validation.
 
 The Test action now sets `PICKUP_UNIT_TESTS=1`; the app skips live bootstrap and the shared client uses a synthetic host with HTTP rejected by URLProtocol. A regression verifies the flag and actual HTTP denial. Explicit repository tests keep their synthetic transports and real Keychain coverage. SDK payload logging was removed, earlier owned text logs were redacted, and result bundles containing earlier diagnostics were restricted to the current user. The final isolated suite passed **248/248**, and the Edge suite passed **36/36**. Local SQL/RLS and concurrency checks passed; full evidence and remaining gates are in the October 22 plan.
+
+
+## Authorized production rollout — October 22
+
+[Rollout evidence](../../operations/2026-10-22-production-rollout.md) supersedes the
+earlier undeployed/publication-blocked statements above. Source `b8349d2` is pushed
+to main. All ten pending migrations are applied; internal enqueue execution/direct
+membership writes are closed, null-host retention is enabled, and the scheduled
+cleanup preflight defect is fixed. send-auth-email v23 and send-push v18 are ACTIVE
+with exact source parity. Vercel privacy/AASA/fallback pages are published; origin
+and Apple CDN association JSON match, and hosted auth now uses exact HTTPS routes.
+The new cleanup cron has succeeded; the 15-minute reminder cron is removed.
+
+Prior validation remains 261/261 isolated simulator tests, 39/39 Edge Function tests,
+Release build/analyzer plus the newly rerun local SQL/RLS regression suite. This is
+not a new iOS candidate or proof of live user/device/provider acceptance. Existing
+old TestFlight direct-write/custom-auth-link clients must be replaced; signed
+Associated Domains provisioning, unique candidate build/archive/distribution,
+physical-device acceptance and Beta App Review remain open. Restricted logical
+recovery material was captured; a restore exercise and complete operational
+recovery readiness remain open. No paid service, iOS upload or invitation occurred.
