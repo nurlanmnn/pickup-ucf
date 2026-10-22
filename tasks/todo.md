@@ -17,6 +17,15 @@ candidate; Associated Domains provisioning, unique build number, signed archive,
 distribution, iOS 17/current-iOS two-account/device and provider acceptance, restore
 exercise and external Beta App Review. No new iOS upload or invitation occurred.
 
+## Build 5 prepared — October 22
+
+Local signed Release archive and App Store IPA export passed for version 1.0 (5),
+source `53ac5c7`. Exported app/widget signatures and App Store profiles verify;
+production APNs and Associated Domains are present. See
+[build 5 provenance and acceptance](../docs/testflight/2026-10-22-build-5.md).
+Upload authorization, Apple validation/processing, internal installation and all
+exact-candidate physical/provider checks remain open. The paired iPhone is unavailable.
+
 # Previous work — October 22, 2026
 
 Continue with [input boundaries and launch gates](../docs/superpowers/plans/2026-10-22-input-boundaries-and-launch-gates.md). BETA-08 changes are preserved on `codex/realtime-chat-recovery`. BETA-03, explicit RPC/mutation grants, serialized leave, contextual notification consent and account-local cleanup now have local implementation. Production exposed RPC grants and missing October notification migrations were confirmed read-only. The owner chose anonymized retained games; deletion, null-host UI, chat reconciliation and relaunch cleanup now have local coverage. Production/device/App Store gates remain open. This source snapshot was committed and pushed to main as `c18ef78` on October 22; production deployment remains open. Earlier test-host bootstrap refreshed one existing production profile/token registration; the incident and the now-enforced synthetic test isolation are recorded in the focused plan.

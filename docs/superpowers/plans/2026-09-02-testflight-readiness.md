@@ -990,3 +990,15 @@ Associated Domains provisioning, unique candidate build/archive/distribution,
 physical-device acceptance and Beta App Review remain open. Restricted logical
 recovery material was captured; a restore exercise and complete operational
 recovery readiness remain open. No paid service, iOS upload or invitation occurred.
+
+
+## October 22 — Build 5 packaging
+
+Version 1.0 (5), source `53ac5c7`, has a successful signed Release archive and
+local App Store distribution export. Strict app/widget signature checks passed;
+the exported app has production APNs, the expected App ID and Associated Domains,
+and App Store profiles with debugging disabled. This supersedes the earlier
+build-number/archive/provisioning preparation gap. See
+[build 5 record](../../testflight/2026-10-22-build-5.md). No upload or Apple server
+validation/processing occurred. Device/provider acceptance and release gates remain
+open; historical owner attestation does not establish this candidate's acceptance.

@@ -6,9 +6,9 @@ This file contains TestFlight metadata for the first external beta. Verify candi
 
 - App: PickUp UCF
 - Bundle ID: `edu.ucf.pickup`
-- Version/build: `TBD`
-- Source commit: `TBD`
-- Production migration head: `20260917192500` observed September 30, 2026; recheck at submission
+- Prepared version/build: `1.0 (5)` — local candidate; upload/processing and device acceptance pending
+- Candidate source commit: `53ac5c7a197955f606afdcc06a0f1029a8a0e455`
+- Production migration head: `20261022170532` verified in the October 22 rollout; recheck if the backend changes
 - Submitted by/date: `TBD`
 
 ## Beta App Description
@@ -46,7 +46,7 @@ Recheck these source-confirmed limits on the exact candidate after the final int
 
 - Live Activities start when the app is opened during the final hour before a game or while it is active. A Live Activity does not automatically start at the one-hour mark while the app stays closed. The server reminder operates separately.
 - When the app is closed, Live Activity removal depends on the server dispatcher and APNs delivery; immediate removal at the exact end second cannot be guaranteed, especially offline.
-- Verify reminder count, background cleanup, and updated layouts on the new candidate before accepting these limits. The October notification migrations and updated function/build still have pending deployment/device gates in the readiness checklist.
+- Verify reminder count, background cleanup, and updated layouts on the exact candidate before accepting these limits. The October notification migrations and functions were deployed October 22; candidate distribution and device acceptance remain open.
 
 ## Beta App Review Contact
 
@@ -158,5 +158,7 @@ Password recovery must be requested and completed on the same app installation;
 a successful link exchange opens a new-password form. Expired/replayed/wrong-install
 links require a fresh request. Custom-scheme auth callbacks are rejected. Verify
 Vercel AASA/CDN, hosted allowlists, email hook, signed entitlements and physical-device
-behavior before saving these as candidate-specific What to Test. Build 1.0 (4) is
-still existing local metadata; no new upload is implied.
+behavior before saving these as candidate-specific What to Test. Vercel/AASA/CDN,
+hosted allowlists and the email hook were deployed and checked October 22. Local
+build 1.0 (5) replaces build 4 metadata; no upload or device pass is implied. See
+[build 5 evidence and acceptance](2026-10-22-build-5.md).
