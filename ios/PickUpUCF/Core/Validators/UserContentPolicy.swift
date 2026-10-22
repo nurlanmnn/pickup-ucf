@@ -29,7 +29,7 @@ enum UserContentPolicyError: LocalizedError {
         case .required:
             "Enter text before continuing."
         case .tooLong(let maximum):
-            "Keep this text under \(maximum) characters."
+            "Use no more than \(maximum) characters."
         case .prohibited:
             "This text may violate the community rules. Edit it and try again."
         }
@@ -49,12 +49,13 @@ enum UserContentPolicy {
     ]
 
     static func validate(_ rawValue: String, field: UserContentField) throws -> String {
+        guard !containsDisallowedControlCharacter(rawValue) else { throw UserContentPolicyError.prohibited }
         let normalized = normalize(rawValue)
         guard !normalized.isEmpty else { throw UserContentPolicyError.required }
-        guard normalized.count <= field.maximumLength else {
+        guard normalized.unicodeScalars.count <= field.maximumLength else {
             throw UserContentPolicyError.tooLong(maximum: field.maximumLength)
         }
-        guard !containsDisallowedControlCharacter(rawValue), !containsProhibitedContent(normalized) else {
+        guard !containsProhibitedContent(normalized) else {
             throw UserContentPolicyError.prohibited
         }
         return normalized
@@ -62,24 +63,42 @@ enum UserContentPolicy {
 
     static func validateOptional(_ rawValue: String?, field: UserContentField) throws -> String? {
         guard let rawValue else { return nil }
-        let normalized = normalize(rawValue)
-        guard !normalized.isEmpty else { return nil }
-        return try validate(normalized, field: field)
+        guard !containsDisallowedControlCharacter(rawValue) else { throw UserContentPolicyError.prohibited }
+        guard !normalize(rawValue).isEmpty else { return nil }
+        return try validate(rawValue, field: field)
     }
 
+    // Explicit White_Space set shared with PostgreSQL; forbidden C0/C1 controls
+    // are checked before whitespace is collapsed. NFC keeps equivalent accents equal.
+    private static let whitespace = CharacterSet(charactersIn:
+        "\t\n\r \u{00A0}\u{1680}\u{2000}\u{2001}\u{2002}\u{2003}\u{2004}\u{2005}\u{2006}\u{2007}\u{2008}\u{2009}\u{200A}\u{2028}\u{2029}\u{202F}\u{205F}\u{3000}"
+    )
+
     static func normalize(_ value: String) -> String {
-        value
-            .split(whereSeparator: \.isWhitespace)
+        value.precomposedStringWithCanonicalMapping
+            .components(separatedBy: whitespace)
+            .filter { !$0.isEmpty }
             .joined(separator: " ")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func length(_ value: String) -> Int {
+        normalize(value).unicodeScalars.count
+    }
+
+    static func validationMessage(_ value: String, field: UserContentField, optional: Bool = false) -> String? {
+        do {
+            if optional { _ = try validateOptional(value, field: field) }
+            else { _ = try validate(value, field: field) }
+            return nil
+        } catch {
+            return AppErrorMapper.message(for: error)
+        }
     }
 
     private static func containsDisallowedControlCharacter(_ value: String) -> Bool {
         value.unicodeScalars.contains { scalar in
-            CharacterSet.controlCharacters.contains(scalar)
-                && scalar != "\n"
-                && scalar != "\r"
-                && scalar != "\t"
+            (scalar.value < 32 || (127...159).contains(scalar.value))
+                && scalar != "\n" && scalar != "\r" && scalar != "\t"
         }
     }
 

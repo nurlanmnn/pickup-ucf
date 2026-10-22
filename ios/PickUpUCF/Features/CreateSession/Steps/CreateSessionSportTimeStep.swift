@@ -47,11 +47,8 @@ struct CreateSessionSportTimeStep: View {
                     .padding(Spacing.m)
                     .background(AppColor.surface(colorScheme))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .onChange(of: viewModel.customSportName) { _, newValue in
-                        if newValue.count > 40 {
-                            viewModel.customSportName = String(newValue.prefix(40))
-                        }
-                    }
+
+                ContentFieldFeedback(value: viewModel.customSportName, field: .customSport)
 
                 if let error = viewModel.sportNameError {
                     FieldErrorLabel(message: error)

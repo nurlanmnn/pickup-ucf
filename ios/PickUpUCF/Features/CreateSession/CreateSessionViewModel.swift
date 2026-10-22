@@ -76,10 +76,22 @@ final class CreateSessionViewModel {
         return venuePickerOptionId == Self.customVenuePickerTag
     }
 
+    var notesForValidation: String {
+        if UserContentPolicy.validationMessage(notes, field: .sessionNotes, optional: true) != nil { return notes }
+        return OtherSportNotes.composedNotes(sport: sport, customOtherName: customSportName, userNotes: notes) ?? ""
+    }
+
+    private var contentIsValid: Bool {
+        UserContentPolicy.validationMessage(notes, field: .sessionNotes, optional: true) == nil
+            && UserContentPolicy.validationMessage(notesForValidation, field: .sessionNotes, optional: true) == nil
+            && (sport != .other || UserContentPolicy.validationMessage(customSportName, field: .customSport) == nil)
+            && (selectedVenueId != nil || UserContentPolicy.validationMessage(customLocationSelection?.label ?? "", field: .customLocation) == nil)
+    }
+
     var canSubmit: Bool {
-        guard !isLoading else { return false }
+        guard !isLoading, contentIsValid else { return false }
         guard (15 ... 300).contains(durationMinutes), (2 ... 50).contains(capacity) else { return false }
-        if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if sport == .other, UserContentPolicy.validationMessage(customSportName, field: .customSport) != nil {
             return false
         }
         let hasLocation = selectedVenueId != nil || customLocationSelection != nil
@@ -430,7 +442,7 @@ final class CreateSessionViewModel {
     }
 
     private var sportAndTimeIsValid: Bool {
-        if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if sport == .other, UserContentPolicy.validationMessage(customSportName, field: .customSport) != nil {
             return false
         }
         guard (15 ... 300).contains(durationMinutes) else { return false }
@@ -438,7 +450,7 @@ final class CreateSessionViewModel {
     }
 
     private var locationIsValid: Bool {
-        selectedVenueId != nil || customLocationSelection != nil
+        selectedVenueId != nil || (customLocationSelection != nil && UserContentPolicy.validationMessage(customLocationSelection?.label ?? "", field: .customLocation) == nil)
     }
 
     private func markDirtyIfNeeded() {

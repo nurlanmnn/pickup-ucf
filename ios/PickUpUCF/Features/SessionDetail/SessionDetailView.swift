@@ -68,10 +68,12 @@ struct SessionDetailView: View {
                             } label: {
                                 Label("Report session", systemImage: "exclamationmark.bubble")
                             }
-                            Button(role: .destructive) {
-                                showBlockConfirm = true
-                            } label: {
-                                Label("Block host", systemImage: "hand.raised")
+                            if session.hostId != nil {
+                                Button(role: .destructive) {
+                                    showBlockConfirm = true
+                                } label: {
+                                    Label("Block host", systemImage: "hand.raised")
+                                }
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
@@ -335,29 +337,37 @@ struct SessionDetailView: View {
 
             Divider().padding(.leading, 52)
 
-            NavigationLink {
-                HostProfileView(
-                    userId: session.hostId,
-                    currentUserId: appState.session?.userId,
-                    onBlocked: {
-                        appState.touchSessionFeedRefresh()
-                        dismiss()
-                    }
-                )
-            } label: {
-                infoRow(icon: "person.fill", color: AppColor.sportAccent(session.sport)) {
-                    HStack {
-                        Text(session.host?.handle ?? "Host")
-                            .font(AppFont.body(.semibold))
-                            .foregroundStyle(AppColor.textPrimary(colorScheme))
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+            if let hostId = session.hostId {
+                NavigationLink {
+                    HostProfileView(
+                        userId: hostId,
+                        currentUserId: appState.session?.userId,
+                        onBlocked: {
+                            appState.touchSessionFeedRefresh()
+                            dismiss()
+                        }
+                    )
+                } label: {
+                    infoRow(icon: "person.fill", color: AppColor.sportAccent(session.sport)) {
+                        HStack {
+                            Text(session.host?.handle ?? "Host")
+                                .font(AppFont.body(.semibold))
+                                .foregroundStyle(AppColor.textPrimary(colorScheme))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(AppColor.textSecondary(colorScheme).opacity(0.5))
+                        }
                     }
                 }
+                .buttonStyle(.plain)
+            } else {
+                infoRow(icon: "person.fill", color: AppColor.sportAccent(session.sport)) {
+                    Text("Deleted host")
+                        .font(AppFont.body(.semibold))
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                }
             }
-            .buttonStyle(.plain)
 
             if session.isOutdoorForWeather, let weather = session.weatherSnapshot {
                 Divider().padding(.leading, 52)

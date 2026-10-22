@@ -40,6 +40,9 @@ struct CreateSessionDetailsStep: View {
                 .background(AppColor.surface(colorScheme))
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
+            ContentFieldFeedback(value: viewModel.notesForValidation, field: .sessionNotes, optional: true)
+            if viewModel.sport == .other { FormFieldHint(text: "Includes the sport label saved with your notes.") }
+
             DisclosureGroup(isExpanded: $showMoreOptions) {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Toggle("Repeat weekly", isOn: $viewModel.repeatWeekly)

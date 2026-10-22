@@ -25,7 +25,7 @@ struct DeleteAccountView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(AppColor.destructive)
                         .font(.system(size: 16, weight: .semibold))
-                    Text("This permanently deletes your profile, messages, and game history. Open sessions you host will be cancelled.")
+                    Text("This permanently deletes your profile and messages. Your hosted games stay under “Deleted host”, and active games you host are cancelled. Limited safety records and protected backups may be retained.")
                         .font(AppFont.body())
                         .foregroundStyle(.primary)
                 }

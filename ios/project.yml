@@ -39,6 +39,8 @@ targets:
       path: PickUpUCF/Info.plist
       properties:
         CFBundleDisplayName: PickUp UCF
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "4"
         SUPABASE_URL: $(SUPABASE_URL)
         SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
         CFBundleURLTypes:
@@ -86,6 +88,8 @@ targets:
       path: PickUpUCFWidget/Info.plist
       properties:
         CFBundleDisplayName: PickUp UCF Widget
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "4"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
@@ -128,6 +132,8 @@ schemes:
       config: Debug
     test:
       config: Debug
+      environmentVariables:
+        PICKUP_UNIT_TESTS: "1"
       targets:
         - PickUpUCFTests
     profile:

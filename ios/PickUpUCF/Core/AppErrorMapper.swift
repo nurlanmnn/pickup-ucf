@@ -294,6 +294,18 @@ enum AppErrorMapper {
         if text.contains("report_target_not_found") || text.contains("invalid_report_target") {
             return "This item can’t be reported or is no longer available."
         }
+        if text.contains("session_not_editable") || text.contains("invalid_session_status_transition") {
+            return "This game can no longer be edited. Refresh to see its current status."
+        }
+        if text.contains("host_cannot_leave") {
+            return "As the host, cancel the game instead of leaving it."
+        }
+        if text.contains("user_content_required") {
+            return "Enter text before continuing."
+        }
+        if text.contains("user_content_too_long") {
+            return "This text is too long. Shorten it and try again."
+        }
         if text.contains("user_content_rejected") {
             return "This text may violate the community rules. Edit it and try again."
         }

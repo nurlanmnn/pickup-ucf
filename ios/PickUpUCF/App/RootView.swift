@@ -12,6 +12,7 @@ struct RootView: View {
                     OnboardingView()
                 } else {
                     MainTabView()
+                        .id(appState.session?.userId)
                 }
             } else {
                 WelcomeView()

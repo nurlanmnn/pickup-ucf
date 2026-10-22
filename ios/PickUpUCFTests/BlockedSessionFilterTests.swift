@@ -20,7 +20,7 @@ final class BlockedSessionFilterTests: XCTestCase {
 
         XCTAssertEqual(filtered.count, 2)
         XCTAssertTrue(filtered.allSatisfy { $0.hostId != blockedHostId })
-        XCTAssertEqual(Set(filtered.map(\.hostId)), Set([otherHostA, otherHostB]))
+        XCTAssertEqual(Set(filtered.compactMap(\.hostId)), Set([otherHostA, otherHostB]))
     }
 
     func testEmptyBlockListReturnsAllSessions() {

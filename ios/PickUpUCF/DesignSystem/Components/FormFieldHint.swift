@@ -12,3 +12,21 @@ struct FormFieldHint: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 }
+
+/// Counts normalized Unicode code points, matching the database limit.
+struct ContentFieldFeedback: View {
+    let value: String
+    let field: UserContentField
+    var optional = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            FormFieldHint(text: "\(UserContentPolicy.length(value))/\(field.maximumLength) characters")
+                .accessibilityHint("Emoji may count as several characters.")
+            if !value.isEmpty, let message = UserContentPolicy.validationMessage(value, field: field, optional: optional) {
+                FieldErrorLabel(message: message)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}

@@ -108,17 +108,38 @@ final class AuthRepository: AuthRepositoryProtocol {
     }
 
     func currentSession() async -> AppSession? {
-        guard let session = try? await client.auth.session else { return nil }
-        guard let mapped = try? mapSession(session) else { return nil }
-        guard mapped.isEmailConfirmed else {
-            try? await client.auth.signOut()
+        guard let session = try? await client.auth.session,
+              let cached = try? mapSession(session) else { return nil }
+        guard cached.isEmailConfirmed else {
+            try? await client.auth.signOut(scope: .local)
             return nil
         }
-        return mapped
+        do {
+            // A persisted JWT can outlive account deletion. Check the current
+            // server user before restoring it, without treating offline as deletion.
+            let user = try await client.auth.user(jwt: session.accessToken)
+            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            let current = try mapUser(user)
+            guard current.userId == cached.userId, current.isEmailConfirmed else {
+                try? await client.auth.signOut(scope: .local)
+                return nil
+            }
+            return current
+        } catch let error as AuthError where [ErrorCode.userNotFound, .sessionNotFound, .sessionExpired, .badJWT, .refreshTokenNotFound].contains(error.errorCode) {
+            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            try? await client.auth.signOut(scope: .local)
+            return nil
+        } catch {
+            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            return cached
+        }
     }
 
     private func mapSession(_ session: Session) throws -> AppSession {
-        let user = session.user
+        try mapUser(session.user)
+    }
+
+    private func mapUser(_ user: User) throws -> AppSession {
         let confirmed = user.emailConfirmedAt != nil || user.confirmedAt != nil
         guard let email = user.email else {
             throw AuthRepositoryError.missingEmail

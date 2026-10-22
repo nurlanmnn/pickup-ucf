@@ -4,6 +4,19 @@ import XCTest
 @testable import PickUpUCF
 
 final class AppErrorMapperTests: XCTestCase {
+    func testMapsContentAndLifecycleBoundaryErrorsWithoutEchoingBackendDetails() {
+        for (message, expected) in [
+            ("user_content_required", "Enter text before continuing."),
+            ("user_content_too_long", "This text is too long. Shorten it and try again."),
+            ("session_not_editable", "This game can no longer be edited. Refresh to see its current status."),
+            ("invalid_session_status_transition", "This game can no longer be edited. Refresh to see its current status."),
+            ("host_cannot_leave", "As the host, cancel the game instead of leaving it.")
+        ] {
+            XCTAssertEqual(AppErrorMapper.message(for: PostgrestError(
+                detail: "private SQL content", hint: nil, code: "22023", message: message)), expected)
+        }
+    }
+
     func testMapsStructuredAuthErrorsBeforeLocalizedDescription() {
         let cases: [(ErrorCode, String)] = [
             (.invalidCredentials, "Invalid email or password."),

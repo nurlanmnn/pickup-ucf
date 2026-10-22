@@ -77,3 +77,14 @@ enum AccountTransitionCoordinator {
         return failures.isEmpty ? .completed : .completedWithWarning(failures)
     }
 }
+
+/// Clear account-linked references while retaining push quarantine needed for recovery.
+enum AccountLocalDataCleanup {
+    static func clear(defaults: UserDefaults = .standard) {
+        for key in defaults.dictionaryRepresentation().keys where
+            key.hasPrefix("calendar_export_event_id_") ||
+            ["createSession.lastSport", "createSession.lastVenueId", "discoverSportFilterMode"].contains(key) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+}

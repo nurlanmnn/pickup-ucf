@@ -43,7 +43,7 @@ struct MapLocationPickerView: View {
                         confirmSelection()
                     }
                     .fontWeight(.semibold)
-                    .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(UserContentPolicy.validationMessage(draftLabel, field: .customLocation) != nil)
                 }
             }
         }
@@ -138,9 +138,10 @@ struct MapLocationPickerView: View {
             Text("Selected")
                 .font(AppFont.caption(.semibold))
                 .foregroundStyle(AppColor.textSecondary(colorScheme))
-            Text(draftLabel.isEmpty ? "Search or tap the map to drop a pin." : draftLabel)
+            TextField("Location name", text: $draftLabel, axis: .vertical)
                 .font(AppFont.body())
                 .foregroundStyle(AppColor.textPrimary(colorScheme))
+            ContentFieldFeedback(value: draftLabel, field: .customLocation)
             FormFieldHint(text: "Tip: tap the map to fine-tune the pin after searching.")
 
             if embedded {
@@ -150,7 +151,7 @@ struct MapLocationPickerView: View {
                 .font(AppFont.headline(.semibold))
                 .foregroundStyle(AppColor.accent(colorScheme))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .disabled(draftLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(UserContentPolicy.validationMessage(draftLabel, field: .customLocation) != nil)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -204,15 +205,13 @@ struct MapLocationPickerView: View {
     }
 
     private func confirmSelection() {
-        let trimmed = draftLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        guard let trimmed = try? UserContentPolicy.validate(draftLabel, field: .customLocation) else { return }
         selection = CustomLocationSelection(label: trimmed, coordinate: pinCoordinate)
         dismiss()
     }
 
     private func confirmSelectionEmbedded() {
-        let trimmed = draftLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        guard let trimmed = try? UserContentPolicy.validate(draftLabel, field: .customLocation) else { return }
         selection = CustomLocationSelection(label: trimmed, coordinate: pinCoordinate)
     }
 

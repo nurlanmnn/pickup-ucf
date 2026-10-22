@@ -31,6 +31,7 @@ struct SignUpView: View {
                             .submitLabel(.next)
                             .onSubmit { focusedField = .email }
                     }
+                    ContentFieldFeedback(value: viewModel.displayName, field: .displayName)
                     if showFieldHints, let hint = displayNameHint {
                         FieldErrorLabel(message: hint).formCardInset()
                     }

@@ -43,4 +43,31 @@ final class UserContentPolicyTests: XCTestCase {
             XCTAssertFalse(error.localizedDescription.localizedCaseInsensitiveContains(rejected))
         }
     }
+    func testNFCAndUnicodeWhitespaceMatchServerContract() throws {
+        let normalized = try UserContentPolicy.validate(" \u{00A0}Cafe\u{0301}\u{2007}\nteam\u{3000}", field: .displayName)
+        XCTAssertEqual(normalized, "Café team")
+        XCTAssertEqual(normalized.unicodeScalars.count, 9)
+    }
+
+    func testEmojiSequencesCountCodePointsAndRemainAllowed() throws {
+        let family = "👩‍👩‍👧‍👦" // Seven code points, one grapheme.
+        XCTAssertEqual(try UserContentPolicy.validate(family, field: .chatMessage), family)
+        XCTAssertThrowsError(try UserContentPolicy.validate(String(repeating: family, count: 72), field: .chatMessage))
+    }
+
+    func testOptionalContentCannotNormalizeAwayForbiddenControls() {
+        for raw in ["hello\u{000B}world", "\u{0085}", "hello\u{000C}"] {
+            XCTAssertThrowsError(try UserContentPolicy.validateOptional(raw, field: .sessionNotes))
+        }
+    }
+
+    func testAllFieldBoundariesUseNormalizedCodePoints() throws {
+        for field in [UserContentField.displayName, .sessionNotes, .customSport, .customLocation, .chatMessage, .reportContext] {
+            XCTAssertThrowsError(try UserContentPolicy.validate(" \n\t", field: field))
+            XCTAssertEqual(try UserContentPolicy.validate("é", field: field), "é")
+            XCTAssertEqual(try UserContentPolicy.validate(String(repeating: "e\u{0301}", count: field.maximumLength), field: field), String(repeating: "é", count: field.maximumLength))
+            XCTAssertThrowsError(try UserContentPolicy.validate(String(repeating: "🏀", count: field.maximumLength + 1), field: field))
+        }
+    }
+
 }

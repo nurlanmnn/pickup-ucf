@@ -1,3 +1,5 @@
+\set ON_ERROR_STOP on
+BEGIN;
 \ir helpers.sql
 \ir phase_a_notifications.sql
 \ir phase_b_sports.sql
@@ -11,3 +13,10 @@
 \ir phase_f_device_token_ownership.sql
 \ir phase_g_moderation.sql
 \ir phase_h_atomic_creation.sql
+\ir phase_i_input_boundaries.sql
+\ir phase_j_rpc_grants.sql
+\ir phase_k_join_leave.sql
+\ir phase_l_account_deletion.sql
+\ir phase_m_roster_access.sql
+\ir phase_n_session_status.sql
+ROLLBACK;

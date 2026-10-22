@@ -20,7 +20,7 @@ final class SignUpViewModel {
         EmailDomainValidator.validationMessage(for: email) == nil
             && PasswordValidator.validationMessage(for: password) == nil
             && PasswordValidator.confirmationMessage(password: password, confirm: confirmPassword) == nil
-            && !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && UserContentPolicy.validationMessage(displayName, field: .displayName) == nil
             && !isLoading
     }
 
@@ -36,7 +36,7 @@ final class SignUpViewModel {
             try await repository.signUp(
                 email: email,
                 password: password,
-                displayName: displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+                displayName: try UserContentPolicy.validate(displayName, field: .displayName)
             )
             didSignUp = true
         } catch {

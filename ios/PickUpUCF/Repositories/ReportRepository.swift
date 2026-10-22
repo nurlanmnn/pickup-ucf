@@ -51,7 +51,7 @@ final class ReportRepository: ReportRepositoryProtocol {
 
     func submitReport(target: ReportTarget, category: ReportCategory, context: String?) async throws {
         let safeContext = try UserContentPolicy.validateOptional(context, field: .reportContext)
-        if let safeContext, safeContext.count < 10 {
+        if let safeContext, safeContext.unicodeScalars.count < 10 {
             throw ReportRepositoryError.contextTooShort
         }
 

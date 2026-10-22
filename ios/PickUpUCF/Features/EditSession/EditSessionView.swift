@@ -55,11 +55,9 @@ struct EditSessionView: View {
                             .focused($focusedField, equals: .customSportName)
                             .onChange(of: vm.customSportName) { _, newValue in
                                 vm.markDirty()
-                                if newValue.count > 40 {
-                                    vm.customSportName = String(newValue.prefix(40))
-                                }
                             }
 
+                        ContentFieldFeedback(value: vm.customSportName, field: .customSport)
                         if let error = vm.sportNameError {
                             FieldErrorLabel(message: error)
                         }
@@ -169,6 +167,8 @@ struct EditSessionView: View {
                         .lineLimit(2...4)
                         .focused($focusedField, equals: .notes)
                         .onChange(of: vm.notes) { _, _ in vm.markDirty() }
+                    ContentFieldFeedback(value: vm.notesForValidation, field: .sessionNotes, optional: true)
+                    if vm.sport == .other { FormFieldHint(text: "Includes the sport label saved with your notes.") }
                 } header: {
                     Text("Details")
                 } footer: {

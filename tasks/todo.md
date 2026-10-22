@@ -1,4 +1,10 @@
-# Current work — October 21, 2026
+# Current work — October 22, 2026
+
+Continue with [input boundaries and launch gates](../docs/superpowers/plans/2026-10-22-input-boundaries-and-launch-gates.md). BETA-08 changes are preserved on `codex/realtime-chat-recovery`. BETA-03, explicit RPC/mutation grants, serialized leave, contextual notification consent and account-local cleanup now have local implementation. Production exposed RPC grants and missing October notification migrations were confirmed read-only. The owner chose anonymized retained games; deletion, null-host UI, chat reconciliation and relaunch cleanup now have local coverage. Production/device/App Store gates remain open. No commit, push or deployment was performed. Earlier test-host bootstrap refreshed one existing production profile/token registration; the incident and the now-enforced synthetic test isolation are recorded in the focused plan.
+
+# Previous work — October 21, 2026
+
+BETA-08 source and regression work is recorded in [Realtime chat recovery](../docs/superpowers/plans/2026-10-21-realtime-chat-recovery.md). Live two-account reconnect/foreground checks and physical-device accessibility remain open.
 
 Use the [master readiness checklist](../docs/superpowers/plans/2026-09-02-testflight-readiness.md) for remaining work. UI/auth UX, chat pagination, and atomic creation have local evidence; the atomic-creation production migration was approved and applied on October 21. The owner has requested pushing the current state to main. Earlier incident checklists below preserve historical evidence; TF-06 was subsequently completed by owner confirmation on October 4. Physical-device/offline and remaining deployment gates stay separate.
 

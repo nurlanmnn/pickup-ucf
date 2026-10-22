@@ -1,4 +1,10 @@
-# Current work — October 21, 2026
+# Current work — October 22, 2026
+
+Continue with [input boundaries and launch gates](../docs/superpowers/plans/2026-10-22-input-boundaries-and-launch-gates.md). BETA-08 changes are preserved on `codex/realtime-chat-recovery`. BETA-03, explicit RPC/mutation grants, serialized leave, contextual notification consent and account-local cleanup now have local implementation. Production exposed RPC grants and missing October notification migrations were confirmed read-only. The owner chose anonymized retained games; deletion, null-host UI, chat reconciliation and relaunch cleanup now have local coverage. Production/device/App Store gates remain open. No commit, push or deployment was performed. Earlier test-host bootstrap refreshed one existing production profile/token registration; the incident and the now-enforced synthetic test isolation are recorded in the focused plan.
+
+# Previous work — October 21, 2026
+
+Latest workstream: [Realtime chat recovery and author identity](../docs/superpowers/plans/2026-10-21-realtime-chat-recovery.md), BETA-08. App-only implementation and signed simulator verification; no new backend migration is needed. Keep transport/device evidence separate from synthetic state/HTTP tests.
 
 Current evidence: [UI and navigation audit](../docs/design/2026-10-21-ux-audit.md), [newest-message chat](../docs/superpowers/plans/2026-10-14-local-beta-readiness.md), and [atomic creation](../docs/superpowers/plans/2026-10-21-atomic-session-creation.md). The owner approved and production received the atomic-creation migration on October 21. The owner subsequently requested pushing all current changes to main. Signed simulator verification passed 218/218 iOS tests; device/offline and other open readiness gates remain separate. No archive upload or App Store submission is included.
 

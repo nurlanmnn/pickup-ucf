@@ -23,11 +23,59 @@ final class AuthSessionPersistenceTests: XCTestCase {
         XCTAssertNotNil(try storage.retrieve(key: key), "Sign-in must reach Keychain, not just app UI state")
         let profile = try await ProfileRepository(client: client).fetchCurrentProfile()
         XCTAssertEqual(profile.id, signedIn.userId)
+        let validated = await AuthRepository(client: client).currentSession()
+        XCTAssertEqual(validated?.userId, signedIn.userId)
         let restored = try await makeClient().auth.session
         XCTAssertEqual(restored.user.id, signedIn.userId, "A new client must restore the persisted session")
         try await client.auth.signOut(scope: .local)
         XCTAssertNil(makeClient().auth.currentSession, "Local sign-out must remove the saved session")
     }
+    func testRemoteLogoutFailureStillClearsRealKeychainSession() async throws {
+        let storage = KeychainLocalStorage(service: "pickup.logout-tests.\(UUID().uuidString)")
+        let key = UUID().uuidString
+        defer { try? storage.remove(key: key) }
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [PersistedAuthRequest.self]
+        let client = SupabaseClient(supabaseURL: URL(string: "https://logout-error.invalid")!, supabaseKey: "synthetic-key",
+                                    options: .init(auth: .init(storage: storage, storageKey: key, autoRefreshToken: false),
+                                                   global: .init(session: URLSession(configuration: config))))
+        let repository = AuthRepository(client: client)
+        _ = try await repository.signIn(email: "synthetic@ucf.edu", password: "synthetic-password")
+        do { try await repository.signOut(); XCTFail("Expected remote failure") }
+        catch {}
+        XCTAssertThrowsError(try storage.retrieve(key: key)) { error in
+            XCTAssertTrue(error.localizedDescription.hasPrefix("errSecItemNotFound:"))
+        }
+        XCTAssertNil(client.auth.currentSession)
+    }
+
+    func testRelaunchRejectsDeletedAccountButRetainsSessionDuringOfflineVerification() async throws {
+        for host in ["deleted-auth-tests.invalid", "offline-auth-tests.invalid"] {
+            let storage = KeychainLocalStorage(service: "pickup.relaunch-tests.\(UUID().uuidString)")
+            let key = UUID().uuidString
+            defer { try? storage.remove(key: key) }
+            let config = URLSessionConfiguration.ephemeral
+            config.protocolClasses = [PersistedAuthRequest.self]
+            func makeClient() -> SupabaseClient {
+                SupabaseClient(supabaseURL: URL(string: "https://\(host)")!, supabaseKey: "synthetic-key",
+                               options: .init(auth: .init(storage: storage, storageKey: key, autoRefreshToken: false),
+                                              global: .init(session: URLSession(configuration: config))))
+            }
+            _ = try await AuthRepository(client: makeClient()).signIn(email: "synthetic@ucf.edu", password: "synthetic-password")
+            let restoredClient = makeClient()
+            let restored = await AuthRepository(client: restoredClient).currentSession()
+            if host.hasPrefix("deleted") {
+                XCTAssertNil(restored)
+                XCTAssertThrowsError(try storage.retrieve(key: key)) { error in
+                    XCTAssertTrue(error.localizedDescription.hasPrefix("errSecItemNotFound:"))
+                }
+            } else {
+                XCTAssertNotNil(restored, "A network failure is not evidence of deletion")
+                XCTAssertNotNil(try storage.retrieve(key: key))
+            }
+        }
+    }
+
 }
 
 private final class PersistedAuthRequest: URLProtocol {
@@ -37,6 +85,22 @@ private final class PersistedAuthRequest: URLProtocol {
     override func startLoading() {
         do {
             let payload: [String: Any]
+            if request.url?.path == "/auth/v1/user" {
+                if request.url?.host == "offline-auth-tests.invalid" { throw URLError(.notConnectedToInternet) }
+                let deleted = request.url?.host == "deleted-auth-tests.invalid"
+                let user: [String: Any] = ["id": Self.userId, "aud": "authenticated", "role": "authenticated",
+                    "email": "synthetic@ucf.edu", "app_metadata": [:], "user_metadata": [:],
+                    "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z",
+                    "email_confirmed_at": "2026-01-01T00:00:00Z", "is_anonymous": false]
+                let body = deleted ? Data(#"{"code":"user_not_found","msg":"User from sub claim in JWT does not exist"}"#.utf8)
+                    : try JSONSerialization.data(withJSONObject: user)
+                let response = HTTPURLResponse(url: request.url!, statusCode: deleted ? 404 : 200, httpVersion: nil,
+                                               headerFields: ["Content-Type": "application/json", "X-Supabase-Api-Version": "2024-01-01"])!
+                client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                client?.urlProtocol(self, didLoad: body)
+                client?.urlProtocolDidFinishLoading(self)
+                return
+            }
             if request.url?.path == "/auth/v1/token" {
                 payload = [
                     "access_token": "synthetic-access-token", "refresh_token": "synthetic-refresh-token",
@@ -52,12 +116,20 @@ private final class PersistedAuthRequest: URLProtocol {
                 payload = ["id": Self.userId, "display_name": "Synthetic Knight", "games_played": 0,
                            "show_up_streak": 0, "preferred_sports": []]
             } else if request.url?.path == "/auth/v1/logout" {
+                if request.url?.host == "logout-error.invalid" {
+                    let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil,
+                                                   headerFields: ["Content-Type": "application/json", "X-Supabase-Api-Version": "2024-01-01"])!
+                    client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                    client?.urlProtocol(self, didLoad: Data(#"{"code":"unexpected_failure","msg":"Synthetic logout failure"}"#.utf8))
+                    client?.urlProtocolDidFinishLoading(self)
+                    return
+                }
                 payload = [:]
             } else {
                 throw URLError(.unsupportedURL)
             }
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil,
-                                           headerFields: ["Content-Type": "application/json"])!
+                                           headerFields: ["Content-Type": "application/json", "X-Supabase-Api-Version": "2024-01-01"])!
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: try JSONSerialization.data(withJSONObject: payload))
             client?.urlProtocolDidFinishLoading(self)

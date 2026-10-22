@@ -6,6 +6,7 @@ struct ChatView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @State private var viewModel: ChatViewModel
     @State private var reportMessage: SessionMessage?
     @State private var userToBlock: UUID?
@@ -26,6 +27,17 @@ struct ChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if let error = viewModel.syncError ?? viewModel.authorError {
+                VStack(spacing: Spacing.xs) {
+                    ErrorBanner(message: error)
+                    Button("Retry") { Task { await viewModel.startRealtime() } }
+                        .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel("Retry live updates")
+                        .accessibilityHint("Reconnect and fetch messages you may have missed")
+                }
+                .padding(.horizontal, Spacing.m)
+            }
             messageList
             composer
         }
@@ -47,6 +59,15 @@ struct ChatView: View {
         }
         .onDisappear {
             Task { await viewModel.stopRealtime() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            Task {
+                if phase == .active {
+                    if viewModel.messages.value == nil { await viewModel.load() }
+                    await viewModel.startRealtime()
+                }
+                else if phase == .background { await viewModel.stopRealtime() }
+            }
         }
         .sheet(item: $reportMessage) { message in
             NavigationStack {
@@ -181,6 +202,8 @@ struct ChatView: View {
                     .padding(.horizontal, Spacing.m)
             }
 
+            ContentFieldFeedback(value: viewModel.draftText, field: .chatMessage)
+                .padding(.horizontal, Spacing.m)
             HStack(alignment: .bottom, spacing: Spacing.s) {
                 TextField("Message", text: $viewModel.draftText, axis: .vertical)
                     .lineLimit(1 ... 4)
@@ -213,7 +236,7 @@ struct ChatView: View {
     }
 
     private var canSend: Bool {
-        !viewModel.draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !viewModel.isSending
+        UserContentPolicy.validationMessage(viewModel.draftText, field: .chatMessage) == nil && !viewModel.isSending
     }
 }
 

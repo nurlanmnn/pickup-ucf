@@ -4,7 +4,7 @@
 
 **Status:** Internal TestFlight physical-device smoke gate completed by release-owner confirmation on 2026-10-04; external Beta App Review preparation in progress
 
-**Last audited:** 2026-10-21 (local UX/source, simulator, and test verification; production/App Store Connect not re-audited)
+**Last audited:** 2026-10-22 (local source/simulator/SQL review plus read-only production migration, RPC-grant, host-FK and cron checks; physical devices and App Store Connect not re-audited)
 
 **Target sequence:** Internal TestFlight → external TestFlight → stabilized beta
 
@@ -383,7 +383,7 @@ directly in App Store Connect.
 
 **Tasks:**
 
-- [ ] Deploy every currently tracked Supabase migration to the production project in order (last recorded parity through `20260917192500` on 2026-09-30; October notification migrations and the separate October 14 venue correction remain pending recorded production verification).
+- [ ] Deploy the missing October 5 notification migrations and the seven October 22 candidate migrations in reviewed dependency order. Read-only October 22 history confirms the venue correction and atomic creation are recorded; candidate deployment remains open.
 - [ ] Verify RLS is enabled and least-privilege policies behave correctly for anonymous, authenticated, blocked, and deleted users.
 - [x] Configure `APNS_ENV=production` and verify the existing APNs key/team/bundle identifiers for TestFlight delivery (2026-09-17).
 - [ ] Complete secret ownership documentation; the dedicated push cron secret is configured, while Brevo/email-hook ownership still requires verification.
@@ -469,15 +469,17 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Define normalized minimum/maximum lengths for chat messages, display names, session notes, custom sport names, and custom location names.
-- [ ] Decide whitespace, newline, emoji/grapheme, and Unicode normalization behavior.
-- [ ] Add database constraints or controlled RPC validation so crafted clients cannot bypass limits.
-- [ ] Mirror limits in the iOS UI with counters and accessible inline guidance.
-- [ ] Map rejected input to safe, specific errors.
-- [ ] Add boundary tests at below-minimum, exact-limit, over-limit, whitespace-only, multiline, and multi-byte Unicode inputs.
-- [ ] Coordinate limits with the UGC filter/moderation rules.
+- [x] Define normalized minimum/maximum lengths for chat messages, display names, session notes, custom sport names, and custom location names.
+- [x] Decide whitespace, newline, emoji/grapheme, and Unicode normalization behavior.
+- [x] Add database constraints or controlled RPC validation so crafted clients cannot bypass limits.
+- [x] Mirror limits in the iOS UI with counters and accessible inline guidance.
+- [x] Map rejected input to safe, specific errors.
+- [x] Add boundary tests at below-minimum, exact-limit, over-limit, whitespace-only, multiline, and multi-byte Unicode inputs.
+- [x] Coordinate limits with the UGC filter/moderation rules.
 
 **Done when:** Client and server enforce the same documented rules and malicious/oversized input cannot enter the database.
+
+**Local source evidence (2026-10-22):** Aligned NFC normalization, an explicit Unicode whitespace set, code-point limits (not grapheme clusters), raw C0/C1 rejection with TAB/LF/CR collapsing, required display/chat text, and optional blank-to-null behavior. Added accessible counters/guidance without truncating drafts across signup, chat, create/edit and custom-location inputs. The notes counter includes the stored Other-sport label. Existing UGC filters remain in place. New migration `20261022145737_input_content_boundaries.sql` and crafted-client SQL tests pass locally; deployment and exact-candidate device checks remain open. See the [October 22 plan](2026-10-22-input-boundaries-and-launch-gates.md).
 
 ## BETA-04 — Remove nested navigation and join/leave controls (**P1**)
 
@@ -522,14 +524,16 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Add an in-app explanation tied to a concrete reminder/chat benefit.
-- [ ] Trigger the system prompt only after an intentional user action or meaningful setup point.
-- [ ] Do not repeatedly nag users who decline.
-- [ ] Show the current authorization state and a Settings deep link when permission is denied.
+- [x] Add an in-app explanation tied to a concrete reminder/chat benefit.
+- [x] Trigger the system prompt only after an intentional user action or meaningful setup point.
+- [x] Do not repeatedly nag users who decline.
+- [x] Show the current authorization state and a Settings deep link when permission is denied.
 - [ ] Keep token registration/unregistration correct across permission changes and account transitions.
 - [ ] Measure prompt acceptance without collecting unnecessary personal data.
 
 **Done when:** Users understand why notifications are useful before the system prompt, and every permission state has a coherent recovery path.
+
+**Local source evidence (2026-10-22):** Removed the notification prompt from authenticated bootstrap. Notification Settings explains reminders/chat, requests permission only through Enable notifications, displays denied state and the system Settings link, and refreshes status on foreground. Authorization/ownership/quarantine tests pass locally. Physical allow/deny/Settings recovery and account-switch delivery remain open; no acceptance analytics or new SDK was added.
 
 ## BETA-07 — Replace sensitive custom-scheme links with Universal Links (**P1**)
 
@@ -555,11 +559,13 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Include safe author metadata in the realtime flow or resolve it from a bounded profile/roster cache.
-- [ ] Avoid an N+1 profile request for each incoming message.
-- [ ] Define behavior for deleted, blocked, or renamed users.
-- [ ] Keep profile visibility consistent with RLS/data-minimization rules.
-- [ ] Test simultaneous senders, cache misses, reconnects, edits to display name, and deleted accounts.
+- [x] Include safe author metadata in the realtime flow or resolve it from a bounded profile/roster cache.
+- [x] Avoid an N+1 profile request for each incoming message.
+- [x] Define behavior for deleted, blocked, or renamed users.
+- [x] Keep profile visibility consistent with RLS/data-minimization rules.
+- [x] Test simultaneous senders, cache misses, reconnect catch-up, edits to display name, and missing/deleted profile metadata with synthetic HTTP/state cases.
+
+**Local implementation (2026-10-21):** Per-chat sender metadata is cached for 60 seconds with a 100-sender limit. Unknown senders are coalesced and resolved through session-scoped, RLS-protected message reads (at most 50 IDs/request) using the existing minimal author join. Missing metadata uses Player; blocking and lifecycle/revision checks prevent late reads restoring hidden names. Successful subscription/rejoin and foreground activation trigger catch-up to the last verified history boundary, retaining older history/cursors and handling multi-page gaps even when a newer realtime row is already present. Separate name/refresh errors have an accessible Retry action. Focused plan: `2026-10-21-realtime-chat-recovery.md`. Signed simulator tests cover state/HTTP behavior; real two-account WebSocket reconnect, foreground transport, and physical-device VoiceOver remain separate release checks.
 
 **Done when:** New realtime messages immediately show the correct permitted author identity without excessive requests or privacy leakage.
 
@@ -569,14 +575,18 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Define an explicit cleanup sequence for device token, Live Activities, local caches, widget/App Group state, realtime subscriptions, and auth state.
-- [ ] Unregister the APNs token before remote account deletion when possible.
-- [ ] Clear local authenticated state even if the final remote sign-out call fails.
-- [ ] Make retries safe and prevent deleted-account data from reappearing after relaunch.
-- [ ] Show clear progress, confirmation, failure, and irreversible-action copy.
+- [x] Define an explicit cleanup sequence for device token, Live Activities, local caches, widget/App Group state, realtime subscriptions, and auth state.
+- [x] Unregister the APNs token before remote account deletion when possible.
+- [x] Clear local authenticated state even if the final remote sign-out call fails.
+- [x] Make retries safe and prevent deleted-account data from reappearing after relaunch. (local source/tests; device gate remains open)
+- [x] Show clear progress, confirmation, failure, and irreversible-action copy. (local source/tests; device gate remains open)
 - [ ] Test offline deletion, partial backend failure, token-unregister failure, relaunch, and a new user signing in on the same device.
 
 **Done when:** After confirmed deletion, the device contains no usable prior-account session/data and a subsequent user cannot receive or see the deleted user’s information.
+
+**Local source evidence (2026-10-22):** The owner chose retained games with an anonymized host. `20261022152043_anonymize_hosted_games_on_deletion.sql` cancels active hosted games, preserves game rows with null host references and other players' chat, removes the deleted account's ordinary messages/tokens/memberships/authored notification previews, reconciles counts/promotions, disables future recurrence, and makes retries idempotent. Attendance uses null-safe host authorization. Source UI shows Deleted host without a profile/block link; local privacy copy explains retained history and limited safety records. SQL tests prove forced-failure rollback and preserve other-user cancellation/activity cleanup. The account-before-session locks in `20261022155106_serialize_account_mutations_with_deletion.sql` prevent new joins/creation racing past deletion cleanup.
+
+Account changes clear navigation, create prefills, banners and account-linked defaults/calendar identifiers; APNs quarantine remains available for recovery. A missing session at launch clears local references/notifications and quarantines the retained token. Real-Keychain synthetic tests cover deleted-account relaunch, offline restore and remote logout failure. Chat recovery revalidates older loaded rows so deleted messages disappear on successful refresh; failures retain history for retry. Exported calendar events are not removed by local identifier cleanup, and immediate deletion propagation to another open device is not claimed. **Production remains blocked:** the hosted-account FK failure is still deployed until the candidate migration is authorized/applied. Exact-candidate two-account/device deletion, offline/relaunch and notification isolation remain open.
 
 ## BETA-10 — Add privacy-safe observability (**P1**)
 
@@ -590,7 +600,7 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 - [ ] Attach build/environment identifiers and safe correlation IDs.
 - [ ] Define beta health signals: crash-free sessions, launch failures, auth failures, RPC errors, notification failures, and latency.
 - [ ] Configure alert ownership and a triage workflow for P0/P1 beta issues.
-- [ ] Verify debug logging is not accidentally shipped at an unsafe verbosity.
+- [x] Verify debug logging is not accidentally shipped at an unsafe verbosity (raw SDK payload logging removed in both configurations on October 22).
 
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
@@ -632,21 +642,23 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 
 **Tasks:**
 
-- [ ] Inventory every table policy, RPC, trigger, and `SECURITY DEFINER` function.
-- [ ] Revoke default/public execute rights and grant each function only to required roles.
+- [ ] Complete the table-policy/data-minimization threat-model audit (application function signatures and grants inventoried October 22).
+- [x] Revoke default/public execute rights and grant each function only to required roles (local migration; production deployment remains open).
 - [ ] Move player counts, host membership, capacity enforcement, status transitions, and other invariants behind transactional server logic.
 - [ ] Review whether profile, participant, roster, report, and blocked-user reads expose more data than each screen needs.
-- [ ] Verify anonymous users cannot call authenticated mutation functions.
+- [x] Verify anonymous users cannot call authenticated mutation functions (local SQL; production remains exposed until deployment).
 - [ ] Add SQL tests for cross-user access, crafted updates, blocked users, deleted users, and role escalation.
 - [ ] Document intentional exceptions and the threat model.
 
 **Done when:** The SQL security suite proves least-privilege access and clients cannot directly corrupt server-owned state.
 
+**Partial local evidence (2026-10-22):** `20261022150215_restrict_application_rpc_grants.sql` revokes direct PUBLIC/anon/authenticated execution, restores only client/RLS-helper grants, closes maintenance/enqueue/recurrence functions, pins three advisor-reported search paths, and restricts direct profile/session/member mutations. Atomic creation and join/leave own membership/count changes; clients cannot write counts/statistics or insert memberships. SQL verifies ordinary-user denial plus allowed profile upsert/edit and host notes edit. **Read-only production audit confirms exposed enqueue/global maintenance grants.** This is a release blocker until the reviewed migration is deployed with a compatible candidate; legacy direct-insert clients must be retired/coordinated. Current-account school-data checks reject stale deleted-account email claims. The roster visibility migration shares a private access gate with session RLS, filters blocked identities and preserves true waitlist position/counts. `20261022154815_enforce_host_status_transitions.sql` denies crafted completion/reopening/closed-content edits and reconciles open/full after capacity changes. Full numeric/edit/read-minimization audit and exact production role-matrix verification remain open.
+
 ## BETA-14 — Test join/leave concurrency and idempotency (**P1**)
 
 **Tasks:**
 
-- [ ] Review join and leave functions for consistent row locking and transaction boundaries.
+- [x] Review join and leave functions for consistent row locking and transaction boundaries (local fix).
 - [ ] Guarantee capacity cannot be exceeded under concurrent joins.
 - [ ] Guarantee counts cannot go negative or drift from participant rows.
 - [ ] Make repeated join/leave requests idempotent or return stable domain errors.
@@ -654,6 +666,8 @@ These tasks should be prioritized from user feedback and production evidence. Fi
 - [ ] Add a reconciliation query/job only if invariants cannot be guaranteed transactionally.
 
 **Done when:** Concurrency tests preserve capacity, membership, and count invariants under retries and simultaneous requests.
+
+**Partial local evidence (2026-10-22):** Reproduced duplicate leave producing `player_count=0` with one joined host. `20261022150858_serialize_session_leave.sql` takes the same session lock as join before reading membership, rejects host leave, skips blocked/suspended waitlist candidates, and honors promotion notification preferences. The local concurrency harness passes duplicate leave, competing final-slot joins and mixed join/leave; serial SQL covers host denial/idempotent leave. Harness fixtures and original function are restored in `finally`. Account-deletion count reconciliation and a simultaneous join against a locked/deleting account also pass locally. Atomic creation now takes the same account lock. Broader host/cancellation stress and production/device gates remain open.
 
 ## BETA-15 — Break up oversized feature files after release blockers (**P2**)
 
@@ -929,3 +943,16 @@ Focused plan and detailed evidence: `docs/superpowers/plans/2026-10-14-local-bet
 - [ ] Other open source/production/operations gates in this checklist, including BETA-08 realtime author/catch-up work, remain separate.
 
 Detailed UX audit: `docs/design/2026-10-21-ux-audit.md`. Production atomic-creation deployment was subsequently approved and applied at 15:50 UTC. No commit, push, archive upload, or external submission was performed.
+
+## Launch-critical follow-up — 2026-10-22
+
+- Preserved and reviewed the uncommitted BETA-08 source; no new blocker found in its ordering, authorization, bounded identity lookup, pagination and lifecycle guards. Live two-account/device checks remain separate.
+- Local implementation and validation details: [input boundaries and launch gates](2026-10-22-input-boundaries-and-launch-gates.md).
+- Read-only production migration history confirms atomic creation and the venue correction are recorded, while `20261005140000` and `20261005150000` remain absent. The old 15-minute reminder cron is still active. No migration/function deployment was performed; see the test-host bootstrap exception below.
+- Do not publish until exposed production RPCs, pending notification migration/function parity, hosted-account deletion, exact-candidate device/accessibility checks and the remaining EXT gates are resolved. Optional polish stays deferred.
+
+### October 22 test-host bootstrap exception
+
+Earlier unit-test hosts executed the existing startup path against production. Request-ID-paired SDK diagnostics confirm existing-profile upserts and device-token registration refreshes, plus auth-session refreshes. These requests involved one profile and one stored APNs token; read-only verification confirms that token currently belongs to that profile. Previous field values/ownership were not captured, so they cannot be reconstructed or safely restored. No migration, account deletion or session-content mutation was issued. This is an unintended production side effect, not device/integration validation.
+
+The Test action now sets `PICKUP_UNIT_TESTS=1`; the app skips live bootstrap and the shared client uses a synthetic host with HTTP rejected by URLProtocol. A regression verifies the flag and actual HTTP denial. Explicit repository tests keep their synthetic transports and real Keychain coverage. SDK payload logging was removed, earlier owned text logs were redacted, and result bundles containing earlier diagnostics were restricted to the current user. The final isolated suite passed **248/248**, and the Edge suite passed **36/36**. Local SQL/RLS and concurrency checks passed; full evidence and remaining gates are in the October 22 plan.

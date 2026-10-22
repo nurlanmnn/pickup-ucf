@@ -56,8 +56,20 @@ final class EditSessionViewModel {
         venuePickerOptionId == Self.customVenuePickerTag
     }
 
+    var notesForValidation: String {
+        if UserContentPolicy.validationMessage(notes, field: .sessionNotes, optional: true) != nil { return notes }
+        return OtherSportNotes.composedNotes(sport: sport, customOtherName: customSportName, userNotes: notes) ?? ""
+    }
+
+    private var contentIsValid: Bool {
+        UserContentPolicy.validationMessage(notes, field: .sessionNotes, optional: true) == nil
+            && UserContentPolicy.validationMessage(notesForValidation, field: .sessionNotes, optional: true) == nil
+            && (sport != .other || UserContentPolicy.validationMessage(customSportName, field: .customSport) == nil)
+            && (selectedVenueId != nil || UserContentPolicy.validationMessage(customLocationSelection?.label ?? "", field: .customLocation) == nil)
+    }
+
     var canSubmit: Bool {
-        guard !isLoading else { return false }
+        guard !isLoading, contentIsValid else { return false }
         guard (15 ... 300).contains(durationMinutes), (2 ... 50).contains(capacity) else { return false }
         guard capacity >= minimumCapacity else { return false }
         if sport == .other, customSportName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

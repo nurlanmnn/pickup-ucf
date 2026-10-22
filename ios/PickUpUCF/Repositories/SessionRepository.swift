@@ -113,7 +113,7 @@ final class SessionRepository: SessionRepositoryProtocol {
         blockedHostIds: Set<UUID>
     ) -> [PickupSession] {
         guard !blockedHostIds.isEmpty else { return sessions }
-        return sessions.filter { !blockedHostIds.contains($0.hostId) }
+        return sessions.filter { !($0.hostId.map(blockedHostIds.contains) ?? false) }
     }
 
     func fetchMySessions(userId: UUID) async throws -> [PickupSession] {
@@ -234,10 +234,11 @@ final class SessionRepository: SessionRepositoryProtocol {
             throw SessionRepositoryError.customSportNameRequired
         }
 
+        let safeUserNotes = try UserContentPolicy.validateOptional(input.notes, field: .sessionNotes)
         let composedNotes = OtherSportNotes.composedNotes(
             sport: input.sport,
             customOtherName: normalizedOther,
-            userNotes: input.notes
+            userNotes: safeUserNotes
         )
         let notesToStore = try UserContentPolicy.validateOptional(composedNotes, field: .sessionNotes)
 
@@ -289,10 +290,11 @@ final class SessionRepository: SessionRepositoryProtocol {
             throw SessionRepositoryError.customSportNameRequired
         }
 
+        let safeUserNotes = try UserContentPolicy.validateOptional(input.notes, field: .sessionNotes)
         let composedNotes = OtherSportNotes.composedNotes(
             sport: input.sport,
             customOtherName: normalizedOther,
-            userNotes: input.notes
+            userNotes: safeUserNotes
         )
         let notesToStore = try UserContentPolicy.validateOptional(composedNotes, field: .sessionNotes)
 

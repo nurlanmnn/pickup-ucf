@@ -2,6 +2,23 @@ import XCTest
 @testable import PickUpUCF
 
 final class CreateSessionStepValidationTests: XCTestCase {
+    func testContentLimitsPreventAdvancingWithoutTruncatingDrafts() {
+        let vm = CreateSessionViewModel()
+        vm.venuePickerOptionId = UUID().uuidString
+        vm.notes = String(repeating: "🏀", count: 1000)
+        XCTAssertTrue(vm.canSubmit)
+        vm.notes += "🏀"
+        XCTAssertFalse(vm.canSubmit)
+        XCTAssertEqual(vm.notes.unicodeScalars.count, 1001)
+        vm.notes = ""
+        vm.sport = .other
+        vm.customSportName = String(repeating: "🏀", count: 41)
+        XCTAssertFalse(vm.canAdvance(from: .sportAndTime))
+        vm.customSportName = "Pickleball"
+        vm.notes = String(repeating: "a", count: 990)
+        XCTAssertFalse(vm.canSubmit, "Stored sport label also consumes the notes budget")
+    }
+
     func testCanAdvanceSportAndTimeRequiresValidSportAndSchedule() {
         let vm = CreateSessionViewModel()
         vm.sport = .basketball

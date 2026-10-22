@@ -34,6 +34,7 @@ final class PushNotificationService: NSObject {
     private let registerForRemoteNotifications: @MainActor () -> Void
     private let unregisterForRemoteNotifications: @MainActor () -> Void
     private let endLiveActivities: @MainActor () async -> Void
+    private let authorizationStatus: @MainActor () async -> UNAuthorizationStatus
     private var acceptsTokenRegistration = false
     private var pendingRegistration: Task<Void, Never>?
 
@@ -45,9 +46,14 @@ final class PushNotificationService: NSObject {
         },
         unregisterForRemoteNotifications: @escaping @MainActor () -> Void = {
             UIApplication.shared.unregisterForRemoteNotifications()
+            UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         },
         endLiveActivities: @escaping @MainActor () async -> Void = {
             await GameLiveActivityCoordinator.endAllForAccountTransition()
+        },
+        authorizationStatus: @escaping @MainActor () async -> UNAuthorizationStatus = {
+            await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         }
     ) {
         self.tokenRepository = tokenRepository
@@ -55,6 +61,7 @@ final class PushNotificationService: NSObject {
         self.registerForRemoteNotifications = registerForRemoteNotifications
         self.unregisterForRemoteNotifications = unregisterForRemoteNotifications
         self.endLiveActivities = endLiveActivities
+        self.authorizationStatus = authorizationStatus
     }
 
     func requestAuthorizationAndRegister() async {
@@ -133,6 +140,13 @@ final class PushNotificationService: NSObject {
         tokenStore.requiresServerRecovery = false
     }
 
+    func prepareForMissingSession() async {
+        acceptsTokenRegistration = false
+        if tokenStore.token != nil { tokenStore.requiresServerRecovery = true }
+        unregisterForRemoteNotifications()
+        await endLiveActivities()
+    }
+
     func restoreAfterFailedAccountDeletion() async {
         await refreshRegistrationAfterAuthorizationChange()
     }
@@ -140,7 +154,12 @@ final class PushNotificationService: NSObject {
     func refreshRegistrationAfterAuthorizationChange() async {
         await registerStoredTokenIfAvailable()
         guard acceptsTokenRegistration else { return }
-        registerForRemoteNotifications()
+        let status = await authorizationStatus()
+        guard acceptsTokenRegistration, !tokenStore.requiresServerRecovery else { return }
+        switch status {
+        case .authorized, .provisional, .ephemeral: registerForRemoteNotifications()
+        default: unregisterForRemoteNotifications()
+        }
     }
 
     private func enqueueRegistration(_ operation: @escaping () async -> Void) async {

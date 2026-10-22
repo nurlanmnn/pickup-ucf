@@ -3,6 +3,26 @@ import Supabase
 @testable import PickUpUCF
 
 final class ChatRepositoryTests: XCTestCase {
+    func testAuthorResolutionIsOneSessionScopedMessageBatchWithMinimalProfiles() async throws {
+        var requests = 0
+        let ids = [UUID(), UUID()]
+        ChatRequestStub.respond = { request in
+            requests += 1
+            XCTAssertEqual(request.url?.path, "/rest/v1/messages")
+            let items = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!.queryItems!
+            let value = { (name: String) in items.first { $0.name == name }?.value }
+            XCTAssertEqual(value("session_id"), "eq.\(self.sessionId.uuidString)")
+            XCTAssertEqual(value("limit"), "50")
+            for id in ids { XCTAssertTrue(value("id")?.contains(id.uuidString) == true) }
+            XCTAssertTrue(value("select")?.contains("id,display_name,username") == true)
+            XCTAssertFalse(value("select")?.contains("email") == true)
+            return Data("[]".utf8)
+        }
+        let repository = makeRepository()
+        _ = try await repository.fetchMessageUpdates(sessionId: sessionId, ids: ids)
+        _ = try await repository.fetchMessageUpdates(sessionId: sessionId, ids: [])
+        XCTAssertEqual(requests, 1)
+    }
     func testOpeningChatReturnsNewestFiftyInChronologicalOrder() async throws {
         let repository = makeRepository()
         ChatRequestStub.respond = { request in

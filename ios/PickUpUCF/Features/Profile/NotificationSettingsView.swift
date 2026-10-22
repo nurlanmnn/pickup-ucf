@@ -1,8 +1,14 @@
 import SwiftUI
+import UserNotifications
+import UIKit
 
 struct NotificationSettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var authorizationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var isCheckingPermission = true
     @State private var viewModel = NotificationSettingsViewModel()
 
     var body: some View {
@@ -14,6 +20,35 @@ struct NotificationSettingsView: View {
                     ErrorBanner(message: error)
                 }
 
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text("Get game reminders and chat alerts")
+                        .font(AppFont.headline(.semibold))
+                    Text("Allow notifications to hear when your game is coming up, a spot opens, or your group sends a message.")
+                        .font(AppFont.body())
+                    if !isCheckingPermission {
+                        switch authorizationStatus {
+                        case .notDetermined:
+                            Button("Enable notifications") {
+                                Task {
+                                    isCheckingPermission = true
+                                    await PushNotificationService.shared.requestAuthorizationAndRegister()
+                                    await refreshPermission()
+                                }
+                            }
+                            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                        case .denied:
+                            Text("Notifications are off for PickUp UCF.")
+                            Button("Open notification settings") {
+                                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                            }
+                            .frame(minHeight: AccessibilityLayout.minimumTouchTarget)
+                        default:
+                            Text("Notifications are allowed. Choose the alerts you want below.")
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Spacing.m)
                 SettingsCardGroup(label: "Notifications") {
                     notificationRow(
                         title: "Session reminders",
@@ -95,12 +130,22 @@ struct NotificationSettingsView: View {
             .padding(Spacing.m)
         }
         .appScreenBackground()
+        .task { await refreshPermission() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await refreshPermission() } }
+        }
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
             if vm.isLoading { ProgressView() }
         }
         .task { await viewModel.load() }
+    }
+
+    @MainActor
+    private func refreshPermission() async {
+        authorizationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        isCheckingPermission = false
     }
 
     private func notificationRow(

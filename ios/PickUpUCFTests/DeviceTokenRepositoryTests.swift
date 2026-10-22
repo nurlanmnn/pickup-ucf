@@ -1,4 +1,5 @@
 import XCTest
+import UserNotifications
 import Supabase
 @testable import PickUpUCF
 
@@ -182,6 +183,42 @@ final class DeviceTokenRepositoryTests: XCTestCase {
     }
 
     @MainActor
+    func testMissingSessionClearsLocalNotificationsAndKeepsTokenQuarantinedForNextOwner() async {
+        let token = String(repeating: "ab", count: 32)
+        let store = InMemoryDeviceTokenStore(token: token)
+        var unregisterCount = 0
+        var activityEndCount = 0
+        let repository = RecordingDeviceTokenRepository()
+        let service = PushNotificationService(tokenRepository: repository, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { unregisterCount += 1 },
+            endLiveActivities: { activityEndCount += 1 })
+        await service.prepareForMissingSession()
+        XCTAssertEqual(unregisterCount, 1)
+        XCTAssertEqual(activityEndCount, 1)
+        XCTAssertEqual(store.token, token)
+        XCTAssertTrue(store.requiresServerRecovery)
+        XCTAssertTrue(repository.registeredTokens.isEmpty)
+    }
+
+    @MainActor
+    func testAuthorizationRefreshDoesNotRegisterRemoteNotificationsWithoutPermission() async {
+        for status: UNAuthorizationStatus in [.notDetermined, .denied] {
+            var registerCount = 0
+            var unregisterCount = 0
+            let service = PushNotificationService(
+                tokenRepository: RecordingDeviceTokenRepository(),
+                tokenStore: InMemoryDeviceTokenStore(),
+                registerForRemoteNotifications: { registerCount += 1 },
+                unregisterForRemoteNotifications: { unregisterCount += 1 },
+                endLiveActivities: {}, authorizationStatus: { status }
+            )
+            await service.refreshRegistrationAfterAuthorizationChange()
+            XCTAssertEqual(registerCount, 0)
+            XCTAssertEqual(unregisterCount, 1)
+        }
+    }
+
+    @MainActor
     func testAuthorizationRefreshRegistersStoredTokenBeforeRemoteNotifications() async {
         let token = String(repeating: "12", count: 32)
         let repository = RecordingDeviceTokenRepository()
@@ -191,7 +228,8 @@ final class DeviceTokenRepositoryTests: XCTestCase {
             tokenStore: InMemoryDeviceTokenStore(token: token),
             registerForRemoteNotifications: { localRegisterCount += 1 },
             unregisterForRemoteNotifications: {},
-            endLiveActivities: {}
+            endLiveActivities: {},
+            authorizationStatus: { .authorized }
         )
 
         await service.refreshRegistrationAfterAuthorizationChange()
@@ -239,7 +277,8 @@ final class DeviceTokenRepositoryTests: XCTestCase {
             tokenStore: store,
             registerForRemoteNotifications: { localRegisterCount += 1 },
             unregisterForRemoteNotifications: { localUnregisterCount += 1 },
-            endLiveActivities: {}
+            endLiveActivities: {},
+            authorizationStatus: { .authorized }
         )
 
         do {
@@ -374,6 +413,41 @@ private final class RecordingDeviceTokenRepository: DeviceTokenRepositoryProtoco
 }
 
 final class AccountTransitionCoordinatorTests: XCTestCase {
+    @MainActor
+    func testSuccessfulSignOutClearsAccountNavigationAndDraftsDespiteRemoteFailure() async {
+        let appState = authenticatedAppState()
+        let sessionId = UUID()
+        appState.queueSessionDeepLink(id: sessionId, openChat: true)
+        appState.requestCreateSession(prefill: CreateSessionPrefill(sport: .basketball))
+        appState.showError("Previous account banner")
+        appState.needsOnboarding = true
+        _ = await AccountTransitionCoordinator.signOut(appState: appState, unregisterToken: {}, signOut: { throw TestError.failed })
+        XCTAssertNil(appState.sessionDetailDeepLink)
+        XCTAssertNil(appState.pendingCreateSessionPrefill)
+        XCTAssertNil(appState.bannerMessage)
+        XCTAssertFalse(appState.needsOnboarding)
+        XCTAssertFalse(appState.consumeSessionDetailOpenChat(for: sessionId))
+    }
+
+    func testAccountLocalCleanupPreservesQuarantineAndUnrelatedSettings() throws {
+        let name = "pickup.cleanup.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        for key in ["calendar_export_event_id_example", "createSession.lastSport", "createSession.lastVenueId", "discoverSportFilterMode"] {
+            defaults.set("synthetic", forKey: key)
+        }
+        defaults.set(true, forKey: "pushNotifications.requiresServerRecovery")
+        defaults.set("synthetic-token", forKey: "pushNotifications.lastAPNSToken")
+        defaults.set(true, forKey: "welcomeIntroCompleted")
+        AccountLocalDataCleanup.clear(defaults: defaults)
+        XCTAssertNil(defaults.string(forKey: "calendar_export_event_id_example"))
+        XCTAssertNil(defaults.string(forKey: "createSession.lastVenueId"))
+        XCTAssertTrue(defaults.bool(forKey: "pushNotifications.requiresServerRecovery"))
+        XCTAssertEqual(defaults.string(forKey: "pushNotifications.lastAPNSToken"), "synthetic-token")
+        XCTAssertTrue(defaults.bool(forKey: "welcomeIntroCompleted"))
+        AccountLocalDataCleanup.clear(defaults: defaults)
+    }
+
     @MainActor
     func testSignOutCleansUpBeforeLogoutAndClearsAppState() async {
         let appState = authenticatedAppState()

@@ -37,7 +37,7 @@ struct ProfileSummary: Codable, Equatable {
 
 struct PickupSession: Codable, Identifiable, Equatable {
     let id: UUID
-    let hostId: UUID
+    let hostId: UUID?
     let sport: SportType
     /// When `sport` is `.other`, the name the host entered (e.g. "Pickleball").
     var customSportName: String?

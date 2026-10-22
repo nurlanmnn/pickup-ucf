@@ -15,12 +15,13 @@ struct ReportSheet: View {
     private let repository = ReportRepository()
 
     private var trimmedContext: String {
-        context.trimmingCharacters(in: .whitespacesAndNewlines)
+        UserContentPolicy.normalize(context)
     }
 
     private var canSubmit: Bool {
-        (trimmedContext.isEmpty || trimmedContext.count >= 10)
-            && trimmedContext.count <= 500
+        (trimmedContext.isEmpty || UserContentPolicy.length(context) >= 10)
+            && UserContentPolicy.length(context) <= 500
+            && UserContentPolicy.validationMessage(context, field: .reportContext, optional: true) == nil
             && !isSubmitting
     }
 
@@ -55,9 +56,8 @@ struct ReportSheet: View {
                     .focused($reasonFocused)
                     .disabled(isSubmitting)
 
-                    FormFieldHint(
-                        text: "\(trimmedContext.count)/500 characters · if provided, minimum 10"
-                    )
+                    ContentFieldFeedback(value: context, field: .reportContext, optional: true)
+                    FormFieldHint(text: "If provided, use at least 10 characters.")
 
                     NavigationLink("Read the community rules") {
                         CommunityRulesView()

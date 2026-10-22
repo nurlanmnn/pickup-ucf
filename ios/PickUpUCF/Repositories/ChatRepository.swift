@@ -4,6 +4,7 @@ import Supabase
 protocol ChatRepositoryProtocol {
     func fetchMessages(sessionId: UUID, before: ChatMessageCursor?, limit: Int) async throws -> ChatMessagePage
     func sendMessage(sessionId: UUID, body: String) async throws -> SessionMessage
+    func fetchMessageUpdates(sessionId: UUID, ids: [UUID]) async throws -> [SessionMessage]
 }
 
 struct ChatMessageCursor: Equatable {
@@ -71,6 +72,16 @@ final class ChatRepository: ChatRepositoryProtocol {
             .single()
             .execute()
             .value
+    }
+
+    func fetchMessageUpdates(sessionId: UUID, ids: [UUID]) async throws -> [SessionMessage] {
+        guard !ids.isEmpty else { return [] }
+        precondition(ids.count <= AppPagination.chatMessageLimit)
+        return try await client.from("messages").select(messageSelect)
+            .eq("session_id", value: sessionId.uuidString)
+            .in("id", values: ids.map(\.uuidString))
+            .limit(AppPagination.chatMessageLimit)
+            .execute().value
     }
 }
 

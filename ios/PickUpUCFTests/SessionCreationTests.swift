@@ -5,6 +5,20 @@ import Supabase
 final class SessionCreationTests: XCTestCase {
     private let createdId = UUID()
 
+    func testRetainedSessionDecodesAfterHostAccountDeletion() throws {
+        var row = try XCTUnwrap(JSONSerialization.jsonObject(with: sessionData()) as? [String: Any])
+        row["host_id"] = NSNull()
+        row["host"] = NSNull()
+        row["status"] = "cancelled"
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let session = try decoder.decode(PickupSession.self, from: JSONSerialization.data(withJSONObject: row))
+        XCTAssertNil(session.hostId)
+        XCTAssertNil(session.host)
+        XCTAssertEqual(session.status, .cancelled)
+        XCTAssertEqual(SessionRepository.filterBlockedHosts([session], blockedHostIds: [UUID()]).count, 1)
+    }
+
     func testCreationUsesOneRPCWithoutCallerControlledHostOrCount() async throws {
         var requests: [URLRequest] = []
         let input = makeInput()

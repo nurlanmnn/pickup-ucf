@@ -9,12 +9,14 @@ enum AuthenticatedSessionCoordinator {
             let repository = ProfileRepository()
             try await repository.ensureProfileForCurrentUser()
             let profile = try await repository.fetchCurrentProfile()
+            guard appState.session?.userId == session.userId else { return }
             appState.needsOnboarding = profile.onboardingCompletedAt == nil
         } catch {
+            guard appState.session?.userId == session.userId else { return }
             appState.showError(error)
         }
+        guard appState.session?.userId == session.userId else { return }
         appState.consumePendingSessionDeepLinkIfNeeded()
-        await PushNotificationService.shared.registerStoredTokenIfAvailable()
-        await PushNotificationService.shared.requestAuthorizationAndRegister()
+        await PushNotificationService.shared.refreshRegistrationAfterAuthorizationChange()
     }
 }

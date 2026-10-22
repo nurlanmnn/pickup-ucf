@@ -112,6 +112,8 @@ BEGIN
     RAISE EXCEPTION 'moderation failed: blocked host session remained visible';
   END IF;
 
+  -- Simulate the privileged sender/trigger path. Ordinary users cannot enqueue.
+  RESET role;
   PERFORM public.enqueue_notification(
     v_reporter_id, v_session_id, 'chat_message', 'New message', 'Hidden body',
     'ext01-blocked-notification', jsonb_build_object('actor_user_id', v_host_id)

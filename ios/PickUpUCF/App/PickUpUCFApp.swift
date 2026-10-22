@@ -30,10 +30,15 @@ struct PickUpUCFApp: App {
                 appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
             }
             .task {
+                // Unit-test hosts must not restore a real account or touch the live backend.
+                guard !SupabaseManager.isUnitTestMode else { return }
                 await GameLiveActivityCoordinator.endExpired()
                 guard AppConfig.currentLaunchMode == .ready else { return }
                 if let session = await AuthRepository().currentSession() {
                     await AuthenticatedSessionCoordinator.bootstrap(session: session, appState: appState)
+                } else if appState.session == nil {
+                    AccountLocalDataCleanup.clear()
+                    await PushNotificationService.shared.prepareForMissingSession()
                 }
             }
             .task(id: scenePhase) {
@@ -93,7 +98,13 @@ struct PushNavigationTarget: Equatable {
 
 @Observable
 final class AppState {
-    var session: AppSession?
+    var session: AppSession? {
+        didSet {
+            if let previous = oldValue, previous.userId != session?.userId {
+                clearAccountContext()
+            }
+        }
+    }
     var preferredColorScheme: ColorScheme?
     var bannerMessage: String?
     var bannerIsError = true
@@ -116,6 +127,20 @@ final class AppState {
     private(set) var createSessionRequestNonce = 0
     private(set) var discoverRequestNonce = 0
     var pendingCreateSessionPrefill: CreateSessionPrefill?
+
+    private func clearAccountContext() {
+        AccountLocalDataCleanup.clear()
+        clearBanner()
+        needsOnboarding = false
+        sessionDetailDeepLink = nil
+        sessionDetailDeepLinkTarget = .discover
+        pendingSessionDeepLink = nil
+        pendingSessionDeepLinkOpenChat = false
+        sessionDetailOpenChatId = nil
+        pendingCreateSessionPrefill = nil
+        profileRefreshNonce += 1
+        sessionFeedRefreshNonce += 1
+    }
 
     var isAuthenticated: Bool {
         session?.isEmailConfirmed == true
