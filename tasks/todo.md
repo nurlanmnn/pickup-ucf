@@ -1,5 +1,11 @@
 # Current work — Production deployed; iOS candidate acceptance next
 
+October 23: connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5).
+CoreDevice marks it as a developer app; TestFlight provenance and hands-on
+acceptance remain unconfirmed. Completed an isolated actual-snapshot logical
+restore: 38 imported table-count checks and 44 foreign-key checks passed;
+disposable container removed. See [scope, evidence and recovery gaps](../docs/operations/2026-10-23-isolated-restore.md).
+
 The owner authorized pushing current source and deploying required changes on
 October 22. Source `b8349d2` is verified on origin/main. See the
 [production rollout record](../docs/operations/2026-10-22-production-rollout.md).
@@ -12,10 +18,10 @@ October 22. Source `b8349d2` is verified on origin/main. See the
 - Preserved isolated 261-test iOS and 39-test Edge Function evidence. The new SQL
   regression first failed, then the complete local candidate SQL/RLS suite passed.
 
-Remaining: replace older TestFlight builds with the atomic/nullable-host/HTTPS
-candidate; Associated Domains provisioning, unique build number, signed archive,
-distribution, iOS 17/current-iOS two-account/device and provider acceptance, restore
-exercise and external Beta App Review. No new iOS upload or invitation occurred.
+Remaining: confirm TestFlight candidate provenance and complete iOS 17/current-iOS
+two-account/device and provider acceptance, complete platform recovery readiness,
+and external Beta App Review. Build-5 packaging/internal distribution was completed
+October 22 as recorded below; no additional upload or invitation occurred.
 
 ## Build 5 prepared — October 22
 

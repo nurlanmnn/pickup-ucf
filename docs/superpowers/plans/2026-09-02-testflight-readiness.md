@@ -1013,3 +1013,19 @@ export compliance saved, and Testing status in the existing Internal Testers gro
 `1d97439c-57b6-487f-841b-f75ee1c371f2`. This supersedes the prior no-upload status.
 See the build 5 record for encryption evidence. No Beta App Review submission,
 new tester invitation or physical/provider acceptance was performed.
+
+## October 23 — Installation metadata and scoped restore exercise
+
+The connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5), marked
+as a developer app by CoreDevice. TestFlight origin and exact binary provenance
+remain unconfirmed; no hands-on acceptance was performed. Both device lanes and
+provider/two-account checks remain open. See the build 5 record.
+
+The actual October 22 pre-rollout logical snapshot was restored in a fresh,
+network-disabled, tmpfs-only PostgreSQL container. All 38 imported table-count
+checks and 44 foreign-key checks passed, along with sequence and RLS-enabled
+checks. Six incompatible empty auth COPY blocks were explicitly excluded; all
+populated blocks were restored. The container was removed after validation.
+This advances the logical restore exercise only. Managed auth schema, platform
+configuration/secrets/storage, forward migrations and operational recovery
+readiness remain open. See [restore evidence and replay procedure](../../operations/2026-10-23-isolated-restore.md).
