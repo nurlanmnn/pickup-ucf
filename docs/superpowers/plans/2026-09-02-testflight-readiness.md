@@ -658,7 +658,7 @@ Account changes clear navigation, create prefills, banners and account-linked de
 - [ ] Complete the table-policy/data-minimization threat-model audit (application function signatures and grants inventoried October 22).
 - [x] Revoke default/public execute rights and grant each function only to required roles (deployed October 22; metadata rechecked October 23).
 - [ ] Move player counts, host membership, capacity enforcement, status transitions, and other invariants behind transactional server logic.
-- [ ] Review whether profile, participant, roster, report, and blocked-user reads expose more data than each screen needs.
+- [x] Review profile, participant, roster, report, and blocked-user client reads (October 23 source audit; reproduced participant/helper leaks fixed locally; optional timestamp minimization deferred).
 - [x] Verify anonymous users cannot call authenticated mutation functions (local SQL and October 23 production execute-permission metadata).
 - [ ] Add SQL tests for cross-user access, crafted updates, blocked users, deleted users, and role escalation.
 - [ ] Document intentional exceptions and the threat model.
@@ -666,6 +666,22 @@ Account changes clear navigation, create prefills, banners and account-linked de
 **Done when:** The SQL security suite proves least-privilege access and clients cannot directly corrupt server-owned state.
 
 **Partial local evidence (2026-10-22):** `20261022150215_restrict_application_rpc_grants.sql` revokes direct PUBLIC/anon/authenticated execution, restores only client/RLS-helper grants, closes maintenance/enqueue/recurrence functions, pins three advisor-reported search paths, and restricts direct profile/session/member mutations. Atomic creation and join/leave own membership/count changes; clients cannot write counts/statistics or insert memberships. SQL verifies ordinary-user denial plus allowed profile upsert/edit and host notes edit. **Read-only production audit confirms exposed enqueue/global maintenance grants.** This is a release blocker until the reviewed migration is deployed with a compatible candidate; legacy direct-insert clients must be retired/coordinated. Current-account school-data checks reject stale deleted-account email claims. The roster visibility migration shares a private access gate with session RLS, filters blocked identities and preserves true waitlist position/counts. `20261022154815_enforce_host_status_transitions.sql` denies crafted completion/reopening/closed-content edits and reconciles open/full after capacity changes. Full numeric/edit/read-minimization audit and exact production role-matrix verification remain open.
+
+**Additional local evidence (2026-10-23):** Host numeric/schedule/pin edits are
+protected in pending migration `20261023215028`; iOS edit payload regressions are
+fixed in source `96b1278` (explicit nulls and normalized custom sport name).
+Pending `20261023221000` closes direct participant reads of inaccessible history
+and other waitlist identities. Pending `20261023222000` scopes public policy-helper
+RPCs to the caller while preserving trusted internal checks. Full SQL/RLS now
+passes 34 phase notices inside rollback; isolated concurrency passes four ordered
+races, twelve cancellation/join races and six waitlist retries. Signed isolated
+iOS tests pass 267/267, with unsigned Release build/analyzer passing. Read audit,
+intentional identity/aggregate exceptions and limitations are documented in
+[participant minimization](2026-10-23-participant-read-minimization.md) and
+[helper scope](2026-10-23-policy-helper-reads.md). Verify production keeps
+`pickup_private` out of API exposed schemas before any deployment. These fixes
+are not deployed and the iOS fix is not in TestFlight build 5. BETA-13 remains open
+for full table/role-matrix and compatible-candidate production/device acceptance.
 
 ## BETA-14 — Test join/leave concurrency and idempotency (**P1**)
 

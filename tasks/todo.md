@@ -1,5 +1,22 @@
 # Current work — Production deployed; iOS candidate acceptance next
 
+October 23 continuation: BETA-13 edit/read audit reproduced and fixed three
+additional defect groups locally. Session edits now persist the normalized Other
+sport name and clear optional notes/location/name fields; direct participant reads
+respect game visibility and hide other waitlist identities; public policy helpers
+reject unrelated-user block/suspension probes while preserving trusted internals.
+See [edit payload](../docs/superpowers/plans/2026-10-23-session-edit-payload.md),
+[participant reads](../docs/superpowers/plans/2026-10-23-participant-read-minimization.md),
+and [helper scope](../docs/superpowers/plans/2026-10-23-policy-helper-reads.md).
+Signed isolated simulator tests passed 267/267; unsigned Release build/analyzer
+passed. Candidate SQL/RLS passed 34 phase notices inside rollback; isolated host
+concurrency passed after the helper change. All four October 23 migrations remain
+undeployed, and the iOS fix is absent from TestFlight build 5. Before deployment,
+verify pickup_private remains unexposed in production API configuration. Optional
+profile timestamp minimization is deferred. Device/provider/two-account and full
+production acceptance remain open. See the updated
+[continuation handoff](../docs/operations/2026-10-23-launch-handoff.md).
+
 October 23 follow-up: BETA-13 host-edit numeric/schedule/location-pin bypasses
 reproduced and fixed locally in `20261023215028`; all 31 candidate SQL/RLS phase
 notices passed inside rollback. Production migration and build 5 remain unchanged.
@@ -9,7 +26,7 @@ Also fixed BETA-14 waitlist retries resetting queue priority locally in
 `20261023215505`. Red reproduction and all 32 candidate SQL/RLS phase notices
 passed with rollback; explicit leave/rejoin still creates a new queue entry.
 See [waitlist retry evidence](../docs/superpowers/plans/2026-10-23-waitlist-retry.md).
-Both October 23 migrations remain undeployed.
+These two migrations, plus the subsequent participant/helper read fixes, remain undeployed.
 
 BETA-14 independent isolated concurrency now passes four ordered host-action
 races, twelve cancellation/join races and six simultaneous waitlist retries.
@@ -19,7 +36,7 @@ network-disabled disposable container, removed afterward. See
 
 October 23: connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5).
 The owner confirmed installation through TestFlight and availability for testing.
-iPhone Mirroring now connects. Physical-device launch, online cold relaunch into
+iPhone Mirroring connected for the smoke checks, then disconnected while the owner used the phone away from the computer. Physical-device launch, online cold relaunch into
 the same reviewer profile, Profile/Settings navigation, Privacy Policy and Terms
 links passed smoke checks. No upcoming reviewer games were visible; two-account,
 provider, Calendar, APNs, offline and accessibility checks remain open. See the
@@ -58,8 +75,8 @@ production APNs and Associated Domains are present. See
 Owner subsequently approved upload for internal testing. Upload succeeded at
 2:48 PM America/New_York; Apple processing is Complete, export compliance saved,
 and build 5 is Testing in the existing one-tester Internal Testers group. What to
-Test is saved. Internal installation and exact-candidate physical/provider checks
-remain open. No external invitation or Beta App Review submission occurred.
+Test is saved. Internal installation was owner-confirmed October 23; remaining exact-candidate
+physical/provider checks stay open. No external invitation or Beta App Review submission occurred.
 
 # Previous work — October 22, 2026
 

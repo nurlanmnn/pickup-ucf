@@ -9,7 +9,8 @@ visibility without evidence.
 ## Checkout and authorization
 
 - `/Users/nurlanmammadli/pickup-ucf`, branch `codex/calendar-write-only`.
-- Last implementation/test commit before this handoff: `cc5cbe5`; clean checkout.
+- Latest implementation/test commit: `b27c87b`; documentation updates follow it.
+  Prior continuation started at clean `c4e4718`.
 - Local changes are committed. **No push/merge, new deployment, new build upload,
   external invitation or Beta App Review is authorized by this continuation.**
 - Preserve existing work; inspect Git status first. No optional P2 refactors.
@@ -62,30 +63,67 @@ single-device/provider/physical-iOS-17 acceptance separate from local tests.
    twelve cancellation/join races and six concurrent waitlist retries pass.
    Disposable test container removed; existing local DB was not edited.
 
+7. Session edit payload regressions reproduced through synthetic SDK HTTP tests:
+   Other-name edits, clearing name/notes and both location switches retained old
+   stored values. Fixed in `96b1278` with custom_sport_name and explicit nil JSON
+   encoding. Cancellation remains status-only. Focused tests pass 13/13; full
+   signed isolated simulator suite passes 267/267; unsigned Release build and
+   analyzer pass. Initial unsigned full test run failed existing real-Keychain
+   tests; normal simulator signing resolved that test setup error. Never disable
+   simulator signing for the full suite. No development build touched the phone.
+8. Direct participant reads reproduced historical membership and waitlist
+   identity disclosure. Local migration `20261023221000` restricts other users to
+   joined rows in visible games with block filtering; preserves self lookup,
+   retained participant rosters, host attendance and exact roster aggregates.
+   Commit `09020cb`.
+9. Public helper RPCs reproduced unrelated-user block/suspension disclosure.
+   Migration `20261023222000` moves raw implementations to pickup_private,
+   preserving OIDs/ACLs/policy dependencies; public invoker wrappers scope
+   authenticated caller arguments and preserve nested trusted definer checks.
+   Commit `b27c87b`. **Before deployment verify pickup_private is not exposed by
+   production REST/GraphQL configuration.** Local config exposes public and
+   graphql_public only; production API configuration was not verified here.
+10. Latest full candidate SQL/RLS suite passes 34 phase-success notices inside
+    rollback. After the helper change, isolated host concurrency again passes
+    four ordered host races, twelve cancellation/join races and six waitlist
+    retries. Disposable test container removed. Existing local DB remains at
+    20261005150000 without the atomic create RPC. Independent reviews found no
+    actionable issue in each of the three new increments.
+
 Focused evidence: October 23 host-edit, waitlist-retry and host-action-concurrency
 plans under `docs/superpowers/plans/`, and
 `docs/operations/2026-10-23-isolated-restore.md`. Commits: `a65e417` recovery,
 `277ac46` host edits, `76f7f9e` waitlist retry, `cc5cbe5` concurrency.
 
-## Next independent work
+## Remaining work and gates
 
-Continue BETA-13's remaining edit/read-minimization audit from the master index
-`docs/superpowers/plans/2026-09-02-testflight-readiness.md` (relevant sections only).
-Inspect repository/payload semantics before adding more database restrictions.
-In particular, `SessionRepository.updateSession` computes normalized custom sport
-name but `SessionRowPatch` has no customSportName field; synthesized optional
-encoding also omits nil fields. Investigate whether editing an existing Other
-sport retains the old DB name and whether clearing optional fields/location
-switches retains stale values. This is a source observation, **not yet a tested
-defect**. Reproduce with a focused synthetic/HTTP-denied repository test before
-fixing. Avoid breaking build-5 patch compatibility with stricter representation
-rules. No need to repeat already-passing unchanged SQL/concurrency suites unless
-the new diff affects their behavior.
+The focused independent BETA-13 client edit/read audit is complete for the
+reviewed surfaces. See October 23 `session-edit-payload`,
+`participant-read-minimization` and `policy-helper-reads` plans for exact scope,
+red/green evidence and limitations. Optional profile timestamp/strict column
+minimization is deferred; do not turn that into cosmetic refactoring.
+
+There are now four undeployed October 23 migrations, in order:
+20261023215028, 20261023215505, 20261023221000, 20261023222000. The new iOS edit fix
+also needs a future compatible binary before exact-candidate edit acceptance.
+No deployment/upload/push/merge is authorized by this continuation. Verify
+production private-schema exposure before considering the helper migration.
+Do not label all of BETA-13 or launch readiness complete: complete table/role
+matrix verification, provider/Calendar/APNs/offline/accessibility/two-account and
+physical iOS-17 acceptance, platform recovery ownership/RPO/RTO decisions and
+external Beta App Review remain open. Those need owner availability, explicit
+release authorization or production/device evidence. Do not poll the unavailable
+phone or invent second-account/provider credentials.
+
+Latest source evidence is already validated; do not repeat unchanged passing
+suites for reassurance. If new source changes are justified, reproduce a concrete
+launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Existing unchanged prior evidence: 261/261 isolated simulator tests, 39/39 Deno,
-Release/analyzer; Swift changes justify appropriate focused/full verification.
+Latest evidence: 267/267 signed isolated simulator tests and unsigned Release
+build/analyzer; unchanged prior Edge Function evidence is 39/39 Deno. New Swift
+changes justify appropriate focused/full verification.
 Do not install a development build over TestFlight build 5 without owner intent.
 
 Restricted recovery directories remain outside Git under
