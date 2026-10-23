@@ -1029,3 +1029,10 @@ populated blocks were restored. The container was removed after validation.
 This advances the logical restore exercise only. Managed auth schema, platform
 configuration/secrets/storage, forward migrations and operational recovery
 readiness remain open. See [restore evidence and replay procedure](../../operations/2026-10-23-isolated-restore.md).
+
+The owner subsequently confirmed build 5 was installed through TestFlight and
+the phone is available for hands-on checks. Installation origin is now
+owner-attested. iPhone Mirroring reports Mac Bluetooth off and cannot connect;
+no functional acceptance row has passed from this attempt. Enable Bluetooth and
+connect mirroring to continue with authenticated launch/relaunch and controlled
+account checks.
