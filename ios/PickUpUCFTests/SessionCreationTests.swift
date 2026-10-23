@@ -117,6 +117,94 @@ final class SessionCreationTests: XCTestCase {
         }
     }
 
+    func testEditRenamesExistingOtherSport() async throws {
+        let updated = try await applyEdit(
+            existing: ["sport": "other", "custom_sport_name": "Old sport", "notes": "Other sport: Old sport"],
+            sport: .other, customSportName: "  Badminton  "
+        )
+        XCTAssertEqual(updated.customSportName, "Badminton")
+        XCTAssertEqual(updated.sportDisplayName, "Badminton")
+    }
+
+    func testEditClearsCustomSportWhenChoosingStandardSport() async throws {
+        let updated = try await applyEdit(existing: ["sport": "other", "custom_sport_name": "Old sport"])
+        XCTAssertEqual(updated.sport, .basketball)
+        XCTAssertNil(updated.customSportName)
+    }
+
+    func testEditClearsBlankNotes() async throws {
+        let updated = try await applyEdit(existing: ["notes": "Old notes"], notes: " \n ")
+        XCTAssertNil(updated.notes)
+    }
+
+    func testEditSwitchesNamedVenueToCustomPin() async throws {
+        let custom = CustomLocationSelection(label: "Synthetic field", latitude: 28.6, longitude: -81.2)
+        let updated = try await applyEdit(existing: ["venue_id": UUID().uuidString], customLocation: custom)
+        XCTAssertNil(updated.venueId)
+        XCTAssertEqual(updated.customLocation, custom.label)
+        XCTAssertEqual(updated.customLat, custom.latitude)
+        XCTAssertEqual(updated.customLng, custom.longitude)
+    }
+
+    func testEditSwitchesCustomPinToNamedVenue() async throws {
+        let venueId = UUID()
+        let updated = try await applyEdit(
+            existing: ["custom_location": "Old field", "custom_lat": 28.6, "custom_lng": -81.2],
+            venueId: venueId
+        )
+        XCTAssertEqual(updated.venueId, venueId)
+        XCTAssertNil(updated.customLocation)
+        XCTAssertNil(updated.customLat)
+        XCTAssertNil(updated.customLng)
+    }
+
+    func testCancellationRemainsAStatusOnlyPatch() async throws {
+        var requestCount = 0
+        AtomicCreationRequest.respond = { request in
+            requestCount += 1
+            XCTAssertEqual(request.httpMethod, "PATCH")
+            let fields = try XCTUnwrap(try JSONSerialization.jsonObject(with: self.body(request)) as? [String: Any])
+            XCTAssertEqual(Set(fields.keys), ["status"])
+            XCTAssertEqual(fields["status"] as? String, "cancelled")
+            return (204, Data())
+        }
+        try await makeRepository().cancelSession(id: createdId)
+        XCTAssertEqual(requestCount, 1)
+    }
+
+    /// Model PostgREST PATCH: absent keys retain stored values; explicit null clears them.
+    private func applyEdit(
+        existing: [String: Any], sport: SportType = .basketball,
+        customSportName: String? = nil, venueId: UUID? = nil,
+        customLocation: CustomLocationSelection? = nil, notes: String? = nil
+    ) async throws -> PickupSession {
+        var stored = try XCTUnwrap(JSONSerialization.jsonObject(with: sessionData()) as? [String: Any])
+        stored.merge(existing) { _, new in new }
+        var requestCount = 0
+        AtomicCreationRequest.respond = { request in
+            requestCount += 1
+            XCTAssertEqual(request.url?.host, "creation-tests.invalid")
+            XCTAssertEqual(request.url?.path, "/rest/v1/sessions")
+            XCTAssertEqual(request.httpMethod, "PATCH")
+            XCTAssertTrue(request.url!.absoluteString.lowercased().contains(self.createdId.uuidString.lowercased()))
+            let fields = try XCTUnwrap(try JSONSerialization.jsonObject(with: self.body(request)) as? [String: Any])
+            XCTAssertNil(fields["host_id"])
+            XCTAssertNil(fields["player_count"])
+            XCTAssertNil(fields["status"])
+            stored.merge(fields) { _, new in new }
+            return (200, try JSONSerialization.data(withJSONObject: stored))
+        }
+        defer { AtomicCreationRequest.respond = nil }
+        let updated = try await makeRepository().updateSession(id: createdId, input: UpdateSessionInput(
+            sport: sport, customSportName: customSportName,
+            venueId: customLocation == nil ? (venueId ?? UUID()) : nil,
+            customLocation: customLocation, startsAt: .now.addingTimeInterval(7200),
+            durationMinutes: 90, capacity: 10, skillLevel: .any, notes: notes
+        ))
+        XCTAssertEqual(requestCount, 1)
+        return updated
+    }
+
     private func makeInput() -> CreateSessionInput {
         CreateSessionInput(sport: .basketball, customSportName: nil, venueId: UUID(), customLocation: nil,
                            startsAt: .now.addingTimeInterval(7200), durationMinutes: 90, capacity: 10,

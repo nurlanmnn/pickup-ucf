@@ -300,6 +300,7 @@ final class SessionRepository: SessionRepositoryProtocol {
 
         let payload = SessionRowPatch(
             sport: input.sport,
+            customSportName: normalizedOther,
             venueId: resolved.venueId,
             customLocation: resolved.customLocation,
             customLat: resolved.customLat,
@@ -473,6 +474,7 @@ private extension SessionRepository {
 
 private struct SessionRowPatch: Encodable {
     let sport: SportType
+    let customSportName: String?
     let venueId: UUID?
     let customLocation: String?
     let customLat: Double?
@@ -485,6 +487,7 @@ private struct SessionRowPatch: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case sport
+        case customSportName = "custom_sport_name"
         case venueId = "venue_id"
         case customLocation = "custom_location"
         case customLat = "custom_lat"
@@ -494,6 +497,23 @@ private struct SessionRowPatch: Encodable {
         case capacity
         case skillLevel = "skill_level"
         case notes
+    }
+
+    // This payload replaces every editable field. Omitting nil would leave old
+    // database values intact, so encode explicit nulls for fields being cleared.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(sport, forKey: .sport)
+        try container.encode(customSportName, forKey: .customSportName)
+        try container.encode(venueId, forKey: .venueId)
+        try container.encode(customLocation, forKey: .customLocation)
+        try container.encode(customLat, forKey: .customLat)
+        try container.encode(customLng, forKey: .customLng)
+        try container.encode(startsAt, forKey: .startsAt)
+        try container.encode(endsAt, forKey: .endsAt)
+        try container.encode(capacity, forKey: .capacity)
+        try container.encode(skillLevel, forKey: .skillLevel)
+        try container.encode(notes, forKey: .notes)
     }
 }
 
