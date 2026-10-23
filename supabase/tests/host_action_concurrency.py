@@ -28,7 +28,7 @@ def command(container):
             '-d', 'postgres', '-v', 'ON_ERROR_STOP=1']
 
 
-def main():
+def main(exercise=None):
     container = 'pickup-host-actions-' + uuid.uuid4().hex[:12]
     logs = pathlib.Path(tempfile.mkdtemp(prefix='pickup-host-actions-'))
     created = False
@@ -90,6 +90,11 @@ def main():
                 sql('BEGIN;\n' + migration.read_text() + '\nCOMMIT;')
         assert sql("SELECT NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname IN ('pg_cron','pg_net')), "
                    "NOT EXISTS (SELECT 1 FROM pg_subscription), (SELECT count(*) FROM public.profiles)=0") == 't|t|t'
+
+        # Other concurrency suites share this exact schema-only isolation setup.
+        if exercise is not None:
+            exercise(sql, container)
+            return
 
         users = [str(uuid.uuid4()) for _ in range(4)]
         for user in users:

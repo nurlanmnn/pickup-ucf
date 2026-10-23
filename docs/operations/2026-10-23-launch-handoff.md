@@ -113,24 +113,34 @@ plans under `docs/superpowers/plans/`, and
 `docs/operations/2026-10-23-isolated-restore.md`. Commits: `a65e417` recovery,
 `277ac46` host edits, `76f7f9e` waitlist retry, `cc5cbe5` concurrency.
 
-## Next independent investigation
+## Report concurrency investigation completed
 
 The owner again asked to keep working and open a new chat when context is loaded.
 GitHub feature-branch pushes remain authorized; no merge/deployment/upload.
-Current implementation/documentation head before this handoff update is 405a0a9.
+This continuation started at clean/pushed `47134dd`. Six simultaneous distinct
+report targets reproduced **six committed reports** against the 5/hour limit.
+New migration `20261023231500` serializes on the reporter's auth.users row FOR NO
+KEY UPDATE, preserving deletion lock order and KEY SHARE joins. The count uses a
+fresh READ COMMITTED statement snapshot; stronger transaction-wide snapshots fail
+closed with SQLSTATE 40001 rather than bypassing the limit.
 
-Next concrete source observation: submit_moderation_report counts the caller's
-last-hour/day reports, rejects at 5/20, then inserts without an evident reporter
-lock. Concurrent requests for distinct targets may bypass the rate limit. This
-is **not yet a reproduced defect**. Investigate with synthetic requests in a fresh
-network-disabled schema-only disposable database, using the isolation pattern in
-supabase/tests/host_action_concurrency.py; do not mutate the existing local DB or
-use production. A test-only insert barrier/delay may expose the overlap. First
-prove a real over-limit acceptance; fix minimally only if reproduced, preserving
-valid reporting/duplicate errors, caller auth, independent users and retained
-moderation audit records. Evaluate transaction ordering/deadlocks if serializing
-per reporter. Run changed-relevant SQL/concurrency checks and independent review,
-then commit/push verified source. Do not repeat unchanged iOS/Edge suites.
+`PYTHONDONTWRITEBYTECODE=1 python3 supabase/tests/report_concurrency.py` passed:
+38 candidate SQL/RLS phase notices inside rollback, hourly 6-to-5 and daily
+19-plus-6-to-20, audit-preserving window recovery, independent reporters with a
+500ms lock timeout, duplicate retry, reciprocal reporters, both actual account
+deletion lock orders with retained audit snapshot, and stronger-isolation guards.
+Independent design/final-source review found no required findings. See
+[report concurrency evidence](../superpowers/plans/2026-10-23-report-concurrency.md).
+Only schema/history were read from the existing local DB. All fixture/schema
+writes stayed in a fresh network-disabled disposable container, removed after
+testing. Existing DB head is still 20261005150000 without atomic creation RPCs.
+No new Swift/Edge changes warranted repeating their passing suites.
+
+No additional concrete independent source defect is currently identified. The
+remaining release/device/provider gates below need their own evidence and, where
+applicable, owner availability or explicit release authorization. Optional P2
+polish remains deferred. Do not repeat unchanged tests or poll the unavailable
+phone just to keep working.
 
 ## Remaining work and gates
 
@@ -140,9 +150,10 @@ reviewed surfaces. See October 23 `session-edit-payload`,
 red/green evidence and limitations. Optional profile timestamp/strict column
 minimization is deferred; do not turn that into cosmetic refactoring.
 
-There are now eight undeployed October 23 migrations, in order:
+There are now nine undeployed October 23 migrations, in order:
 20261023215028, 20261023215505, 20261023221000, 20261023222000,
-20261023223500, 20261023224500, 20261023225500, 20261023230500. The new iOS edit fix
+20261023223500, 20261023224500, 20261023225500, 20261023230500,
+20261023231500. The new iOS edit fix
 also needs a future compatible binary before exact-candidate edit acceptance.
 GitHub source pushes were subsequently authorized by the owner. Deployment,
 upload and merge remain outside the current authorization. Verify

@@ -52,7 +52,8 @@ before commit/push. No iOS or Edge source changed in this follow-up; prior signe
   GraphQL. Production API configuration must be verified before deployment.
 - Existing subscribed/client-buffered state needs two-account/device acceptance;
   a new SELECT/INSERT policy is not evidence of immediate UI cache removal.
-- All eight October 23 migrations are **undeployed**. Exact production role/API
+- All nine October 23 migrations are **undeployed**, including the subsequent
+  [report concurrency fix](2026-10-23-report-concurrency.md). Exact production role/API
   verification and compatible-candidate device/provider acceptance remain open.
 - The audit does not grant client SQL connections or arbitrary-SQL RPCs. Do not
   expose private schemas or treat role grants alone as the authorization model.
