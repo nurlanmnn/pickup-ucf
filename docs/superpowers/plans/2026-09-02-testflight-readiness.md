@@ -1036,3 +1036,13 @@ owner-attested. iPhone Mirroring reports Mac Bluetooth off and cannot connect;
 no functional acceptance row has passed from this attempt. Enable Bluetooth and
 connect mirroring to continue with authenticated launch/relaunch and controlled
 account checks.
+
+**Later October 23 device evidence (approximately 5:27–5:30 PM):** Mirroring
+connected after the owner resolved its prerequisites. On the physical iPhone 17,
+build 5 reached Discover/Profile, restored the same reviewer session after
+app-switcher dismissal and reopening, and opened the expected Privacy Policy and
+Terms pages from Settings. My Games history expanded to four entries; no upcoming
+games were visible. See the build 5 record for exact scope and screenshot location.
+Fresh/provider sign-in, offline/revoked-session behavior, Calendar, APNs,
+two-account chat/deletion and accessibility remain open, as does the iOS 17 lane.
+No reviewer-account/game/message changes were made during these smoke checks.

@@ -2,8 +2,12 @@
 
 October 23: connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5).
 The owner confirmed installation through TestFlight and availability for testing.
-iPhone Mirroring is blocked by Mac Bluetooth being off; hands-on acceptance
-remains open. Completed an isolated actual-snapshot logical
+iPhone Mirroring now connects. Physical-device launch, online cold relaunch into
+the same reviewer profile, Profile/Settings navigation, Privacy Policy and Terms
+links passed smoke checks. No upcoming reviewer games were visible; two-account,
+provider, Calendar, APNs, offline and accessibility checks remain open. See the
+[build-5 device evidence](../docs/testflight/2026-10-22-build-5.md).
+Completed an isolated actual-snapshot logical
 restore: 38 imported table-count checks and 44 foreign-key checks passed;
 disposable container removed. See [scope, evidence and recovery gaps](../docs/operations/2026-10-23-isolated-restore.md).
 
@@ -19,7 +23,7 @@ October 22. Source `b8349d2` is verified on origin/main. See the
 - Preserved isolated 261-test iOS and 39-test Edge Function evidence. The new SQL
   regression first failed, then the complete local candidate SQL/RLS suite passed.
 
-Remaining: connect iPhone Mirroring and complete iOS 17/current-iOS
+Remaining: prepare controlled upcoming-game/two-account prerequisites and complete iOS 17/current-iOS
 two-account/device and provider acceptance, complete platform recovery readiness,
 and external Beta App Review. Build-5 packaging/internal distribution was completed
 October 22 as recorded below; no additional upload or invitation occurred.
