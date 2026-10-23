@@ -23,8 +23,9 @@ require joined status, a visible game and no block relationship. No new grants.
   public game/streak statistics; no email/token fields. Client own selects include
   onboarding completion; public host profile selects omit it. Blocked profiles
   are filtered by RLS. Created/updated/onboarding timestamps and arbitrary-user
-  boolean helper inference remain residual minimization questions, not declared
-  accepted by this change.
+  boolean helper inference were noted separately: helper disclosure is now fixed
+  locally in [the helper-scope plan](2026-10-23-policy-helper-reads.md); timestamp
+  minimization is deferred optional work, not a claim of strict column minimization.
 - Session selects embed only venue columns and host id/display name/username.
   Session top-level wildcard retains legacy column compatibility; RLS is the
   authorization boundary. Session times/locations are public for discoverable
@@ -54,8 +55,9 @@ require joined status, a visible game and no block relationship. No new grants.
   test-validity issue. git diff --check passed.
 
 This closes the reproduced direct-read bypass locally, not all of BETA-13.
-Public helper boolean inference and nonessential profile timestamps remain
-unresolved audit items. Deployment and production role-matrix verification need
+Public helper boolean inference was subsequently reproduced and fixed locally
+in [the helper-scope plan](2026-10-23-policy-helper-reads.md). Nonessential profile
+timestamp minimization remains deferred optional work. Deployment and production role-matrix verification need
 their separate authorization/evidence.
 Production remains unchanged. Exact device/two-account and full production role
 matrix acceptance remain separate gates.

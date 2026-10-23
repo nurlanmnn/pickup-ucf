@@ -22,4 +22,5 @@ BEGIN;
 \ir phase_o_host_edit_boundaries.sql
 \ir phase_p_waitlist_retry.sql
 \ir phase_q_participant_reads.sql
+\ir phase_r_helper_scope.sql
 ROLLBACK;
