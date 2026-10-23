@@ -1058,3 +1058,12 @@ including effective client privileges. Both restore containers were removed.
 This supersedes the earlier untested-forward-migration limitation and historical
 exposed-grant audit. It does not complete BETA-13's numeric/edit/read-minimization
 audit or managed-auth/platform recovery. See the isolated restore record.
+
+**October 23 BETA-13 source follow-up:** A crafted host UPDATE accepted capacity 1
+despite creation's 2–50 contract. New migration `20261023215028` extends the existing
+status guard to validate changed capacity, schedule/duration and location-pin
+groups, retaining legacy notes/cancellation and current build-5 venue patches.
+The local reproduction first failed; all 31 candidate SQL/RLS phase notices then
+passed in rollback. No production deployment or binary change occurred. Full
+location/sport representation and read-minimization audits remain open. See
+[host edit evidence](2026-10-23-host-edit-boundaries.md).

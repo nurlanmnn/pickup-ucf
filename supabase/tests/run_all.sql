@@ -19,4 +19,5 @@ BEGIN;
 \ir phase_l_account_deletion.sql
 \ir phase_m_roster_access.sql
 \ir phase_n_session_status.sql
+\ir phase_o_host_edit_boundaries.sql
 ROLLBACK;

@@ -1,5 +1,10 @@
 # Current work — Production deployed; iOS candidate acceptance next
 
+October 23 follow-up: BETA-13 host-edit numeric/schedule/location-pin bypasses
+reproduced and fixed locally in `20261023215028`; all 31 candidate SQL/RLS phase
+notices passed inside rollback. Production migration and build 5 remain unchanged.
+See [host edit contract and evidence](../docs/superpowers/plans/2026-10-23-host-edit-boundaries.md).
+
 October 23: connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5).
 The owner confirmed installation through TestFlight and availability for testing.
 iPhone Mirroring now connects. Physical-device launch, online cold relaunch into
