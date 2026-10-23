@@ -25,4 +25,5 @@ BEGIN;
 \ir phase_r_helper_scope.sql
 \ir phase_s_report_caller.sql
 \ir phase_t_chat_visibility.sql
+\ir phase_u_message_fields.sql
 ROLLBACK;
