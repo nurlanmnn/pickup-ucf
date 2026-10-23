@@ -11,6 +11,12 @@ passed with rollback; explicit leave/rejoin still creates a new queue entry.
 See [waitlist retry evidence](../docs/superpowers/plans/2026-10-23-waitlist-retry.md).
 Both October 23 migrations remain undeployed.
 
+BETA-14 independent isolated concurrency now passes four ordered host-action
+races, twelve cancellation/join races and six simultaneous waitlist retries.
+Only schema/history were copied from the local DB; fixtures stayed in a fresh
+network-disabled disposable container, removed afterward. See
+[host-action concurrency](../docs/superpowers/plans/2026-10-23-host-action-concurrency.md).
+
 October 23: connected iPhone 17 / iOS 27.0.1 reports installed version 1.0 (5).
 The owner confirmed installation through TestFlight and availability for testing.
 iPhone Mirroring now connects. Physical-device launch, online cold relaunch into

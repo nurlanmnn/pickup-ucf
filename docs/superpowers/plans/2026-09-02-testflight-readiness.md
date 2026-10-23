@@ -1074,3 +1074,13 @@ previous function; migration `20261023215505` skips conflict updates for existin
 waitlist rows, preserving priority while retaining explicit leave/rejoin behavior.
 All 32 candidate SQL/RLS phase notices passed in rollback. Local source only;
 production and build 5 are unchanged. See [waitlist retry evidence](2026-10-23-waitlist-retry.md).
+
+**October 23 BETA-14 concurrency follow-up:** The new local-only
+`supabase/tests/host_action_concurrency.py` clones schema/history (no rows) into a
+fresh network-disabled tmpfs container. Four ordered cancellation/join and
+capacity/join races, twelve simultaneous cancellation/join races and six
+waitlist retries passed count/capacity/lifecycle/priority checks. No source-local
+database edit occurred; the disposable container was removed. This supplies the
+previously missing host/cancellation exercise; physical two-account acceptance
+and deployment of the two October 23 fixes remain open. See
+[concurrency evidence](2026-10-23-host-action-concurrency.md).
