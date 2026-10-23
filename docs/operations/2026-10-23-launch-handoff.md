@@ -113,6 +113,25 @@ plans under `docs/superpowers/plans/`, and
 `docs/operations/2026-10-23-isolated-restore.md`. Commits: `a65e417` recovery,
 `277ac46` host edits, `76f7f9e` waitlist retry, `cc5cbe5` concurrency.
 
+## Next independent investigation
+
+The owner again asked to keep working and open a new chat when context is loaded.
+GitHub feature-branch pushes remain authorized; no merge/deployment/upload.
+Current implementation/documentation head before this handoff update is 405a0a9.
+
+Next concrete source observation: submit_moderation_report counts the caller's
+last-hour/day reports, rejects at 5/20, then inserts without an evident reporter
+lock. Concurrent requests for distinct targets may bypass the rate limit. This
+is **not yet a reproduced defect**. Investigate with synthetic requests in a fresh
+network-disabled schema-only disposable database, using the isolation pattern in
+supabase/tests/host_action_concurrency.py; do not mutate the existing local DB or
+use production. A test-only insert barrier/delay may expose the overlap. First
+prove a real over-limit acceptance; fix minimally only if reproduced, preserving
+valid reporting/duplicate errors, caller auth, independent users and retained
+moderation audit records. Evaluate transaction ordering/deadlocks if serializing
+per reporter. Run changed-relevant SQL/concurrency checks and independent review,
+then commit/push verified source. Do not repeat unchanged iOS/Edge suites.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
