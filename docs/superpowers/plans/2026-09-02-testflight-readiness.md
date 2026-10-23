@@ -656,10 +656,10 @@ Account changes clear navigation, create prefills, banners and account-linked de
 **Tasks:**
 
 - [ ] Complete the table-policy/data-minimization threat-model audit (application function signatures and grants inventoried October 22).
-- [x] Revoke default/public execute rights and grant each function only to required roles (local migration; production deployment remains open).
+- [x] Revoke default/public execute rights and grant each function only to required roles (deployed October 22; metadata rechecked October 23).
 - [ ] Move player counts, host membership, capacity enforcement, status transitions, and other invariants behind transactional server logic.
 - [ ] Review whether profile, participant, roster, report, and blocked-user reads expose more data than each screen needs.
-- [x] Verify anonymous users cannot call authenticated mutation functions (local SQL; production remains exposed until deployment).
+- [x] Verify anonymous users cannot call authenticated mutation functions (local SQL and October 23 production execute-permission metadata).
 - [ ] Add SQL tests for cross-user access, crafted updates, blocked users, deleted users, and role escalation.
 - [ ] Document intentional exceptions and the threat model.
 
@@ -1046,3 +1046,15 @@ games were visible. See the build 5 record for exact scope and screenshot locati
 Fresh/provider sign-in, offline/revoked-session behavior, Calendar, APNs,
 two-account chat/deletion and accessibility remain open, as does the iOS 17 lane.
 No reviewer-account/game/message changes were made during these smoke checks.
+
+**Later October 23 recovery evidence (approximately 5:46 PM):** A second fresh,
+network-disabled tmpfs restore replayed all ten deployed migrations unchanged.
+pg_cron's API was available with job launching off, max_worker_processes=0 and no
+cron worker; no jobs ran. All 38 count/44 FK checks, migrated boundary assertions
+and a synthetic create/retry/join/chat/anonymized-delete/cleanup transaction passed;
+the transaction rolled back. Read-only production catalog comparison matched 46
+application functions and 148 table/policy/constraint/index/trigger entries,
+including effective client privileges. Both restore containers were removed.
+This supersedes the earlier untested-forward-migration limitation and historical
+exposed-grant audit. It does not complete BETA-13's numeric/edit/read-minimization
+audit or managed-auth/platform recovery. See the isolated restore record.

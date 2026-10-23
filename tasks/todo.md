@@ -9,7 +9,11 @@ provider, Calendar, APNs, offline and accessibility checks remain open. See the
 [build-5 device evidence](../docs/testflight/2026-10-22-build-5.md).
 Completed an isolated actual-snapshot logical
 restore: 38 imported table-count checks and 44 foreign-key checks passed;
-disposable container removed. See [scope, evidence and recovery gaps](../docs/operations/2026-10-23-isolated-restore.md).
+then replayed all ten deployed migrations unchanged in a second isolated restore.
+Synthetic lifecycle/rollback passed; read-only production catalog comparison matched
+46 functions and 148 table/policy/constraint/index/trigger entries. Both disposable
+containers were removed. Platform/auth/configuration recovery gaps remain. See
+[scope, evidence and recovery gaps](../docs/operations/2026-10-23-isolated-restore.md).
 
 The owner authorized pushing current source and deploying required changes on
 October 22. Source `b8349d2` is verified on origin/main. See the

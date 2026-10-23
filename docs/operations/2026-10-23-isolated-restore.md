@@ -88,8 +88,9 @@ workers, cron, email, APNs, Edge Functions or API services around restored data.
 ## Remaining recovery gates
 
 This is a **pre-rollout logical snapshot**, not the current deployed schema. The
-ten October 22 migrations were not replayed here, and cron-dependent migrations
-must not be run unchanged in this environment. Its older RPC grants and deletion
+ten October 22 migrations were not replayed in the first exercise above; the
+follow-on below establishes a separate safe replay environment. The first
+exercise's older RPC grants and deletion
 behavior are unsuitable for service exposure or production rollback.
 
 A complete recovery still requires the correct managed auth schema, roles and
@@ -101,3 +102,66 @@ frequency/retention, acceptable data loss and recovery time before external beta
 The prior hosted WALG/no-PITR metadata was not refreshed in this exercise.
 
 Reference workflow: [Supabase logical backup/restore documentation](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore).
+
+## Restore plus forward migrations — approximately 5:46 PM
+
+A second fresh container, `pickup-restore-forward-20261023`, restored the same
+actual snapshot and replayed **all ten deployed migration files unchanged** in
+rollout order through `20261022170532`. All ten transactions passed. The same
+six empty incompatible auth blocks remain excluded; managed-auth/platform
+limitations above still apply.
+
+This container retained network=none, no ports/host mounts, read-only root, tmpfs
+data, empty listen_addresses and max_worker_processes=0. The only preload was
+pg_cron 1.6.4, with `cron.launch_active_jobs=off` set on the command line **before
+reading snapshots**. The real cron API/metadata could be created with zero cron
+workers. Exact schedule DDL therefore replayed without a scheduler or modified
+migrations. No pg_net extension, subscriptions, API services or provider secrets
+were loaded. [pg_cron's documented setting](https://github.com/citusdata/pg_cron#extension-settings)
+disables active-job launches. All job rows were additionally deactivated after
+replay. Final job-run, active-job and cron-worker counts were all zero.
+
+Validation passed before replay, after replay and after a synthetic lifecycle
+transaction rolled back:
+
+- All 38 source/restored table-count checks and 44 FK checks passed. The migration
+  deleting old queued 15-minute reminders affected zero snapshot rows.
+- Sequence position, table RLS flags, nullable-host SET NULL behavior, activity
+  lifecycle column, null-recipient cleanup guard, internal RPC denial, permitted
+  client RPCs and direct mutation restrictions passed metadata assertions.
+- The synthetic transaction passed atomic create retry, join/counts, chat insert,
+  host account deletion/retry, retained anonymized game/other-player message,
+  stale deleted-account JWT denial and cleanup retry. ROLLBACK preserved restored
+  counts. No production account was changed.
+- Read-only production catalog comparison matched **46/46 application functions**:
+  signatures, definition fingerprints, SECURITY DEFINER flags and effective
+  anon/authenticated/service-role execute permissions.
+- The same comparison matched **148/148 catalog entries**: 18 tables (column
+  definitions/RLS/effective column privileges), 16 policies, 64 constraints,
+  36 indexes and 14 application triggers. App-owned triggers on managed tables
+  were included when present. No table rows or function bodies were retrieved
+  from production; only metadata/fingerprints were returned.
+
+Catalog parity at this timestamp does not prove every policy's semantics, managed
+role parity, current data freshness, provider recovery or complete platform
+recovery. Live project metadata reports PostgreSQL 17.11.0.002; the restored target
+remains the available 17.6 image.
+
+Restricted materials are in
+`/Users/nurlanmammadli/.local/share/pickup-ucf/recovery/2026-10-23-forward-exercise`:
+`restore.py`, baseline/forward validators, migration filenames/hashes/exit codes,
+synthetic lifecycle SQL, parity metadata and private logs. To repeat, use a fresh
+container with the original run command above, change its name to the follow-on
+name, and replace the empty preload with
+`-c shared_preload_libraries=pg_cron -c cron.launch_active_jobs=off`. Keep workers
+at zero. Verify network/mount/runtime isolation and zero cron workers, then create
+the pg_cron extension. Run the follow-on private helper, baseline validator, all
+ten original migration files in recorded order (psql -X, ON_ERROR_STOP, transaction
+per file), forward validator, synthetic lifecycle (ROLLBACK), and forward validator
+again. Capture output privately and remove this specific disposable container,
+including on failure.
+
+The follow-on container was removed; no restore container remains. The existing
+local Supabase database remained healthy. Remaining gates include managed auth
+DDL, roles/history, platform/Storage/configuration and secret recovery, plus
+backup ownership, frequency/retention and RPO/RTO decisions.
