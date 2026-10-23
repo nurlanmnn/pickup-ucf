@@ -136,11 +136,42 @@ writes stayed in a fresh network-disabled disposable container, removed after
 testing. Existing DB head is still 20261005150000 without atomic creation RPCs.
 No new Swift/Edge changes warranted repeating their passing suites.
 
-No additional concrete independent source defect is currently identified. The
-remaining release/device/provider gates below need their own evidence and, where
-applicable, owner availability or explicit release authorization. Optional P2
-polish remains deferred. Do not repeat unchanged tests or poll the unavailable
-phone just to keep working.
+## Next independent investigation: Live Activity registration race
+
+The owner explicitly renewed authorization to keep working and create
+continuation chats when context fills, stopping only for owner action or usage
+limits. Continue concrete launch-critical work; keep verified source pushed.
+
+After report fix `20b8789`, read-only production dashboard inspection confirmed
+pickup_private is not Data API exposed; extra search path is public/extensions.
+GraphQL is disabled (catalog plus stub resolver response). See
+[API exposure evidence](2026-10-23-api-schema-exposure.md). No configuration changed.
+Recheck at actual authorized deployment, especially if GraphQL becomes enabled.
+
+New **reproduced defect**, still unfixed: register_live_activity_token reads an
+eligible session before inserting. In a fresh disposable candidate DB, hold an
+authenticated host cancellation uncommitted after its cleanup trigger ran, then
+register a player's token. The caller sees the old open session and commits a
+future token after cleanup missed it. Final state: cancelled game with one token
+having ended_at NULL and ends_at in the future. The failing regression is
+`supabase/tests/live_activity_concurrency.py` (currently uncommitted). Run with
+PYTHONDONTWRITEBYTECODE=1; it shares the host-action schema-only network-disabled
+disposable harness. The red run printed `accepted=True, future active tokens=1`;
+container removed in finally, existing DB/production untouched.
+
+Next: fix minimally, only after preserving this red evidence. Likely acquire a
+session lock compatible with other registrations but conflicting with host edits,
+cancellation and join/leave BEFORE reading eligibility, then read eligibility in
+a separate statement so membership predicates see post-wait commits. Do not rely
+on a WHERE subquery's old snapshot during EvalPlanQual rechecks. Existing session
+actions take the session lock before token updates; check lock order against
+account deletion and profile/token FKs. Preserve token ownership, idempotent
+retries, schedule changes, no resurrection after ended state, and released clients.
+Expand ordered tests to both registration/cancellation orders, leave/registration,
+schedule edits, retry/ownership and relevant deletion cases; evaluate stronger
+snapshots/deadlocks. Run changed-relevant SQL/RLS in disposable DB, independent
+code-review skill review, docs, commit/push. No unchanged iOS/Edge suite reruns.
+Optional P2 polish stays deferred; do not poll the unavailable phone.
 
 ## Remaining work and gates
 
@@ -156,8 +187,8 @@ There are now nine undeployed October 23 migrations, in order:
 20261023231500. The new iOS edit fix
 also needs a future compatible binary before exact-candidate edit acceptance.
 GitHub source pushes were subsequently authorized by the owner. Deployment,
-upload and merge remain outside the current authorization. Verify
-production private-schema exposure before considering the helper migration.
+upload and merge remain outside the current authorization. Production private
+schema exposure was verified read-only October 23; recheck at helper deployment.
 Do not label all of BETA-13 or launch readiness complete: exact production table/role/API
 matrix verification, provider/Calendar/APNs/offline/accessibility/two-account and
 physical iOS-17 acceptance, platform recovery ownership/RPO/RTO decisions and

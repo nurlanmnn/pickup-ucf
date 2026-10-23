@@ -1,5 +1,13 @@
 # Current work — Production deployed; iOS candidate acceptance next
 
+October 23 read-only production check: Data API exposes public/graphql_public,
+excludes pickup_private, and adds only public/extensions to search_path. GraphQL
+is disabled. See [API exposure evidence](../docs/operations/2026-10-23-api-schema-exposure.md).
+No settings changed; recheck at future authorized helper deployment. A new
+disposable-DB regression reproduced Live Activity registration surviving a racing
+host cancellation with a future active token; fix/verification is next, as detailed
+in the continuation handoff. This is not production/device acceptance.
+
 October 23 report concurrency: reproduced six simultaneous distinct-target
 reports committing past the 5/hour cap. Migration `20261023231500` serializes
 submissions per reporter while preserving current-account authorization and
