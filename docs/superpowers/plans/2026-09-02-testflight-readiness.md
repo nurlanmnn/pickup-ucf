@@ -1067,3 +1067,10 @@ The local reproduction first failed; all 31 candidate SQL/RLS phase notices then
 passed in rollback. No production deployment or binary change occurred. Full
 location/sport representation and read-minimization audits remain open. See
 [host edit evidence](2026-10-23-host-edit-boundaries.md).
+
+**October 23 BETA-14 source follow-up:** Retrying join on a full game reset a
+waiter's joined_at and queue priority. A synthetic regression failed against the
+previous function; migration `20261023215505` skips conflict updates for existing
+waitlist rows, preserving priority while retaining explicit leave/rejoin behavior.
+All 32 candidate SQL/RLS phase notices passed in rollback. Local source only;
+production and build 5 are unchanged. See [waitlist retry evidence](2026-10-23-waitlist-retry.md).
