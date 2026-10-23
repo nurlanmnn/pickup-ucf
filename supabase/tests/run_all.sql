@@ -26,4 +26,5 @@ BEGIN;
 \ir phase_s_report_caller.sql
 \ir phase_t_chat_visibility.sql
 \ir phase_u_message_fields.sql
+\ir phase_v_attendance_access.sql
 ROLLBACK;
