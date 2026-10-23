@@ -47,4 +47,5 @@ gate, not evidence that production configuration was checked by this change.
 This closes the reproduced public helper disclosures locally. No production
 migration, push, merge, binary upload or device acceptance occurred. Before
 future deployment verify production API schema exposure and review the complete
-four-migration pending set in order.
+pending October 23 migration set in order (now eight migrations; see the current
+launch handoff).

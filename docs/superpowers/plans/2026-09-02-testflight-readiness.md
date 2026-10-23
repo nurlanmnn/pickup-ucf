@@ -655,7 +655,7 @@ Account changes clear navigation, create prefills, banners and account-linked de
 
 **Tasks:**
 
-- [ ] Complete the table-policy/data-minimization threat-model audit (application function signatures and grants inventoried October 22).
+- [x] Complete the local source/Data API table-policy threat model (18 application/private tables inventoried October 23; intentional exceptions documented; exact production role/API acceptance remains open).
 - [x] Revoke default/public execute rights and grant each function only to required roles (deployed October 22; metadata rechecked October 23).
 - [ ] Move player counts, host membership, capacity enforcement, status transitions, and other invariants behind transactional server logic.
 - [x] Review profile, participant, roster, report, and blocked-user client reads (October 23 source audit; reproduced participant/helper leaks fixed locally; optional timestamp minimization deferred).
@@ -682,6 +682,15 @@ intentional identity/aggregate exceptions and limitations are documented in
 `pickup_private` out of API exposed schemas before any deployment. These fixes
 are not deployed and the iOS fix is not in TestFlight build 5. BETA-13 remains open
 for full table/role-matrix and compatible-candidate production/device acceptance.
+
+**Further source audit (2026-10-23):** The [18-table/API threat model](2026-10-23-table-policy-audit.md)
+records intentional exceptions and four more reproduced local fixes: current
+account authorization for moderation reports, positive session visibility for
+chat reads/inserts, server-owned message ID/timestamp columns, and own-only
+attendance ledger reads preserving profile history. Migrations `20261023223500`
+through `20261023230500` are undeployed. Complete candidate SQL/RLS passes **38
+phase notices** inside rollback. Exact production/API role verification and
+compatible-candidate/two-account/device acceptance remain open.
 
 ## BETA-14 — Test join/leave concurrency and idempotency (**P1**)
 

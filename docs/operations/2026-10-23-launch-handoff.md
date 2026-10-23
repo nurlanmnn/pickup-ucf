@@ -9,7 +9,7 @@ visibility without evidence.
 ## Checkout and authorization
 
 - `/Users/nurlanmammadli/pickup-ucf`, branch `codex/calendar-write-only`.
-- Latest implementation/test commit: `b27c87b`; documentation updates follow it.
+- Latest implementation/test commit: `3ba71dc`; documentation updates follow it.
   Prior continuation started at clean `c4e4718`.
 - Local changes are committed. On October 23 the owner subsequently authorized
   GitHub pushes during continued work. Push verified source to the feature branch.
@@ -92,6 +92,22 @@ single-device/provider/physical-iOS-17 acceptance separate from local tests.
     20261005150000 without the atomic create RPC. Independent reviews found no
     actionable issue in each of the three new increments.
 
+11. Follow-up table-policy audit inventoried 18 application/private tables with
+    RLS enabled and found four additional concrete defects. Fixed locally:
+    `20261023223500` rejects deleted/unconfirmed/non-school moderation-report
+    callers (`e88c3f1`); `20261023224500` requires positive chat session visibility
+    (`0ad51b4`); `20261023225500` reserves message ID/time for server defaults
+    (`07ab9c9`); `20261023230500` scopes attendance ledger reads to own profile
+    history (`3ba71dc`). Each had a red synthetic reproduction and independent
+    review. Review caught a proposed history compatibility break before commit;
+    final attendance policy preserves build-5 own-history reads and host RPCs.
+12. Latest candidate SQL/RLS passes **38 phase notices** inside rollback. No new
+    Swift/Edge diff, so unchanged simulator/build/analyzer/Edge suites were not
+    repeated. Table/API threat model and intentional exceptions are recorded in
+    `docs/superpowers/plans/2026-10-23-table-policy-audit.md`. Owner authorized
+    GitHub pushes; the verified feature branch was pushed, with follow-up fixes
+    being pushed after review. No merge/deployment/new upload is authorized.
+
 Focused evidence: October 23 host-edit, waitlist-retry and host-action-concurrency
 plans under `docs/superpowers/plans/`, and
 `docs/operations/2026-10-23-isolated-restore.md`. Commits: `a65e417` recovery,
@@ -105,13 +121,14 @@ reviewed surfaces. See October 23 `session-edit-payload`,
 red/green evidence and limitations. Optional profile timestamp/strict column
 minimization is deferred; do not turn that into cosmetic refactoring.
 
-There are now four undeployed October 23 migrations, in order:
-20261023215028, 20261023215505, 20261023221000, 20261023222000. The new iOS edit fix
+There are now eight undeployed October 23 migrations, in order:
+20261023215028, 20261023215505, 20261023221000, 20261023222000,
+20261023223500, 20261023224500, 20261023225500, 20261023230500. The new iOS edit fix
 also needs a future compatible binary before exact-candidate edit acceptance.
 GitHub source pushes were subsequently authorized by the owner. Deployment,
 upload and merge remain outside the current authorization. Verify
 production private-schema exposure before considering the helper migration.
-Do not label all of BETA-13 or launch readiness complete: complete table/role
+Do not label all of BETA-13 or launch readiness complete: exact production table/role/API
 matrix verification, provider/Calendar/APNs/offline/accessibility/two-account and
 physical iOS-17 acceptance, platform recovery ownership/RPO/RTO decisions and
 external Beta App Review remain open. Those need owner availability, explicit

@@ -1,5 +1,16 @@
 # Current work — Production deployed; iOS candidate acceptance next
 
+October 23 further audit: fixed deleted-account report submissions, blocked-host
+chat visibility/sends, forged message timestamps/IDs and attendance-ledger identity
+leaks locally. Own profile history and released host attendance remain compatible.
+Full candidate SQL/RLS now passes **38 phase notices** inside rollback. All 18
+application/private tables have RLS; source/API threat model, intentional
+exceptions and evidence are in the
+[table-policy audit](../docs/superpowers/plans/2026-10-23-table-policy-audit.md).
+There are now **eight undeployed October 23 migrations**. The owner authorized
+GitHub feature-branch pushes; deployment, merge, new upload and external review
+remain separate gates. No new Swift/Edge code warranted repeating prior evidence.
+
 October 23 continuation: BETA-13 edit/read audit reproduced and fixed three
 additional defect groups locally. Session edits now persist the normalized Other
 sport name and clear optional notes/location/name fields; direct participant reads
@@ -10,7 +21,7 @@ See [edit payload](../docs/superpowers/plans/2026-10-23-session-edit-payload.md)
 and [helper scope](../docs/superpowers/plans/2026-10-23-policy-helper-reads.md).
 Signed isolated simulator tests passed 267/267; unsigned Release build/analyzer
 passed. Candidate SQL/RLS passed 34 phase notices inside rollback; isolated host
-concurrency passed after the helper change. All four October 23 migrations remain
+concurrency passed after the helper change. All eight October 23 migrations now remain
 undeployed, and the iOS fix is absent from TestFlight build 5. Before deployment,
 verify pickup_private remains unexposed in production API configuration. Optional
 profile timestamp minimization is deferred. Device/provider/two-account and full
