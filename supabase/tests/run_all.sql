@@ -23,4 +23,5 @@ BEGIN;
 \ir phase_p_waitlist_retry.sql
 \ir phase_q_participant_reads.sql
 \ir phase_r_helper_scope.sql
+\ir phase_s_report_caller.sql
 ROLLBACK;
