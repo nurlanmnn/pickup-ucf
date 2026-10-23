@@ -11,8 +11,10 @@ visibility without evidence.
 - `/Users/nurlanmammadli/pickup-ucf`, branch `codex/calendar-write-only`.
 - Latest implementation/test commit: `b27c87b`; documentation updates follow it.
   Prior continuation started at clean `c4e4718`.
-- Local changes are committed. **No push/merge, new deployment, new build upload,
-  external invitation or Beta App Review is authorized by this continuation.**
+- Local changes are committed. On October 23 the owner subsequently authorized
+  GitHub pushes during continued work. Push verified source to the feature branch.
+  **Merge, new deployment, new build upload, external invitation and Beta App
+  Review remain outside this authorization.**
 - Preserve existing work; inspect Git status first. No optional P2 refactors.
 - Never delete the reviewer account or change its password. Provider password
   entry/change and irreversible production deletion require owner handoff.
@@ -106,7 +108,8 @@ minimization is deferred; do not turn that into cosmetic refactoring.
 There are now four undeployed October 23 migrations, in order:
 20261023215028, 20261023215505, 20261023221000, 20261023222000. The new iOS edit fix
 also needs a future compatible binary before exact-candidate edit acceptance.
-No deployment/upload/push/merge is authorized by this continuation. Verify
+GitHub source pushes were subsequently authorized by the owner. Deployment,
+upload and merge remain outside the current authorization. Verify
 production private-schema exposure before considering the helper migration.
 Do not label all of BETA-13 or launch readiness complete: complete table/role
 matrix verification, provider/Calendar/APNs/offline/accessibility/two-account and
