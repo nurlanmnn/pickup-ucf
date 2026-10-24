@@ -165,10 +165,25 @@ existing DB/production untouched. See [activity concurrency evidence](../superpo
 Independent design and final source/test reviews found no required changes
 (final review completed October 24 after the usage-limit interruption). No Swift/Edge changes warranted rerunning their unchanged suites.
 
-Next independent work: audit another concrete launch-critical RPC invariant with a
-synthetic disposable reproduction before changing code. Preserve all owner-only
-production/device gates below, defer optional P2 polish, and keep verified source
-pushed. Do not poll the unavailable phone.
+## October 24 push worker follow-up
+
+Live Activity fix/test/docs were committed and pushed as `09e9473`. Final source
+review completed after the usage-limit interruption with no required findings.
+
+A subsequent synthetic regression reproduced ordinary outbox transport failure
+aborting later recipients; another proved an acknowledgement DB error inflated the
+sent count. The handler now isolates send/ack errors per outbox row, keeps failures
+pending, checks acknowledgement errors and continues later rows. Both regressions
+failed before the patch. Relevant Edge suite passes 31/31 with type checking:
+`deno test --allow-env supabase/functions/send-push supabase/functions/send-auth-email`.
+See [push outbox recovery](../superpowers/plans/2026-10-24-push-outbox-recovery.md).
+Independent final source/test review found no required changes. This Edge fix is
+**undeployed**, alongside
+the ten pending SQL migrations; no provider/device acceptance is implied.
+
+Next independent work: investigate only a concrete launch-critical invariant,
+using synthetic/local evidence before changing code. Preserve owner-only gates,
+defer optional P2 polish, and keep verified source pushed. Do not poll the phone.
 
 ## Remaining work and gates
 
@@ -199,8 +214,9 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest evidence: 267/267 signed isolated simulator tests and unsigned Release
-build/analyzer; unchanged prior Edge Function evidence is 39/39 Deno. New Swift
+Latest iOS evidence: 267/267 signed isolated simulator tests and unsigned Release
+build/analyzer. October 24 relevant Edge evidence is 31/31 typechecked push/auth
+tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.
 Do not install a development build over TestFlight build 5 without owner intent.
 

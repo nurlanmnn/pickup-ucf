@@ -427,17 +427,23 @@ export async function handler(
   if (error) return new Response(error.message, { status: 500 });
   let sent = 0;
   for (const row of pending ?? []) {
-    const ok = await sendToUserDevices(
-      supabase,
-      row as OutboxRow,
-      requestDeps,
-    );
-    if (ok) {
-      await supabase
-        .from("notification_outbox")
-        .update({ sent_at: (deps.now?.() ?? new Date()).toISOString() })
-        .eq("id", row.id);
-      sent++;
+    try {
+      const ok = await sendToUserDevices(
+        supabase,
+        row as OutboxRow,
+        requestDeps,
+      );
+      if (ok) {
+        const { error: acknowledgementError } = await supabase
+          .from("notification_outbox")
+          .update({ sent_at: (deps.now?.() ?? new Date()).toISOString() })
+          .eq("id", row.id);
+        if (acknowledgementError) throw new Error(acknowledgementError.message);
+        sent++;
+      }
+    } catch {
+      // Keep the row pending for retry without blocking later recipients.
+      console.warn("send-push: Notification dispatch failed; will retry");
     }
   }
 

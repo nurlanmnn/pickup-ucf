@@ -1,3 +1,10 @@
+October 24: push outbox transport failure no longer aborts later recipients;
+failed database acknowledgements no longer inflate the sent count. Both defects
+have red/green synthetic regressions; relevant typechecked Edge tests pass 31/31.
+See [push outbox recovery](../docs/superpowers/plans/2026-10-24-push-outbox-recovery.md).
+This Edge change and ten SQL migrations remain undeployed. Live Activity lifecycle
+fix is committed/pushed as `09e9473`; no production/device acceptance is implied.
+
 # Current work — Production deployed; iOS candidate acceptance next
 
 October 23 read-only production check: Data API exposes public/graphql_public,

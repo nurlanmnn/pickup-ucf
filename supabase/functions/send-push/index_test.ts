@@ -45,6 +45,7 @@ function createMockSupabase(options: {
   onSelectTokens?: (userId: string) => void;
   onDeleteToken?: (token: string) => void;
   onMarkSent?: (id: string) => void;
+  markSentErrors?: Record<string, { message: string }>;
 }) {
   const deletedTokens: string[] = [];
   const markedSent: string[] = [];
@@ -73,6 +74,8 @@ function createMockSupabase(options: {
           }),
           update: (values: { sent_at: string }) => ({
             eq: (_column: string, id: string) => {
+              const error = options.markSentErrors?.[id];
+              if (error) return Promise.resolve({ data: null, error });
               markedSent.push(id);
               options.onMarkSent?.(id);
               return Promise.resolve({ data: null, error: null });
@@ -660,4 +663,76 @@ Deno.test("reminder expires at start and carries its session end for cleanup", a
     String(Date.parse(start) / 1000),
   );
   assertEquals(JSON.parse(String(request!.body)).session_ends_at, end);
+});
+
+Deno.test("handler keeps a failed notification pending and delivers later rows", async () => {
+  setTestEnv({ APNS_ENV: "sandbox" });
+  const rows: OutboxRow[] = [
+    {
+      id: "retry-row",
+      user_id: "retry-user",
+      title: "Retry",
+      body: "Retry later",
+    },
+    {
+      id: "healthy-row",
+      user_id: "healthy-user",
+      title: "Ready",
+      body: "Deliver now",
+    },
+  ];
+  const { supabase, markedSent } = createMockSupabase({
+    pending: rows,
+    tokensByUser: {
+      "retry-user": [{ apns_token: "unreachable-token" }],
+      "healthy-user": [{ apns_token: "healthy-token" }],
+    },
+  });
+  const attempted: string[] = [];
+  const response = await handler(authRequest(), {
+    supabase: supabase as never,
+    getJwt: () => Promise.resolve("mock-jwt"),
+    fetchImpl: (input) => {
+      const token = String(input).split("/").at(-1)!;
+      attempted.push(token);
+      if (token === "unreachable-token") {
+        return Promise.reject(new TypeError("Synthetic transport failure"));
+      }
+      return Promise.resolve(new Response(null, { status: 200 }));
+    },
+  });
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), { sent: 1, liveActivitiesEnded: 0 });
+  assertEquals(attempted, ["unreachable-token", "healthy-token"]);
+  assertEquals(markedSent, ["healthy-row"]);
+});
+
+Deno.test("handler counts only persisted notification acknowledgements", async () => {
+  setTestEnv();
+  const { supabase, markedSent } = createMockSupabase({
+    pending: [
+      {
+        id: "unacknowledged",
+        user_id: "user-1",
+        title: "First",
+        body: "First",
+      },
+      {
+        id: "acknowledged",
+        user_id: "user-2",
+        title: "Second",
+        body: "Second",
+      },
+    ],
+    // No registered devices consumes each row without contacting APNs.
+    markSentErrors: {
+      unacknowledged: { message: "Synthetic database failure" },
+    },
+  });
+  const response = await handler(authRequest(), {
+    supabase: supabase as never,
+  });
+  assertEquals(response.status, 200);
+  assertEquals(await response.json(), { sent: 1, liveActivitiesEnded: 0 });
+  assertEquals(markedSent, ["acknowledged"]);
 });
