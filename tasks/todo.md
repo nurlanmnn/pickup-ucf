@@ -3,10 +3,12 @@
 October 23 read-only production check: Data API exposes public/graphql_public,
 excludes pickup_private, and adds only public/extensions to search_path. GraphQL
 is disabled. See [API exposure evidence](../docs/operations/2026-10-23-api-schema-exposure.md).
-No settings changed; recheck at future authorized helper deployment. A new
-disposable-DB regression reproduced Live Activity registration surviving a racing
-host cancellation with a future active token; fix/verification is next, as detailed
-in the continuation handoff. This is not production/device acceptance.
+No settings changed; recheck at future authorized helper deployment. Live Activity registration/lifecycle ordering is now fixed locally in
+`20261023232500`: account/session locks precede a fresh eligibility read. Both
+lifecycle orders, parallel devices, retries/ownership, terminal states, deletion
+and isolation guards pass in the disposable harness; all 38 candidate SQL/RLS
+notices pass inside rollback. See [Live Activity concurrency evidence](../docs/superpowers/plans/2026-10-23-live-activity-concurrency.md).
+There are **ten undeployed October 23 migrations**. This is not production/device acceptance.
 
 October 23 report concurrency: reproduced six simultaneous distinct-target
 reports committing past the 5/hour cap. Migration `20261023231500` serializes

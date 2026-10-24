@@ -148,30 +148,27 @@ GraphQL is disabled (catalog plus stub resolver response). See
 [API exposure evidence](2026-10-23-api-schema-exposure.md). No configuration changed.
 Recheck at actual authorized deployment, especially if GraphQL becomes enabled.
 
-New **reproduced defect**, still unfixed: register_live_activity_token reads an
-eligible session before inserting. In a fresh disposable candidate DB, hold an
-authenticated host cancellation uncommitted after its cleanup trigger ran, then
-register a player's token. The caller sees the old open session and commits a
-future token after cleanup missed it. Final state: cancelled game with one token
-having ended_at NULL and ends_at in the future. The failing regression is
-`supabase/tests/live_activity_concurrency.py` (currently uncommitted). Run with
-PYTHONDONTWRITEBYTECODE=1; it shares the host-action schema-only network-disabled
-disposable harness. The red run printed `accepted=True, future active tokens=1`;
-container removed in finally, existing DB/production untouched.
+The reproduced Live Activity race is now fixed locally by
+`20261023232500_serialize_live_activity_registration.sql`: caller account KEY SHARE
+then session SHARE, followed by the separate fresh eligibility query. Stronger
+transaction snapshots reject with SQLSTATE 40001. The original regression failed
+with one future active token after cancellation; the fix passes.
 
-Next: fix minimally, only after preserving this red evidence. Likely acquire a
-session lock compatible with other registrations but conflicting with host edits,
-cancellation and join/leave BEFORE reading eligibility, then read eligibility in
-a separate statement so membership predicates see post-wait commits. Do not rely
-on a WHERE subquery's old snapshot during EvalPlanQual rechecks. Existing session
-actions take the session lock before token updates; check lock order against
-account deletion and profile/token FKs. Preserve token ownership, idempotent
-retries, schedule changes, no resurrection after ended state, and released clients.
-Expand ordered tests to both registration/cancellation orders, leave/registration,
-schedule edits, retry/ownership and relevant deletion cases; evaluate stronger
-snapshots/deadlocks. Run changed-relevant SQL/RLS in disposable DB, independent
-code-review skill review, docs, commit/push. No unchanged iOS/Edge suite reruns.
-Optional P2 polish stays deferred; do not poll the unavailable phone.
+`PYTHONDONTWRITEBYTECODE=1 python3 supabase/tests/live_activity_concurrency.py`
+passes 38 candidate SQL/RLS notices inside rollback; both registration/cancel,
+leave, schedule and outside-window orders; concurrent independent device tokens;
+duplicate delivery-state preservation, ownership/normalization, no terminal token
+resurrection; both player/host deletion orders, stale caller and host-own deletion;
+and repeatable-read/serializable guards. Ordered races observe actual database lock
+waits. Fresh schema-only network-disabled disposable container removed afterward;
+existing DB/production untouched. See [activity concurrency evidence](../superpowers/plans/2026-10-23-live-activity-concurrency.md).
+Independent design and final source/test reviews found no required changes
+(final review completed October 24 after the usage-limit interruption). No Swift/Edge changes warranted rerunning their unchanged suites.
+
+Next independent work: audit another concrete launch-critical RPC invariant with a
+synthetic disposable reproduction before changing code. Preserve all owner-only
+production/device gates below, defer optional P2 polish, and keep verified source
+pushed. Do not poll the unavailable phone.
 
 ## Remaining work and gates
 
@@ -181,10 +178,10 @@ reviewed surfaces. See October 23 `session-edit-payload`,
 red/green evidence and limitations. Optional profile timestamp/strict column
 minimization is deferred; do not turn that into cosmetic refactoring.
 
-There are now nine undeployed October 23 migrations, in order:
+There are now ten undeployed October 23 migrations, in order:
 20261023215028, 20261023215505, 20261023221000, 20261023222000,
 20261023223500, 20261023224500, 20261023225500, 20261023230500,
-20261023231500. The new iOS edit fix
+20261023231500, 20261023232500. The new iOS edit fix
 also needs a future compatible binary before exact-candidate edit acceptance.
 GitHub source pushes were subsequently authorized by the owner. Deployment,
 upload and merge remain outside the current authorization. Production private
