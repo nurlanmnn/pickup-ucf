@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import Supabase
 import UIKit
 
@@ -21,6 +22,7 @@ final class ChatViewModel {
     private let repository: ChatRepositoryProtocol
     private let blockRepository: BlockRepositoryProtocol
     private let client: SupabaseClient
+    private let realtimeDiagnostics: ChatRealtimeDiagnostics
 
     private var realtimeChannel: RealtimeChannelV2?
     private var realtimeTask: Task<Void, Never>?
@@ -53,6 +55,7 @@ final class ChatViewModel {
         repository: ChatRepositoryProtocol = ChatRepository(),
         blockRepository: BlockRepositoryProtocol = BlockRepository(),
         client: SupabaseClient = SupabaseManager.shared,
+        realtimeDiagnostics: ChatRealtimeDiagnostics = .init(),
         now: @escaping () -> Date = { .now }
     ) {
         self.sessionId = sessionId
@@ -60,6 +63,7 @@ final class ChatViewModel {
         self.repository = repository
         self.blockRepository = blockRepository
         self.client = client
+        self.realtimeDiagnostics = realtimeDiagnostics
         self.now = now
     }
 
@@ -190,6 +194,7 @@ final class ChatViewModel {
         await stopRealtime()
         guard case .loaded = messages, !Task.isCancelled, version == lifecycleVersion else { return }
 
+        let attempt = ChatRealtimeDiagnostics.Attempt()
         let channel = client.channel("session-chat-\(sessionId.uuidString)")
         realtimeChannel = channel
 
@@ -204,6 +209,14 @@ final class ChatViewModel {
         statusTask = Task { @MainActor [weak self] in
             for await status in statuses {
                 guard let self, !Task.isCancelled, version == self.lifecycleVersion else { return }
+                let result: ChatRealtimeDiagnostics.Result
+                switch status {
+                case .subscribing: result = .subscribing
+                case .subscribed: result = .subscribed
+                case .unsubscribing: result = .unsubscribing
+                case .unsubscribed: result = .unsubscribed
+                }
+                self.realtimeDiagnostics.observe(.channelStatus, result: result, attempt: attempt)
                 if status == .subscribed { await self.refresh() }
             }
         }
@@ -211,11 +224,21 @@ final class ChatViewModel {
         do {
             try await channel.subscribeWithError()
         } catch {
+            // The SDK also throws CancellationError on server/socket closure.
+            // Only caller task cancellation means this invocation was cancelled.
+            let result: ChatRealtimeDiagnostics.Result = version != lifecycleVersion ? .superseded
+                : (Task.isCancelled ? .cancelled : .failed)
+            realtimeDiagnostics.observe(.subscribe, result: result, attempt: attempt,
+                failure: error is CancellationError || (error as? URLError)?.code == .cancelled ? .cancelled : .unknown)
             guard version == lifecycleVersion else { return }
             syncError = "Live updates paused."
             return
         }
 
+        let result: ChatRealtimeDiagnostics.Result = version != lifecycleVersion ? .superseded
+            : (Task.isCancelled ? .cancelled : .returned)
+        realtimeDiagnostics.observe(.subscribe, result: result, attempt: attempt,
+                                    failure: Task.isCancelled ? .cancelled : .none)
         guard version == lifecycleVersion, !Task.isCancelled else { return }
         realtimeTask = Task { @MainActor [weak self] in
             for await action in inserts {
@@ -482,5 +505,74 @@ final class ChatViewModel {
             if $0.createdAt != $1.createdAt { return $0.createdAt < $1.createdAt }
             return $0.id.uuidString < $1.id.uuidString
         }
+    }
+}
+
+/// Closed local observations; subscription never proves delivery or history catch-up.
+struct ChatRealtimeDiagnostics {
+    enum Operation: String, Encodable { case subscribe, channelStatus = "channel_status" }
+    enum Result: String, Encodable { case returned, failed, cancelled, superseded, subscribing, subscribed, unsubscribing, unsubscribed }
+    enum Failure: String, Encodable { case none, cancelled, unknown }
+
+    /// Fresh per subscription; status observations share the invocation start.
+    struct Attempt {
+        fileprivate let id = UUID()
+        fileprivate let start = ProcessInfo.processInfo.systemUptime
+    }
+
+    struct Record: Encodable {
+        let event = "realtime_operation"
+        let operation: Operation
+        let result: Result
+        let failure: Failure
+        let attemptID: String
+        let durationMS: Int
+        let version = Self.bundleNumber("CFBundleShortVersionString")
+        let build = Self.bundleNumber("CFBundleVersion")
+        #if DEBUG
+        let configuration = "debug"
+        #else
+        let configuration = "release"
+        #endif
+        let environment = SupabaseManager.isUnitTestMode ? "unit_test" : "configured"
+
+        enum CodingKeys: String, CodingKey {
+            case event, operation, result, failure, version, build, configuration, environment
+            case attemptID = "attempt_id", durationMS = "duration_ms"
+        }
+
+        var json: String {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            // This closed schema contains only JSON primitives, so encoding cannot fail.
+            guard let data = try? encoder.encode(self), let json = String(data: data, encoding: .utf8) else {
+                return "{}"
+            }
+            return json
+        }
+
+        private static func bundleNumber(_ key: String) -> String {
+            guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String,
+                  !value.isEmpty, value.utf8.count <= 32,
+                  value.utf8.allSatisfy({ (48...57).contains($0) || $0 == 46 }) else { return "unknown" }
+            return value
+        }
+    }
+
+    private static let logger = Logger(subsystem: "edu.ucf.pickup", category: "realtime_operation")
+    private let sink: (Record) -> Void
+
+    init(sink: @escaping (Record) -> Void = Self.write) { self.sink = sink }
+
+    func observe(_ operation: Operation, result: Result, attempt: Attempt, failure: Failure = .none) {
+        sink(Record(operation: operation, result: result, failure: failure,
+                    attemptID: attempt.id.uuidString,
+                    durationMS: Int(max(0, ProcessInfo.processInfo.systemUptime - attempt.start) * 1000)))
+    }
+
+    private static func write(_ record: Record) {
+        // Public only because every field above is closed/allowlisted; no raw error or input.
+        if record.result == .failed { logger.error("\(record.json, privacy: .public)") }
+        else { logger.info("\(record.json, privacy: .public)") }
     }
 }

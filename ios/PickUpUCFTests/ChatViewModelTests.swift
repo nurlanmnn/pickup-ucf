@@ -1,4 +1,5 @@
 import XCTest
+import Network
 import Supabase
 import SwiftUI
 @testable import PickUpUCF
@@ -547,4 +548,333 @@ private final class ChatBlocksStub: BlockRepositoryProtocol {
     func unblock(userId: UUID) async throws { ids.remove(userId) }
     func fetchBlockedUserIds() async throws -> Set<UUID> { ids }
     func fetchBlockedUsers() async throws -> [BlockedUser] { [] }
+}
+
+@MainActor
+final class ChatRealtimeDiagnosticsTests: XCTestCase {
+    private var records: [ChatRealtimeDiagnostics.Record] = []
+
+    func testActualSubscribeRecordsStatusAndReturnAndRefreshesWithExactFilter() async throws {
+        try await harness { server, client, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            try await self.wait { repository.cursors.count == 2 }
+            XCTAssertNil(vm.syncError)
+            XCTAssertEqual(client.realtimeV2.channels.count, 1)
+            let join = try XCTUnwrap(server.frames.first { $0[3] as? String == "phx_join" })
+            let payload = try XCTUnwrap(join[4] as? [String: Any])
+            let config = try XCTUnwrap(payload["config"] as? [String: Any])
+            let changes = try XCTUnwrap(config["postgres_changes"] as? [[String: Any]])
+            XCTAssertEqual(changes.count, 1)
+            XCTAssertEqual(changes.first?["schema"] as? String, "public")
+            XCTAssertEqual(changes.first?["table"] as? String, "messages")
+            XCTAssertEqual(changes.first?["event"] as? String, "INSERT")
+            XCTAssertEqual(changes.first?["filter"] as? String, "session_id=eq.\(vm.sessionId.uuidString)")
+            XCTAssertEqual(self.outcomes, [.returned])
+            XCTAssertTrue(self.records.contains { $0.operation == .channelStatus && $0.result == .subscribed })
+            XCTAssertEqual(Set(self.records.map(\.attemptID)).count, 1)
+            await vm.stopRealtime()
+            XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+            XCTAssertTrue(server.frames.contains { $0[3] as? String == "phx_leave" })
+            try self.assertPrivate(vm)
+        }
+    }
+
+    func testRejectedSubscribePreservesPausedErrorAndNeverRefreshes() async throws {
+        try await harness(mode: .reject) { _, _, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            XCTAssertEqual(vm.syncError, "Live updates paused.")
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertEqual(self.outcomes, [.failed])
+            XCTAssertEqual(self.records.last(where: { $0.operation == .subscribe })?.failure, .unknown)
+            try self.assertPrivate(vm)
+        }
+    }
+
+    func testUnacknowledgedSubscribeTimesOutWithoutClaimingTransportCause() async throws {
+        try await harness(mode: .silent) { server, _, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            XCTAssertTrue(server.frames.contains { $0[3] as? String == "phx_join" })
+            XCTAssertEqual(vm.syncError, "Live updates paused.")
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertEqual(self.outcomes, [.failed])
+            XCTAssertEqual(self.records.last(where: { $0.operation == .subscribe })?.failure, .unknown)
+        }
+    }
+
+    func testStopDuringPendingSubscriptionRecordsSupersededWithoutLateUIError() async throws {
+        try await harness(mode: .silent) { server, client, repository, vm in
+            await vm.load()
+            let start = Task { await vm.startRealtime() }
+            try await self.wait { server.frames.contains { $0[3] as? String == "phx_join" } }
+            await vm.stopRealtime()
+            await start.value
+            XCTAssertNil(vm.syncError)
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+            XCTAssertEqual(self.outcomes, [.superseded])
+        }
+    }
+
+    func testCancellationDuringSubscribeIsVisibleAndPreservesOriginalPausedError() async throws {
+        try await harness(mode: .silent) { server, _, repository, vm in
+            await vm.load()
+            let start = Task { await vm.startRealtime() }
+            try await self.wait { server.frames.contains { $0[3] as? String == "phx_join" } }
+            start.cancel()
+            await start.value
+            XCTAssertEqual(vm.syncError, "Live updates paused.")
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertEqual(self.outcomes, [.cancelled])
+            XCTAssertEqual(self.records.last(where: { $0.operation == .subscribe })?.failure, .cancelled)
+        }
+    }
+
+    func testSupersededWinsWhenCallerAlsoCancelsPendingSubscribe() async throws {
+        try await harness(mode: .silent) { server, client, repository, vm in
+            await vm.load()
+            let start = Task { await vm.startRealtime() }
+            try await self.wait { server.frames.contains { $0[3] as? String == "phx_join" } }
+            start.cancel()
+            await vm.stopRealtime()
+            await start.value
+            XCTAssertEqual(self.outcomes, [.superseded])
+            XCTAssertEqual(self.records.last(where: { $0.operation == .subscribe })?.failure, .cancelled)
+            XCTAssertNil(vm.syncError)
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+        }
+    }
+
+    func testServerCloseIsFailureEvenWhenSDKThrowsCancellation() async throws {
+        try await harness(mode: .silent) { server, _, repository, vm in
+            await vm.load()
+            let start = Task { await vm.startRealtime() }
+            try await self.wait { server.frames.contains { $0[3] as? String == "phx_join" } }
+            server.closeLastChannel()
+            await start.value
+            XCTAssertEqual(vm.syncError, "Live updates paused.")
+            XCTAssertEqual(repository.cursors.count, 1)
+            XCTAssertEqual(self.outcomes, [.failed])
+            XCTAssertEqual(self.records.last(where: { $0.operation == .subscribe })?.failure, .cancelled)
+        }
+    }
+
+    func testServerCloseAfterSubscribeRecordsStatusWithoutRewritingReturnedOutcome() async throws {
+        try await harness { server, _, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            try await self.wait { repository.cursors.count == 2 }
+            let priorUnsubscribed = self.records.filter { $0.result == .unsubscribed }.count
+            server.closeLastChannel()
+            try await self.wait { self.records.filter { $0.result == .unsubscribed }.count > priorUnsubscribed }
+            XCTAssertEqual(self.outcomes, [.returned])
+            XCTAssertEqual(repository.cursors.count, 2)
+            try self.assertPrivate(vm)
+        }
+    }
+
+    func testRetryCreatesFreshAttemptAndPreservesRefreshBehavior() async throws {
+        try await harness(mode: .reject) { server, _, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            server.mode = .accept
+            await vm.startRealtime()
+            try await self.wait { repository.cursors.count == 2 }
+            XCTAssertNil(vm.syncError)
+            XCTAssertEqual(self.outcomes, [.failed, .returned])
+            let attempts = self.records.filter { $0.operation == .subscribe }.map(\.attemptID)
+            XCTAssertEqual(Set(attempts).count, 2)
+        }
+    }
+
+    func testUnloadedAndAlreadyCancelledStartDoNotSubscribeOrLog() async throws {
+        try await harness { server, client, _, vm in
+            await vm.startRealtime()
+            await vm.load()
+            let start = Task { withUnsafeCurrentTask { $0?.cancel() }; await vm.startRealtime() }
+            await start.value
+            XCTAssertTrue(server.frames.isEmpty)
+            XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+            XCTAssertTrue(self.records.isEmpty)
+        }
+    }
+
+    func testDefaultLoggerRuntimeSmoke() async throws {
+        try await harness(capture: false) { server, _, repository, vm in
+            await vm.load()
+            await vm.startRealtime()
+            try await self.wait { repository.cursors.count == 2 }
+            XCTAssertNil(vm.syncError)
+            server.mode = .reject
+            await vm.startRealtime()
+            XCTAssertEqual(vm.syncError, "Live updates paused.")
+        }
+    }
+
+    private var outcomes: [ChatRealtimeDiagnostics.Result] {
+        records.filter { $0.operation == .subscribe }.map(\.result)
+    }
+
+    private func assertPrivate(_ vm: ChatViewModel) throws {
+        XCTAssertFalse(records.isEmpty)
+        for record in records {
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(record.json.utf8)) as? [String: Any])
+            XCTAssertEqual(Set(json.keys), Set(["event", "operation", "result", "failure", "attempt_id", "duration_ms", "version", "build", "configuration", "environment"]))
+            XCTAssertEqual(json["event"] as? String, "realtime_operation")
+            XCTAssertEqual(json["environment"] as? String, "unit_test")
+            XCTAssertNotNil(UUID(uuidString: record.attemptID))
+            XCTAssertGreaterThanOrEqual(record.durationMS, 0)
+            for secret in [vm.sessionId.uuidString, vm.currentUserId.uuidString, "private", "session-chat", "session_id", "127.0.0.1", "phx_", "https:", "ws:"] {
+                XCTAssertFalse(record.json.contains(secret))
+            }
+        }
+    }
+
+    private func wait(_ predicate: () -> Bool) async throws {
+        let end = ProcessInfo.processInfo.systemUptime + 4
+        while !predicate() {
+            guard ProcessInfo.processInfo.systemUptime < end else { throw RealtimeFixtureError.timeout }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+    }
+
+    private func harness(
+        mode: LoopbackRealtimeServer.Mode = .accept, capture: Bool = true,
+        action: (LoopbackRealtimeServer, SupabaseClient, ChatHistoryStub, ChatViewModel) async throws -> Void
+    ) async throws {
+        let server = try LoopbackRealtimeServer(mode: mode)
+        defer { server.stop() }
+        try await wait { server.port != nil }
+        let port = try XCTUnwrap(server.port)
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [RealtimeDenyHTTP.self]
+        let client = SupabaseClient(supabaseURL: URL(string: "http://127.0.0.1:\(port)")!, supabaseKey: "private-synthetic-key",
+            options: .init(auth: .init(storage: RealtimeDiscardStorage(), autoRefreshToken: false),
+                           global: .init(session: URLSession(configuration: config), logger: nil),
+                           realtime: .init(timeoutInterval: 0.4, maxRetryAttempts: 1,
+                                           disconnectOnEmptyChannelsAfter: 0, handleAppLifecycle: false)))
+        let repository = ChatHistoryStub()
+        repository.pages = (0..<10).map { _ in ChatMessagePage(messages: [], nextCursor: nil) }
+        let vm = ChatViewModel(sessionId: UUID(), currentUserId: UUID(), repository: repository,
+            blockRepository: ChatBlocksStub(), client: client,
+            realtimeDiagnostics: capture ? .init { self.records.append($0) } : .init())
+        do { try await action(server, client, repository, vm) }
+        catch {
+            await vm.stopRealtime()
+            await client.realtimeV2.disconnect()
+            throw error
+        }
+        await vm.stopRealtime()
+        await client.realtimeV2.disconnect()
+    }
+}
+
+private enum RealtimeFixtureError: Error { case timeout }
+
+private struct RealtimeDiscardStorage: AuthLocalStorage {
+    func store(key: String, value: Data) throws {}
+    func retrieve(key: String) throws -> Data? { nil }
+    func remove(key: String) throws {}
+}
+
+private final class RealtimeDenyHTTP: URLProtocol {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        XCTFail("Realtime fixture unexpectedly attempted HTTP")
+        client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+    }
+    override func stopLoading() {}
+}
+
+/// Only synthetic Phoenix v2 text frames, on a numeric IPv4 loopback endpoint.
+@MainActor
+private final class LoopbackRealtimeServer {
+    enum Mode { case accept, reject, silent }
+    var mode: Mode
+    private(set) var port: UInt16?
+    private(set) var frames: [[Any]] = []
+    private let listener: NWListener
+    private var connections: [NWConnection] = []
+    private var stopped = false
+    private let queue = DispatchQueue(label: "pickup.synthetic.realtime")
+
+    init(mode: Mode) throws {
+        self.mode = mode
+        let parameters = NWParameters(tls: nil, tcp: NWProtocolTCP.Options())
+        parameters.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: .any)
+        let websocket = NWProtocolWebSocket.Options()
+        websocket.autoReplyPing = true
+        parameters.defaultProtocolStack.applicationProtocols.insert(websocket, at: 0)
+        listener = try NWListener(using: parameters)
+        listener.stateUpdateHandler = { [weak self] state in
+            Task { @MainActor in
+                guard let self, !self.stopped else { return }
+                if case .ready = state { self.port = self.listener.port?.rawValue }
+            }
+        }
+        listener.newConnectionHandler = { [weak self] connection in
+            Task { @MainActor in
+                guard let self, !self.stopped else { connection.cancel(); return }
+                self.connections.append(connection)
+                connection.start(queue: self.queue)
+                self.receive(connection)
+            }
+        }
+        listener.start(queue: queue)
+    }
+
+    func stop() {
+        stopped = true
+        listener.cancel()
+        connections.forEach { $0.cancel() }
+        listener.newConnectionHandler = nil
+        listener.stateUpdateHandler = nil
+    }
+
+    func closeLastChannel() {
+        guard let frame = frames.last(where: { $0[3] as? String == "phx_join" }), let connection = connections.last else { return }
+        send([frame[0], NSNull(), frame[2], "phx_close", [:]], on: connection)
+    }
+
+    private func receive(_ connection: NWConnection) {
+        connection.receiveMessage { [weak self] data, context, _, error in
+            Task { @MainActor in
+                guard let self, !self.stopped else { return }
+                let opcode = (context?.protocolMetadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata)?.opcode
+                if opcode == .close { return }
+                if let data, let metadata = context?.protocolMetadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata,
+                   metadata.opcode == .text {
+                    do {
+                        let frame = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [Any])
+                        guard frame.count == 5 else { XCTFail("Expected Phoenix v2 frame"); return }
+                        self.frames.append(frame)
+                        if frame[3] as? String == "phx_join", self.mode != .silent {
+                            self.reply(frame, on: connection, accepted: self.mode == .accept)
+                        } else if frame[3] as? String == "phx_leave" {
+                            self.send([frame[0], NSNull(), frame[2], "phx_close", [:]], on: connection)
+                        }
+                    } catch { XCTFail("Invalid synthetic websocket frame") }
+                }
+                if error == nil { self.receive(connection) }
+            }
+        }
+    }
+
+    private func reply(_ frame: [Any], on connection: NWConnection, accepted: Bool) {
+        let response: [String: Any] = accepted ? ["postgres_changes": []] : ["reason": "private synthetic rejection"]
+        send([frame[0], frame[1], frame[2], "phx_reply", ["status": accepted ? "ok" : "error", "response": response]], on: connection)
+    }
+
+    private func send(_ frame: [Any], on connection: NWConnection) {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: frame)
+            let context = NWConnection.ContentContext(identifier: "synthetic-text",
+                metadata: [NWProtocolWebSocket.Metadata(opcode: .text)])
+            connection.send(content: data, contentContext: context, isComplete: true, completion: .idempotent)
+        } catch { XCTFail("Could not encode synthetic websocket frame") }
+    }
 }

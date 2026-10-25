@@ -442,6 +442,52 @@ are separate diagnostic surfaces, not included in this backend-stage slice.
 BETA-10/11 remain partial. No new phone readiness check/reconnect or publication;
 October24 fixture remains past/unpublished and needs owner-approved future time.
 
+## October25 realtime subscription diagnostics
+
+ChatViewModel now emits local realtime_operation records for actual subscription
+returned/failed/caller-cancelled/superseded outcomes and finite channel statuses
+observed while that lifecycle is current. Fresh UUID shared per invocation;
+monotonic duration is elapsed since start, not message latency/connection health.
+Exactly ten closed fields; no entity/channel IDs, payloads/content/tokens/URLs/raw
+errors or server codes. SDK CancellationError can mean server/socket closure, so
+result follows lifecycle supersession then caller Task.isCancelled; thrown error
+category is separate. Original guards, stream-before-subscribe order, subscribed
+refresh, syncError, tasks and unsubscribe/remove order retained. Never infer
+message delivery, caught-up history or confirmed remote cleanup from these logs.
+See [contract/evidence](../superpowers/plans/2026-10-25-realtime-diagnostics.md).
+
+Test-only Network.framework websocket listener explicitly binds127.0.0.1 on an
+ephemeral port; real pinned SDK uses only that URL/synthetic key, discarded auth,
+no auto-refresh/app lifecycle and separately denied HTTP. No vendor abstraction,
+new source registration or configured backend. Initial8 real-SDK tests failed14
+missing-record assertions with all behavior checks passing. Focused34/34, then
+final full signed isolated **333/333** including11 new runtime tests and combined
+cancel/stop precedence, all existing Keychain/four rendered AX tests pass.
+Established16e AX1/1 verified before/after restart and after suite. Unsigned
+Release simulator build/analyzer pass. Focused/full actual default Logger12
+records each passed exact schema/privacy/UUID/enum/monotonic checks. Design review
+caught ambiguous SDK cancellation; final review caught asynchronous test-record
+selection, fixed without product/assertion weakening. Final follow-up no issues.
+Cross-model skipped for autonomous continuation; no external CLI used. Artifacts
+/tmp/pickup-realtime-{red-v3,focused-v2,verified,full-v2}.{log,xcresult},
+/tmp/pickup-realtime-release-analyze-v2.log. No unchanged UI/SQL/Edge repeats.
+
+Next useful independent P1: deterministic authenticated UI fixture strategy and a
+bounded first navigation slice (Discover/My Games/Profile with synthetic data),
+or remaining service cleanup/live-activity diagnostics if fixture isolation cannot
+be achieved narrowly. Existing UI mode supplies HTTPdeny/discardauth and no
+session; simply assigning AppState.session is insufficient for SDK-authenticated
+repository reads. Inspect auth/bootstrap and system side effects before seeding.
+AuthenticatedSessionCoordinator.bootstrap unconditionally refreshes push state;
+never let fixture setup call it unchecked. Existing RootView switches on AppState
+session; tabs construct repositories internally. Preserve one fail-closed launch
+strategy, empty built URL/key, no real restoration/storage or permission/provider
+side effects, no websocket assumption from HTTPdeny. Spec/review/red proof and
+appropriate runtime checks before committing; keep first fixture scope bounded.
+Broader BETA-10/11 remain partial; no production/device acceptance claimed.
+No phone readiness check/reconnect/publication; October24 fixture remains past and
+unpublished, and new future fixture time still requires owner approval.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -471,7 +517,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 322/322 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
+Latest iOS evidence: 333/333 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

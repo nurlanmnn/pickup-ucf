@@ -1,3 +1,13 @@
+October25: BETA-10 local realtime subscription diagnostics now distinguish returned,
+failed, caller-cancelled and superseded attempts plus finite channel-status
+observations. Closed ten-field JSON excludes identifiers/content/URLs/raw errors;
+SDK cancellation is kept separate from caller cancellation. Loopback-only real-SDK
+websocket harness: initial8 tests failed14 absent-record assertions; focused34/34
+and final signed isolated333/333 (11 new runtime tests), Release build/analyzer,
+actual Logger schema/privacy checks and final fresh-context review pass. See
+[scope/evidence](../docs/superpowers/plans/2026-10-25-realtime-diagnostics.md).
+Subscription/status does not prove delivery or caught-up history. BETA-10/11 partial.
+
 October25: BETA-10 device-token backend diagnostics now distinguish register RPC,
 unregister RPC and the PGRST202-only owner-filtered fallback delete. Closed ten-field
 local JSON excludes tokens/identities/raw errors; original payloads, filters,

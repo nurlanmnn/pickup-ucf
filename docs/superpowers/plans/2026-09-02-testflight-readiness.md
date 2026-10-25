@@ -662,6 +662,19 @@ fresh-context final review and actual Logger schema/privacy check pass. See
 backend stage returned, not delivery or affected rows. Service decisions, realtime
 health, reporting/metrics/alerts and physical/provider acceptance remain open.
 
+October25 local realtime subscription slice: actual ChatViewModel lifecycle emits
+closed realtime_operation observations for subscription return/failure/caller
+cancellation/supersession and finite active-lifecycle channel status. SDK-thrown
+cancellation alone does not imply caller cancellation; stale lifecycle wins.
+Original guards/stream/refresh/error/unsubscribe order retained. New real-SDK
+loopback-only websocket harness proves synthetic success, rejection, timeout,
+server close, caller cancellation, stop, retry and combined precedence. Focused34/34
+and final signed isolated333/333 (11 new), Release build/analyzer, actual Logger
+schema/privacy checks and fresh-context review pass. See
+[scope and evidence](2026-10-25-realtime-diagnostics.md). A returned subscription or
+subscribed observation does not prove delivery/caught-up history; full health,
+reporting/metrics/alerts and other critical flows remain open.
+
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
 
 **Problem:** Unit coverage is strong, but there is no automated UI suite covering the release-critical user journey.
