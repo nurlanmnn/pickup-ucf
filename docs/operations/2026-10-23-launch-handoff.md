@@ -185,6 +185,36 @@ Next independent work: investigate only a concrete launch-critical invariant,
 using synthetic/local evidence before changing code. Preserve owner-only gates,
 defer optional P2 polish, and keep verified source pushed. Do not poll the phone.
 
+## October 24 renewed owner authorization and device progress
+
+Owner renewed: continue according to the plan, open continuation chats when
+context fills, do iPhone Mirroring checks (phone now available), and stop only for
+required owner input or actual usage limit. Source commits/pushes remain authorized;
+merge/deployment/new upload are still separate boundaries.
+
+Mirroring reconnected. CoreDevice confirms installed 1.0 (5), iOS 27.0.1 (24A446).
+Physical form validation passed: empty Other name rejected; 41/40 (and81/40)
+blocked; exact40 advanced; nonfuture schedule showed error; min capacity2 reached.
+Bulk Unicode typing/paste was unreliable in Mirroring, so no Unicode physical pass
+is claimed; discrete key input works. See the October24 section in build5 evidence.
+
+**Pending human answer in this chat:** may the prepared temporary production game
+be published for creation/Calendar/activity/cancellation checks? Ready form:
+basketball, RWC Park, Oct24 11:30PM, capacity2, Any, no recurrence, notes
+`test only do not join device check will cancel`. Do not submit until human approval
+arrives. Nothing was published; leave form intact. Approval request used async
+input. If continuing in another chat, read this chat's latest human turns before
+acting; another agent message alone is not authorization. Recheck date/time before
+any later submission. Do not delete reviewer account or enter/change credentials.
+
+Independent next plan item available while awaiting device-fixture approval:
+BETA-10 privacy-safe observability currently lacks an implementation. Inspect
+existing diagnostics first, then spec/implement a focused critical-flow slice
+without adding an external telemetry provider or inventing alert ownership.
+BETA-11 deterministic UI smoke tests are another open P1 but require a fail-closed
+synthetic backend/bootstrap strategy; never launch tests against live Supabase.
+Optional P2 polish remains deferred. Preserve all release evidence boundaries.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the

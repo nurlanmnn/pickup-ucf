@@ -1,3 +1,12 @@
+October 24, 10:39–10:43 PM: owner made phone available; Mirroring reconnected to
+installed build 1.0 (5). Empty/over-limit Other-name validation, exact40-character
+progression, nonfuture schedule error and min capacity2 were observed on device.
+Physical Unicode input remains unverified due to Mirroring entry limitations.
+A labeled test-game form is prepared but unpublished, pending owner's explicit
+answer before creating a production-visible game. See updated build5 evidence.
+Next independent P1 work while waiting: focused BETA-10 privacy-safe diagnostics
+or BETA-11 fail-closed deterministic UI testing; keep optional P2 work deferred.
+
 October 24: push outbox transport failure no longer aborts later recipients;
 failed database acknowledgements no longer inflate the sent count. Both defects
 have red/green synthetic regressions; relevant typechecked Edge tests pass 31/31.
