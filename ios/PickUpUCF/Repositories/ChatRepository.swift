@@ -19,13 +19,15 @@ struct ChatMessagePage {
 
 final class ChatRepository: ChatRepositoryProtocol {
     private let client: SupabaseClient
+    private let diagnostics: ChatOperationDiagnostics
     private let messageSelect = """
         *, \
         author:profiles!messages_user_id_fkey(id, display_name, username)
         """
 
-    init(client: SupabaseClient = SupabaseManager.shared) {
+    init(client: SupabaseClient = SupabaseManager.shared, diagnostics: ChatOperationDiagnostics = .init()) {
         self.client = client
+        self.diagnostics = diagnostics
     }
 
     func fetchMessages(
@@ -33,25 +35,27 @@ final class ChatRepository: ChatRepositoryProtocol {
         before: ChatMessageCursor? = nil,
         limit: Int = AppPagination.chatMessageLimit
     ) async throws -> ChatMessagePage {
-        let pageSize = min(max(limit, 1), AppPagination.chatMessageLimit)
-        var query = client
-            .from("messages")
-            .select(messageSelect)
-            .eq("session_id", value: sessionId.uuidString)
-        if let before {
-            query = query.or("created_at.lt.\(before.timestamp),and(created_at.eq.\(before.timestamp),id.lt.\(before.id.uuidString))")
+        return try await diagnostics.record(before == nil ? .fetchFirst : .fetchOlder) {
+            let pageSize = min(max(limit, 1), AppPagination.chatMessageLimit)
+            var query = client
+                .from("messages")
+                .select(messageSelect)
+                .eq("session_id", value: sessionId.uuidString)
+            if let before {
+                query = query.or("created_at.lt.\(before.timestamp),and(created_at.eq.\(before.timestamp),id.lt.\(before.id.uuidString))")
+            }
+            let rows: [MessageRow] = try await query
+                .order("created_at", ascending: false)
+                .order("id", ascending: false)
+                .limit(pageSize + 1)
+                .execute()
+                .value
+            let page = Array(rows.prefix(pageSize))
+            return ChatMessagePage(
+                messages: page.reversed().map(\.message),
+                nextCursor: rows.count > pageSize ? page.last?.cursor : nil
+            )
         }
-        let rows: [MessageRow] = try await query
-            .order("created_at", ascending: false)
-            .order("id", ascending: false)
-            .limit(pageSize + 1)
-            .execute()
-            .value
-        let page = Array(rows.prefix(pageSize))
-        return ChatMessagePage(
-            messages: page.reversed().map(\.message),
-            nextCursor: rows.count > pageSize ? page.last?.cursor : nil
-        )
     }
 
     func sendMessage(sessionId: UUID, body: String) async throws -> SessionMessage {
@@ -62,26 +66,30 @@ final class ChatRepository: ChatRepositoryProtocol {
             throw ChatRepositoryError.emptyMessage
         }
 
-        let userId = try await client.auth.session.user.id
-        let payload = MessageInsert(sessionId: sessionId, userId: userId, body: safeBody)
+        return try await diagnostics.record(.send) {
+            let userId = try await client.auth.session.user.id
+            let payload = MessageInsert(sessionId: sessionId, userId: userId, body: safeBody)
 
-        return try await client
-            .from("messages")
-            .insert(payload)
-            .select(messageSelect)
-            .single()
-            .execute()
-            .value
+            return try await client
+                .from("messages")
+                .insert(payload)
+                .select(messageSelect)
+                .single()
+                .execute()
+                .value
+        }
     }
 
     func fetchMessageUpdates(sessionId: UUID, ids: [UUID]) async throws -> [SessionMessage] {
         guard !ids.isEmpty else { return [] }
         precondition(ids.count <= AppPagination.chatMessageLimit)
-        return try await client.from("messages").select(messageSelect)
-            .eq("session_id", value: sessionId.uuidString)
-            .in("id", values: ids.map(\.uuidString))
-            .limit(AppPagination.chatMessageLimit)
-            .execute().value
+        return try await diagnostics.record(.fetchUpdates) {
+            return try await client.from("messages").select(messageSelect)
+                .eq("session_id", value: sessionId.uuidString)
+                .in("id", values: ids.map(\.uuidString))
+                .limit(AppPagination.chatMessageLimit)
+                .execute().value
+        }
     }
 }
 

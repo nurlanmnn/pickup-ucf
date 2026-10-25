@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A21021202600000000000006 /* SessionCreationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A21021202600000000000005 /* SessionCreationTests.swift */; };
 		A24102400000000000000002 /* AuthOperationDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24102400000000000000001 /* AuthOperationDiagnosticsTests.swift */; };
+		A25102500000000000000002 /* ChatOperationDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25102500000000000000001 /* ChatOperationDiagnosticsTests.swift */; };
 		A21021202600000000000004 /* UXFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A21021202600000000000003 /* UXFlowTests.swift */; };
 		A21021202600000000000002 /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A21021202600000000000001 /* DesignSystemTests.swift */; };
 		013583CE83E1EADAECD70FBE /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45AB7447F8A2EB3FAB2814C /* Profile.swift */; };
@@ -133,6 +134,7 @@
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
 		A775975E51AE475743E7D98B /* SessionMutationDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */; };
 		A24102400000000000000004 /* AuthOperationDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24102400000000000000003 /* AuthOperationDiagnostics.swift */; };
+		A25102500000000000000004 /* ChatOperationDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25102500000000000000003 /* ChatOperationDiagnostics.swift */; };
 		ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */; };
 		AD064081E6C1D35BE53D3157 /* GameLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B3B7BB32179124147A7E8C /* GameLiveActivityWidget.swift */; };
 		AD2D11E213D7A2580CF4644E /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAFA31181F35F9C4D81D29A /* SignUpViewModel.swift */; };
@@ -241,6 +243,7 @@
 /* Begin PBXFileReference section */
 		A21021202600000000000005 /* SessionCreationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionCreationTests.swift; sourceTree = "<group>"; };
 		A24102400000000000000001 /* AuthOperationDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthOperationDiagnosticsTests.swift; sourceTree = "<group>"; };
+		A25102500000000000000001 /* ChatOperationDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOperationDiagnosticsTests.swift; sourceTree = "<group>"; };
 		A21021202600000000000003 /* UXFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UXFlowTests.swift; sourceTree = "<group>"; };
 		A21021202600000000000001 /* DesignSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemTests.swift; sourceTree = "<group>"; };
 		02F173A691B4304565EB4F3F /* CreateSessionSportTimeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateSessionSportTimeStep.swift; sourceTree = "<group>"; };
@@ -416,6 +419,7 @@
 		ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMessage.swift; sourceTree = "<group>"; };
 		EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMutationDiagnostics.swift; sourceTree = "<group>"; };
 		A24102400000000000000003 /* AuthOperationDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthOperationDiagnostics.swift; sourceTree = "<group>"; };
+		A25102500000000000000003 /* ChatOperationDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOperationDiagnostics.swift; sourceTree = "<group>"; };
 		EECC9097C151B4A1D73E9C16 /* StepperNumberFieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperNumberFieldRow.swift; sourceTree = "<group>"; };
 		EF6296C1331592FD98797241 /* BlockedUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUser.swift; sourceTree = "<group>"; };
 		EFB3BB5184646C277155E04F /* ChangePasswordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordViewModel.swift; sourceTree = "<group>"; };
@@ -635,6 +639,7 @@
 				A21021202600000000000003 /* UXFlowTests.swift */,
 				A21021202600000000000005 /* SessionCreationTests.swift */,
 				A24102400000000000000001 /* AuthOperationDiagnosticsTests.swift */,
+				A25102500000000000000001 /* ChatOperationDiagnosticsTests.swift */,
 				BB121B4A2DA58FBC742C9853 /* FormValidationFeedbackTests.swift */,
 				FFCD4DCC6D7117C57EF950C7 /* GameLiveActivitySelectionTests.swift */,
 				287C4C99F51315693066BC38 /* MySportsFilterTests.swift */,
@@ -823,6 +828,7 @@
 				E97A586CC650E5E91A8734BB /* SessionLocationResolver.swift */,
 				EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */,
 				A24102400000000000000003 /* AuthOperationDiagnostics.swift */,
+				A25102500000000000000003 /* ChatOperationDiagnostics.swift */,
 				DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */,
 				14A57198420B50B36CA6070A /* SupabaseManager.swift */,
 				AEE3D90F9016C3AAB6C5B572 /* Validators */,
@@ -1174,6 +1180,7 @@
 				1FCA653716B1F4393E14EEB0 /* SessionMessage.swift in Sources */,
 				A775975E51AE475743E7D98B /* SessionMutationDiagnostics.swift in Sources */,
 				A24102400000000000000004 /* AuthOperationDiagnostics.swift in Sources */,
+				A25102500000000000000004 /* ChatOperationDiagnostics.swift in Sources */,
 				3DB20B32CFBBDD6DCBAB65DB /* SessionParticipant.swift in Sources */,
 				ADC7102007A4BB723B0CB63C /* SessionRepository.swift in Sources */,
 				965EF1A9EE9B4DDCA381C386 /* SessionRoster.swift in Sources */,
@@ -1238,6 +1245,7 @@
 				A21021202600000000000004 /* UXFlowTests.swift in Sources */,
 				A21021202600000000000006 /* SessionCreationTests.swift in Sources */,
 				A24102400000000000000002 /* AuthOperationDiagnosticsTests.swift in Sources */,
+				A25102500000000000000002 /* ChatOperationDiagnosticsTests.swift in Sources */,
 				1F610F514C39CA642A885F56 /* FormValidationFeedbackTests.swift in Sources */,
 				0E9E0618B88A9A96ADE4050B /* GameLiveActivitySelectionTests.swift in Sources */,
 				DAB745C7C3093E430EB7AC1C /* MySportsFilterTests.swift in Sources */,

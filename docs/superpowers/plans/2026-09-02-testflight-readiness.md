@@ -632,6 +632,15 @@ unsigned Release simulator build/analyzer and independent review pass. See
 [scope and evidence](2026-10-24-auth-diagnostics.md). Restoration diagnostics,
 other flows, centralized reporting/metrics/alert ownership remain open.
 
+**Additional local evidence (October25):** chat repository first/older pages,
+send and targeted updates now emit closed local chat_operation JSON. Requests,
+exact cursors, normalization/results/errors remain; no content, identity, raw
+error or cursor enters records. Focused15/15, full signed isolated300/300 and
+unsigned Release simulator build/analyzer pass; independent reviews have no
+required findings. See [scope and evidence](2026-10-25-chat-diagnostics.md).
+This does not establish realtime subscription/delivery or full refresh health;
+remaining flows/reporting/metrics/alerts keep BETA-10 open.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)

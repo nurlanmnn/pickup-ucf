@@ -338,6 +338,37 @@ credentials or tokens in logs; no external provider or alert-owner invention.
 Broader BETA-10/11 gates remain open. Continue concrete work and push verified
 source within existing authorization; do not merge/deploy/upload.
 
+## October25 chat repository diagnostics
+
+Local chat_operation records now distinguish newest/older-page reads, send
+(session lookup+insert), and targeted author/history reads. Exactly ten closed
+fields exclude messages/authors/IDs/cursors/URLs/error text/codes/tokens. Original
+query/filter/order/lookahead/mapping, cursor precision, validation and thrown
+errors remain. Empty updates/invalid bodies generate no attempt. See
+[contract and evidence](../superpowers/plans/2026-10-25-chat-diagnostics.md).
+
+Focused15/15 and full signed isolated300/300 pass on established16e/iOS26.3.1.
+Before testing, observed AX0/0 from prior UI lane; restored1/true, restarted and
+verified1/1. Prior rendered AX tests pass. Unsigned Release build/analyzer pass.
+Independent design/final/follow-up reviews report no required issues. Actual
+focused/full default Logger JSON checked for closed schema/privacy. Initial
+missing type, duplicate project-registration correction and missing updated_at
+synthetic auth fixture are recorded in the plan; no product assertion weakened.
+Artifacts /tmp/pickup-chat-{red,focused,focused-fixed,verified,full}.log,
+verified/full xcresults, /tmp/pickup-chat-release-analyze.log. No unchanged UI/
+SQL/Edge suites repeated or physical/provider/production acceptance claimed.
+
+October24 approved temporary-game schedule is now past. No game was published;
+do not reschedule or publish without owner approval. No new phone-readiness reply
+was checked in this slice; no reconnect attempted. Continue independent local P1.
+BETA-10/11 remain partial. Next useful work: inspect remaining critical diagnostics
+at actual boundaries (auth restoration with its intentional offline fallback,
+notification registration/account cleanup, or realtime subscription lifecycle).
+Avoid logging a successful backend substep as successful restoration/delivery;
+read existing tests and SDK boundaries, spec and reproduce useful cases first.
+Remaining deterministic authenticated UI fixture strategy is also open; never
+launch against live backend. Preserve all deployment/upload/owner-only gates.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -367,7 +398,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 289/289 signed isolated simulator tests plus 4/4 credential-free XCUITests on the established
+Latest iOS evidence: 300/300 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October24). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

@@ -1,3 +1,15 @@
+October25: BETA-10 local chat diagnostics now distinguish first/older page reads,
+send (session lookup+insert), and targeted message/author reconciliation reads.
+Closed ten-field local chat_operation JSON excludes content/identities/cursors/
+URLs/errors; exact queries, normalization, returned values and original errors
+remain. Invalid bodies/empty updates emit no record or request. Focused15/15 and
+full signed isolated300/300 pass after restoring/restarting simulator AX1/true;
+unsigned Release simulator build/analyzer pass. Independent design/final reviews
+found no required issues. See [scope/evidence](../docs/superpowers/plans/2026-10-25-chat-diagnostics.md).
+BETA-10 remains partial; realtime subscription health/other flows/reporting/alerts
+remain open. October24 temporary-game time is past; no game was published, and a
+new time needs owner approval. No phone reconnect/deployment/upload occurred.
+
 October 24 follow-up: isolated UI smoke now passes6/6, adding blank sign-up
 and reset-request blank/non-school-email validation plus return to original sign-in.
 Built backend URL/key empty; three new screenshots inspected. Initial intro-route
