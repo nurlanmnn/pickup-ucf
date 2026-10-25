@@ -1,3 +1,13 @@
+October25 evening physical follow-up: owner-approved8PM temporary game was
+published and app-reported Calendar export succeeded. Mirroring then disconnected;
+Calendar details/physical cancellation/Live Activity remain unverified. The exact
+approved fixture was administratively cancelled through backend (1 row), with
+separate cancelled/0-active-token verification. No game remains published from
+this test. Calendar copy may remain; inspect/remove that copy when reachable.
+Owner readiness retry and Mirroring restart both failed; do not repeatedly poll.
+See [build5 evidence](../docs/testflight/2026-10-22-build-5.md). Keep local work going,
+stop at15 percent remaining usage; no deployment/upload/new fixture authorization.
+
 October25 evening: LiveActivityTokenRepository now uses existing closed local
 DeviceTokenDiagnostics for register_live_activity_rpc. Original RPC/payload/
 whitespace/errors remain; no fallback/retry/auth/ActivityKit change. Focused32/32

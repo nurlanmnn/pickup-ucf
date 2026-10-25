@@ -561,6 +561,40 @@ Broader BETA-10/11 gates remain partial. Next local P1: actual push-service clea
 retry/quarantine decision diagnostics or a bounded additional authenticated UI
 workflow with explicit isolation; spec and meaningful red proof before changes.
 
+## October25 evening phone fixture and cleanup — latest device state
+
+New human approval received directly in parent chat01a1711a-a181-7c13-b487-327cc9afce2a:
+Yes, publish and cancel after testing, for October25 8:00PM Eastern basketball/
+RWC Park/capacity2/Any/no recurrence/test-only warning notes. This supersedes the
+old October24 fixture for this one test only. Actual publication succeeded and
+Calendar export showed app success. Do not say no game has ever been published:
+the October25 fixture was published and is now CANCELLED.
+
+Mirroring connected, existing signed-in Discover/My Games/Profile/Settings worked;
+no upcoming games initially,4 past entries; notification UI says allowed/all six
+displayed toggles on. No settings/password/account change. Build5 metadata is
+prior owner-confirmed, not re-read; no install. App-reported Calendar success only:
+Apple Calendar rendering/connection failed before exact exported event details.
+Live Activity fixture was outside60-minute window; no activity/APNs acceptance.
+
+After Connection Interrupted then iPhone Not Found, one reconnect failed. Owner
+explicitly confirmed nearby/unlocked-once/locked in this parent chat; retry and
+fresh Mirroring app restart also failed. No repeated polling. Approved fixture
+cancellation was therefore performed through the connected Supabase backend,
+strict single-row exact-fixture predicates; affected1, separate read confirms
+cancelled and0 active activity tokens. This is authorized administrative cleanup,
+NOT physical cancellation acceptance. No new schema/Edge/config/deployment action.
+Calendar copy may remain: inspect/remove ONLY the temporary October25 8PM
+Basketball/RWC Park copy after connection is actually restored; no deletion yet.
+Details in [build5 physical evidence](../testflight/2026-10-22-build-5.md).
+
+Latest parent instruction: keep concrete local work going, continuation chats when
+context fills, stop if any applicable usage window reaches15 percent remaining.
+At resume primary0 percent used/secondary15 percent used. Check get_usage_limits
+at major boundaries, compare remaining=100-used (15 percent used is NOT stop).
+Never buy/consume reset credits. New phone work requires actual reconnection;
+there is no current approval to publish another game or shift the approved time.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
