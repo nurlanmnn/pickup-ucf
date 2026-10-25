@@ -1,3 +1,14 @@
+October25 evening: PushNotificationService stored-token/APNs callback decisions now
+emit closed existing device-token diagnostics after suppression/no-token/recovery
+clearing/quarantine state. Exact guard/queue/rotation behavior retained, including
+already-queued callback after earlier quarantine. Red18 missing-record assertions;
+focused53/53, final signed isolated358/358, unsigned Release build/analyzer and
+actual Logger48 records (28 registration, all four results) schema/privacy pass.
+Quarantine unified-log severity Error verified. Independent reviews caught/fixed
+severity omission and timing-test scheduling flake; no remaining findings. See
+[scope/evidence](../docs/superpowers/plans/2026-10-25-push-registration-decisions.md).
+BETA-10/11 remain partial; no production/provider/device acceptance or deployment.
+
 October25 evening: ProfileRepository.deleteAccount now emits existing closed
 auth_operation delete_own_account_rpc diagnostics. Exact parameterless POST/no
 body, Void/errors and coordinator/view behavior remain; PostgrestError maps to

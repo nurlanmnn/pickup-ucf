@@ -701,6 +701,14 @@ schema/privacy checks and fresh-context review pass. See
 subscribed observation does not prove delivery/caught-up history; full health,
 reporting/metrics/alerts and other critical flows remain open.
 
+**October25 registration service decisions:** stored-token and APNs callback
+completion logs distinguish suppressed/no token/returned/quarantined after actual
+state changes. Queue/guard/rotation behavior unchanged. Focused53/53 and final
+signed isolated358/358, unsigned Release build/analyzer, actual Logger schema/
+privacy and independent review pass. See
+[scope and limits](2026-10-25-push-registration-decisions.md).
+Local service decisions do not prove APNs delivery; BETA-10 remains partial.
+
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
 
 **Problem:** Unit coverage is strong, but there is no automated UI suite covering the release-critical user journey.

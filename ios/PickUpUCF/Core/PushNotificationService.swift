@@ -87,10 +87,14 @@ final class PushNotificationService: NSObject {
     }
 
     func handleDeviceToken(_ deviceToken: Data) async {
+        let attempt = DeviceTokenDiagnostics.Attempt()
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
         let previousToken = tokenStore.token
         tokenStore.token = token
-        guard acceptsTokenRegistration else { return }
+        guard acceptsTokenRegistration else {
+            diagnostics.finishRegistration(.suppressed, source: .apnsCallback, attempt: attempt)
+            return
+        }
         await enqueueRegistration {
             do {
                 if let previousToken, previousToken != token {
@@ -98,21 +102,29 @@ final class PushNotificationService: NSObject {
                 }
                 try await self.tokenRepository.register(token: token)
                 self.tokenStore.requiresServerRecovery = false
+                self.diagnostics.finishRegistration(.returned, source: .apnsCallback, attempt: attempt)
             } catch {
                 self.quarantineRegistration()
+                self.diagnostics.finishRegistration(.quarantined(error), source: .apnsCallback, attempt: attempt)
             }
         }
     }
 
     func registerStoredTokenIfAvailable() async {
+        let attempt = DeviceTokenDiagnostics.Attempt()
         acceptsTokenRegistration = true
-        guard let token = tokenStore.token else { return }
+        guard let token = tokenStore.token else {
+            diagnostics.finishRegistration(.noStoredToken, source: .storedToken, attempt: attempt)
+            return
+        }
         await enqueueRegistration {
             do {
                 try await self.tokenRepository.register(token: token)
                 self.tokenStore.requiresServerRecovery = false
+                self.diagnostics.finishRegistration(.returned, source: .storedToken, attempt: attempt)
             } catch {
                 self.quarantineRegistration()
+                self.diagnostics.finishRegistration(.quarantined(error), source: .storedToken, attempt: attempt)
             }
         }
     }

@@ -118,9 +118,12 @@ final class LiveActivityTokenRepository: LiveActivityTokenRepositoryProtocol {
 /// An allowlisted local log schema: never serialize Error, SDK payloads or entity IDs.
 // Success describes only this backend stage returning, never delivery or affected rows.
 struct DeviceTokenDiagnostics {
-    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token", registerLiveActivityRPC = "register_live_activity_rpc", accountTransitionCleanup = "account_transition_cleanup" }
+    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token", registerLiveActivityRPC = "register_live_activity_rpc", accountTransitionCleanup = "account_transition_cleanup"
+        case storedTokenRegistration = "stored_token_registration", apnsCallbackRegistration = "apns_callback_registration"
+    }
     enum Result: String, Encodable { case succeeded, failed, cancelled
         case noStoredToken = "no_stored_token", returnedFirstAttempt = "returned_first_attempt", returnedAfterRetry = "returned_after_retry", recoveryRequired = "recovery_required"
+        case registrationSuppressed = "registration_suppressed", registrationReturned = "registration_returned", registrationQuarantined = "registration_quarantined"
     }
     enum Failure: String, Encodable { case none, cancelled, transport, backend, decoding, localPolicy = "local_policy", unknown }
 
@@ -133,6 +136,12 @@ struct DeviceTokenDiagnostics {
     enum CleanupOutcome {
         case noStoredToken, returnedFirstAttempt, returnedAfterRetry
         case recoveryRequired(Error)
+    }
+
+    enum RegistrationSource { case storedToken, apnsCallback }
+    enum RegistrationOutcome {
+        case noStoredToken, suppressed, returned
+        case quarantined(Error)
     }
 
     struct Record: Encodable {
@@ -214,6 +223,21 @@ struct DeviceTokenDiagnostics {
                     durationMS: Int(max(0, ProcessInfo.processInfo.systemUptime - attempt.start) * 1000)))
     }
 
+    /// Service decision after persistence, recovery clearing or quarantine; includes queue wait.
+    func finishRegistration(_ outcome: RegistrationOutcome, source: RegistrationSource, attempt: Attempt) {
+        let result: Result
+        let failure: Failure
+        switch outcome {
+        case .noStoredToken: result = .noStoredToken; failure = .none
+        case .suppressed: result = .registrationSuppressed; failure = .none
+        case .returned: result = .registrationReturned; failure = .none
+        case .quarantined(let error): result = .registrationQuarantined; failure = Self.classify(error)
+        }
+        sink(Record(operation: source == .storedToken ? .storedTokenRegistration : .apnsCallbackRegistration,
+                    result: result, failure: failure, attemptID: attempt.id.uuidString,
+                    durationMS: Int(max(0, ProcessInfo.processInfo.systemUptime - attempt.start) * 1000)))
+    }
+
     private static func classify(_ error: Error) -> Failure {
         if error is CancellationError || (error as? URLError)?.code == .cancelled { return .cancelled }
         if error is URLError { return .transport }
@@ -225,7 +249,7 @@ struct DeviceTokenDiagnostics {
 
     private static func write(_ record: Record) {
         // Public only because every field above is closed/allowlisted; no raw error or input.
-        if record.result == .failed || record.result == .recoveryRequired { logger.error("\(record.json, privacy: .public)") }
+        if record.result == .failed || record.result == .recoveryRequired || record.result == .registrationQuarantined { logger.error("\(record.json, privacy: .public)") }
         else { logger.info("\(record.json, privacy: .public)") }
     }
 }

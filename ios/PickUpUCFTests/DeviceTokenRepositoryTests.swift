@@ -753,6 +753,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { events.append("local") },
             endLiveActivities: { events.append("activity") }, diagnostics: .init {
+                guard $0.operation == .accountTransitionCleanup else { return }
                 XCTAssertNil(store.token)
                 XCTAssertFalse(store.requiresServerRecovery)
                 events.append("diagnostic")
@@ -781,6 +782,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
             diagnostics: .init {
+                guard $0.operation == .accountTransitionCleanup else { return }
                 XCTAssertNil(store.token)
                 XCTAssertFalse(store.requiresServerRecovery)
                 cleanup.append($0)
@@ -805,6 +807,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
             diagnostics: .init {
+                guard $0.operation == .accountTransitionCleanup else { return }
                 XCTAssertEqual(store.token, self.token)
                 XCTAssertTrue(store.requiresServerRecovery)
                 cleanup.append($0)
@@ -830,7 +833,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         var cleanup: [DeviceTokenDiagnostics.Record] = []
         let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
-            diagnostics: .init { cleanup.append($0) })
+            diagnostics: .init { if $0.operation == .accountTransitionCleanup { cleanup.append($0) } })
         do { try await service.unregisterForAccountTransition(); XCTFail() }
         catch { XCTAssertTrue(error as NSError === second) }
         XCTAssertEqual(repo.unregisteredTokens, [token, token])
@@ -854,7 +857,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {
                 events.append("local"); localCleanup.fulfill()
             }, endLiveActivities: { events.append("activity"); await activityGate.wait() },
-            diagnostics: .init { events.append("diagnostic"); cleanup.append($0) })
+            diagnostics: .init { if $0.operation == .accountTransitionCleanup { events.append("diagnostic"); cleanup.append($0) } })
         let registration = Task { await service.registerStoredTokenIfAvailable() }
         await gate.waitUntilStarted()
         let transition = Task { try await service.unregisterForAccountTransition() }
@@ -896,7 +899,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         var cleanup: [DeviceTokenDiagnostics.Record] = []
         let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
             registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
-            diagnostics: .init { cleanup.append($0) })
+            diagnostics: .init { if $0.operation == .accountTransitionCleanup { cleanup.append($0) } })
         try await service.unregisterForAccountTransition()
         XCTAssertEqual(repo.unregisteredTokens, [token, token])
         XCTAssertNil(store.token)
@@ -919,6 +922,208 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
             do { try await service.unregisterForAccountTransition(); XCTAssertNotEqual(outcome, 2) }
             catch { XCTAssertEqual(outcome, 2) }
             if outcome == 0 { try await service.unregisterForAccountTransition() }
+        }
+    }
+
+    @MainActor
+    func testRegistrationDecisionsPersistSuppressedCallbackAndEnableStoredToken() async throws {
+        let (repo, _) = makeClient { _ in (204, Data()) }
+        let store = InMemoryDeviceTokenStore(requiresServerRecovery: true)
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init { decisions.append($0) })
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertTrue(store.requiresServerRecovery)
+        XCTAssertTrue(requests.isEmpty)
+        await service.registerStoredTokenIfAvailable()
+        XCTAssertFalse(store.requiresServerRecovery)
+        XCTAssertEqual(requests.count, 1)
+        XCTAssertEqual(try body(requests[0])["p_apns_token"] as? String, "ab")
+        XCTAssertEqual(decisions.map { $0.operation.rawValue }, ["apns_callback_registration", "stored_token_registration"])
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["registration_suppressed", "registration_returned"])
+        XCTAssertEqual(decisions.map(\.failure), [.none, .none])
+        XCTAssertEqual(Set(decisions.map(\.attemptID)).count, 2)
+        XCTAssertTrue(Set(decisions.map(\.attemptID)).isDisjoint(with: records.map(\.attemptID)))
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationDecisionNoTokenLeavesRecoveryAndEnablesNextCallback() async throws {
+        let (repo, _) = makeClient { _ in (204, Data()) }
+        let store = InMemoryDeviceTokenStore(requiresServerRecovery: true)
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init {
+                if $0.result.rawValue == "no_stored_token" { XCTAssertTrue(store.requiresServerRecovery) }
+                else { XCTAssertFalse(store.requiresServerRecovery) }
+                decisions.append($0)
+            })
+        await service.registerStoredTokenIfAvailable()
+        XCTAssertTrue(requests.isEmpty)
+        XCTAssertNil(store.token)
+        XCTAssertTrue(store.requiresServerRecovery)
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertFalse(store.requiresServerRecovery)
+        XCTAssertEqual(requests.count, 1)
+        XCTAssertEqual(decisions.map { $0.operation.rawValue }, ["stored_token_registration", "apns_callback_registration"])
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["no_stored_token", "registration_returned"])
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationDecisionRotationIgnoresCleanupFailureAndEmitsAfterRecoveryCleared() async throws {
+        let (repo, _) = makeClient { request in
+            request.url!.path.hasSuffix("/unregister_device_token") ? self.failure("42501") : (204, Data())
+        }
+        let store = InMemoryDeviceTokenStore(token: token, requiresServerRecovery: true)
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { XCTFail("No quarantine") },
+            endLiveActivities: {}, diagnostics: .init {
+                XCTAssertFalse(store.requiresServerRecovery)
+                decisions.append($0)
+            })
+        await service.registerStoredTokenIfAvailable()
+        store.requiresServerRecovery = true
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(requests.map { $0.url!.lastPathComponent }, ["register_device_token", "unregister_device_token", "register_device_token"])
+        XCTAssertEqual(try body(requests[1])["p_apns_token"] as? String, token)
+        XCTAssertEqual(try body(requests[2])["p_apns_token"] as? String, "ab")
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertEqual(records.map(\.result), [.succeeded, .failed, .succeeded])
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["registration_returned", "registration_returned"])
+        XCTAssertEqual(decisions.map(\.failure), [.none, .none])
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationDecisionFailureEmitsAfterLocalQuarantineAndSuppressesNextCallback() async throws {
+        let (repo, _) = makeClient { _ in self.failure("42501") }
+        let store = InMemoryDeviceTokenStore(token: token)
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        var events: [String] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {
+                XCTAssertTrue(store.requiresServerRecovery)
+                events.append("local")
+            }, endLiveActivities: {}, diagnostics: .init {
+                XCTAssertTrue(store.requiresServerRecovery)
+                events.append("diagnostic")
+                decisions.append($0)
+            })
+        await service.registerStoredTokenIfAvailable()
+        XCTAssertEqual(store.token, token)
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(requests.count, 1)
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertEqual(events, ["local", "diagnostic", "diagnostic"])
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["registration_quarantined", "registration_suppressed"])
+        XCTAssertEqual(decisions.map(\.failure), [.backend, .none])
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationDecisionCallbackCancellationStillQuarantines() async throws {
+        let repo = RecordingDeviceTokenRepository(registerError: CancellationError())
+        let store = InMemoryDeviceTokenStore()
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        var localCount = 0
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { localCount += 1 },
+            endLiveActivities: {}, diagnostics: .init { decisions.append($0) })
+        await service.registerStoredTokenIfAvailable()
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(repo.registeredTokens, ["ab"])
+        XCTAssertEqual(localCount, 1)
+        XCTAssertTrue(store.requiresServerRecovery)
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["no_stored_token", "registration_quarantined"])
+        XCTAssertEqual(decisions.map(\.failure), [.none, .cancelled])
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationQueueRetainsCapturedTokenAndDoesNotRecheckGuardAfterEarlierQuarantine() async throws {
+        let gate = DeviceRegistrationGate()
+        var calls = 0
+        let repo = RecordingDeviceTokenRepository(unregisterError: TestError.failed,
+            registerResults: [.failure(URLError(.notConnectedToInternet)), .success(())],
+            registerHook: { calls += 1; if calls == 1 { await gate.wait() } })
+        let store = InMemoryDeviceTokenStore(token: token)
+        var decisions: [DeviceTokenDiagnostics.Record] = []
+        var events: [String] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { events.append("local") },
+            endLiveActivities: {}, diagnostics: .init {
+                if $0.result.rawValue == "registration_quarantined" { XCTAssertTrue(store.requiresServerRecovery) }
+                if $0.result.rawValue == "registration_returned" { XCTAssertFalse(store.requiresServerRecovery) }
+                decisions.append($0)
+            })
+        let first = Task { await service.registerStoredTokenIfAvailable() }
+        await gate.waitUntilStarted()
+        let callback = Task { await service.handleDeviceToken(Data([0xab])) }
+        // Yield until the callback has persisted its captured token and entered the queue.
+        for _ in 0..<100 where store.token != "ab" { await Task.yield() }
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertTrue(decisions.isEmpty)
+        XCTAssertEqual(repo.registeredTokens, [token])
+        let queuedStart = ProcessInfo.processInfo.systemUptime
+        try await Task.sleep(nanoseconds: 40_000_000)
+        let heldMS = Int((ProcessInfo.processInfo.systemUptime - queuedStart) * 1000)
+        XCTAssertTrue(decisions.isEmpty)
+        await gate.release()
+        await first.value
+        await callback.value
+        XCTAssertEqual(repo.actions, ["register:\(token)", "unregister:\(token)", "register:ab"])
+        XCTAssertEqual(events, ["local"])
+        XCTAssertEqual(decisions.map { $0.result.rawValue }, ["registration_quarantined", "registration_returned"])
+        XCTAssertEqual(decisions.map(\.failure), [.transport, .none])
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(decisions.last).durationMS, heldMS - 3)
+        XCTAssertFalse(store.requiresServerRecovery)
+        // A queued success does not re-enable the guard disabled by the earlier failure.
+        await service.handleDeviceToken(Data([0xcd]))
+        XCTAssertEqual(store.token, "cd")
+        XCTAssertEqual(repo.registeredTokens, [token, "ab"])
+        XCTAssertEqual(decisions.last?.result.rawValue, "registration_suppressed")
+        XCTAssertEqual(Set(decisions.map(\.attemptID)).count, 3)
+        try assertRegistrationPrivate(decisions)
+    }
+
+    @MainActor
+    func testRegistrationDefaultLoggerSmokeAtActualServiceBoundary() async throws {
+        let (repo, _) = makeClient { request in
+            if request.url!.path.hasSuffix("/unregister_device_token") { return self.failure("42501") }
+            return (204, Data())
+        }
+        let store = InMemoryDeviceTokenStore()
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {})
+        await service.handleDeviceToken(Data([0xab]))
+        store.token = nil
+        await service.registerStoredTokenIfAvailable()
+        await service.handleDeviceToken(Data([0xab]))
+        await service.handleDeviceToken(Data([0xcd]))
+        DeviceDiagnosticRequest.respond = { _ in self.failure("42501") }
+        await service.registerStoredTokenIfAvailable()
+    }
+
+    private func assertRegistrationPrivate(_ decisions: [DeviceTokenDiagnostics.Record], file: StaticString = #filePath, line: UInt = #line) throws {
+        XCTAssertFalse(decisions.isEmpty, file: file, line: line)
+        for record in decisions {
+            XCTAssertTrue(["stored_token_registration", "apns_callback_registration"].contains(record.operation.rawValue), file: file, line: line)
+            XCTAssertTrue(["no_stored_token", "registration_suppressed", "registration_returned", "registration_quarantined"].contains(record.result.rawValue), file: file, line: line)
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(record.json.utf8)) as? [String: Any])
+            XCTAssertEqual(Set(json.keys), Set(["event", "operation", "result", "failure", "attempt_id", "duration_ms", "version", "build", "configuration", "environment"]), file: file, line: line)
+            XCTAssertEqual(json["event"] as? String, "device_token_operation", file: file, line: line)
+            XCTAssertEqual(json["environment"] as? String, "unit_test", file: file, line: line)
+            XCTAssertNotNil(UUID(uuidString: record.attemptID), file: file, line: line)
+            XCTAssertGreaterThanOrEqual(record.durationMS, 0, file: file, line: line)
+            for secret in ["private", token, userID.uuidString, "PGRST202", "https:"] {
+                XCTAssertFalse(record.json.contains(secret), file: file, line: line)
+            }
         }
     }
 
