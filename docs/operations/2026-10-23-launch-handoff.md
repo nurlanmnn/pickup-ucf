@@ -312,6 +312,32 @@ Phone-readiness chat was re-read and has no new human reply; no reconnect or gam
 publication. Approved Oct24 11:30PM fixture must still be future at submission;
 do not shift the time or publish it stale. Continue independent P1 local work.
 
+## October 24 UI validation follow-up
+
+Full isolated UI gate now passes6/6: adds actual blank sign-up and recovery-form
+blank/non-school-email rejection plus return to unchanged original sign-in. No
+product source changes. Final built backend URL/key empty; eight screenshots
+retained, three new ones visually inspected. Initial test setup queried the final
+intro-page signup button on step0; corrected to existing sign-in/account-switch
+route. Existing assertions remain. Independent final review has no required issues.
+See [UI contract/evidence](../superpowers/plans/2026-10-24-ui-smoke.md).
+Results `/tmp/pickup-ui-auth-validation-final.xcresult`, matching `.log`, exported
+attachments `/tmp/pickup-ui-auth-validation-final-attachments`. Prior289/289 signed
+unit and Release build/analyzer evidence was not repeated for test-only changes.
+**Before later full unit runs, check/restore AX1/true and restart after this UI
+lane** as documented. No physical device, backend or production action occurred.
+Phone readiness remains absent; temporary game remains unpublished.
+
+Next independent P1: remaining BETA-10 critical chat diagnostics at actual
+repository boundaries (first/older-page fetch, send and targeted reconciliation),
+or remaining isolated BETA-11 paths if architecture supports a useful focused
+slice. Inspect actual source, spec and meaningful synthetic regressions before
+code; keep original payload/order/errors/cursors and private content untouched.
+No raw SDK Error, server codes, messages, usernames, IDs, cursor timestamps, URLs,
+credentials or tokens in logs; no external provider or alert-owner invention.
+Broader BETA-10/11 gates remain open. Continue concrete work and push verified
+source within existing authorization; do not merge/deploy/upload.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the

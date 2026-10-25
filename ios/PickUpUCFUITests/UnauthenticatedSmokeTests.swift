@@ -81,6 +81,40 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         attach(app, name: "Blank sign in validation")
     }
 
+    func testBlankSignUpShowsLocalValidation() throws {
+        let app = try launch()
+        tap(app.buttons["welcome-sign-in"], in: app)
+        tap(app.buttons["sign-in-switch-to-sign-up"], in: app)
+        XCTAssertTrue(app.textFields["Display name"].waitForExistence(timeout: 5))
+        tap(app.buttons["Create account"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Display name is required"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Error: Email is required"].exists)
+        XCTAssertTrue(app.staticTexts["Error: Password must be at least 8 characters"].exists)
+        XCTAssertTrue(app.secureTextFields["Confirm password"].exists)
+        attach(app, name: "Blank sign up validation")
+    }
+
+    func testPasswordResetLocalValidationAndReturnToSignIn() throws {
+        let app = try launch()
+        tap(app.buttons["welcome-sign-in"], in: app)
+        tap(app.buttons["Forgot password?"], in: app)
+        tap(app.buttons["Send reset link"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Email is required"].waitForExistence(timeout: 5))
+        attach(app, name: "Blank reset request validation")
+        let email = app.textFields["UCF email"]
+        tap(email, in: app)
+        email.typeText("ui-smoke@example.com")
+        tap(app.buttons["Done"], in: app)
+        tap(app.buttons["Send reset link"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Use your @knights.ucf.edu or @ucf.edu email"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["If an account exists for this email, we sent a password reset link."].exists)
+        attach(app, name: "Non school reset request validation")
+        tap(app.buttons["reset-back-to-sign-in"], in: app)
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.textFields["UCF email"].value as? String, "UCF email", "Returning must preserve the original empty sign-in field")
+        XCTAssertTrue(app.buttons["sign-in-switch-to-sign-up"].exists)
+    }
+
     func testLargestDynamicTypeWelcomeAndAccountNavigation() throws {
         let app = try launch(largestType: true)
         attach(app, name: "Largest Dynamic Type welcome")

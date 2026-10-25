@@ -657,6 +657,12 @@ retained screenshots inspected. See [scope, local gate and evidence](2026-10-24-
 Authenticated workflows, controllable permission paths, CI and physical acceptance
 remain open. This does not close BETA-11.
 
+**Follow-up local evidence (October 24):** full isolated UI gate now passes6/6,
+adding blank sign-up and password-reset blank/non-school-email validation and
+return to original sign-in. Backend URL/key remain absent; new screenshots
+inspected. Test-only increment; authenticated flows/permissions/CI/device gates
+remain open. See the same [UI plan](2026-10-24-ui-smoke.md).
+
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
 ## BETA-12 — Match the launch screen to the app experience (**P2**)

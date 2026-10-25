@@ -1,3 +1,11 @@
+October 24 follow-up: isolated UI smoke now passes6/6, adding blank sign-up
+and reset-request blank/non-school-email validation plus return to original sign-in.
+Built backend URL/key empty; three new screenshots inspected. Initial intro-route
+query error was corrected in the test; no product code changed. See
+[UI scope and evidence](../docs/superpowers/plans/2026-10-24-ui-smoke.md).
+Authenticated/permission/CI/device acceptance remains open. Before future unit
+runs check the documented simulator AX prerequisites after the UI lane.
+
 October 24: BETA-10 explicit-auth diagnostics now cover sign-up/sign-in/sign-out,
 verification resend/OTP, recovery request/password update, staged change-password
 and accepted callback exchange. Closed local JSON excludes inputs/identities/raw
