@@ -668,6 +668,14 @@ build/analyzer, actual Logger schema/privacy and fresh reviews pass. See
 [scope/evidence](2026-10-25-push-cleanup-diagnostics.md). Other service decisions,
 whole-account/device/provider health and reporting/metrics/alerts remain open.
 
+**Additional local evidence (October25 evening):** account-deletion RPC now emits
+closed auth_operation delete_own_account_rpc records with existing success/error
+semantics. Exact no-body RPC, Void/errors preserved; PostgrestError is backend.
+Focused38/38, final signed isolated351/351, unsigned Release build/analyzer,
+actual Logger privacy/schema and fresh reviews pass. See
+[scope/evidence](2026-10-25-account-deletion-diagnostics.md). No real account was
+deleted; whole transition/data-retention/device/provider and reporting gates remain.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 October25 local device-token diagnostic slice: register/unregister RPCs and the

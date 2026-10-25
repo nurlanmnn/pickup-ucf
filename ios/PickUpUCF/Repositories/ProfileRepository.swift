@@ -14,8 +14,10 @@ protocol ProfileRepositoryProtocol {
 
 final class ProfileRepository: ProfileRepositoryProtocol {
     private let client: SupabaseClient
+    private let diagnostics: AuthOperationDiagnostics
 
-    init(client: SupabaseClient = SupabaseManager.shared) {
+    init(client: SupabaseClient = SupabaseManager.shared, diagnostics: AuthOperationDiagnostics = .init()) {
+        self.diagnostics = diagnostics
         self.client = client
     }
 
@@ -99,7 +101,9 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     }
 
     func deleteAccount() async throws {
-        try await client.rpc("delete_own_account").execute()
+        try await diagnostics.record(.deleteOwnAccountRPC) {
+            try await client.rpc("delete_own_account").execute()
+        }
     }
 
     static func displayName(from user: User) -> String {

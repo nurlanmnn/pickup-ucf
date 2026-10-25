@@ -11,6 +11,7 @@ struct AuthOperationDiagnostics {
         case changePasswordReauthenticate = "change_password_reauthenticate"
         case changePasswordUpdate = "change_password_update", callbackExchange = "callback_exchange"
         case restore
+        case deleteOwnAccountRPC = "delete_own_account_rpc"
     }
     enum Result: String, Encodable {
         case succeeded, failed, cancelled
@@ -97,7 +98,7 @@ struct AuthOperationDiagnostics {
     static func failure(for error: Error) -> Failure {
         if error is CancellationError || (error as? URLError)?.code == .cancelled { return .cancelled }
         if error is URLError { return .transport }
-        if error is AuthError { return .backend }
+        if error is AuthError || error is PostgrestError { return .backend }
         if error is AuthRepositoryError { return .localPolicy }
         if error is DecodingError { return .decoding }
         return .unknown

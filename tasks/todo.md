@@ -1,3 +1,15 @@
+October25 evening: ProfileRepository.deleteAccount now emits existing closed
+auth_operation delete_own_account_rpc diagnostics. Exact parameterless POST/no
+body, Void/errors and coordinator/view behavior remain; PostgrestError maps to
+backend. Corrected red10 missing-record assertions, focused38/38, final signed
+isolated351/351, Release build/analyzer, actual Logger schema/privacy and independent
+reviews pass. Removed flaky numeric-substring privacy assertions in new tests/
+cleanup helper; exact schema/enums/sensitive-content assertions retained. See
+[scope/evidence](../docs/superpowers/plans/2026-10-25-account-deletion-diagnostics.md).
+RPC return proves only that stage returned; no real account deletion, retained
+content verification, production/provider/device acceptance or deployment/upload.
+BETA-10/11 remain partial.
+
 October25 evening: PushNotificationService account-transition cleanup now emits
 one closed device-token diagnostic after original state updates: no stored token,
 first return, return after existing retry, or recovery required after second error.

@@ -609,6 +609,28 @@ captured-token/timing and first-attempt cancellation tests. See
 [scope/evidence](../superpowers/plans/2026-10-25-push-cleanup-diagnostics.md).
 BETA-10/11 remain partial; no production/provider/phone/deployment/upload action.
 
+## October25 account-deletion backend diagnostics
+
+October25 evening: ProfileRepository.deleteAccount now emits existing closed
+auth_operation delete_own_account_rpc diagnostics. Exact parameterless POST/no
+body, Void/errors and coordinator/view behavior remain; PostgrestError maps to
+backend. Corrected red10 missing-record assertions, focused38/38, final signed
+isolated351/351, Release build/analyzer, actual Logger schema/privacy and independent
+reviews pass. Removed flaky numeric-substring privacy assertions in new tests/
+cleanup helper; exact schema/enums/sensitive-content assertions retained. See
+[scope/evidence](../superpowers/plans/2026-10-25-account-deletion-diagnostics.md).
+RPC return proves only that stage returned; no real account deletion, retained
+content verification, production/provider/device acceptance or deployment/upload.
+BETA-10/11 remain partial.
+
+Next independent local P1: inspect actual push-service registration/quarantine
+completion and suppression decisions (stored-token/callback entrypoints), avoiding
+superficial duplication of existing repository backend stages. Spec, meaningful
+synthetic red/green boundary coverage and fresh review before source changes.
+No need to rerun unchanged351/351 or7/7 lanes. New continuation must preserve
+85%-used stop rule for every applicable usage window, source-only authorization,
+phone unavailability and exact Calendar-copy follow-up described above.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -638,7 +660,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 347/347 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
+Latest iOS evidence: 351/351 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

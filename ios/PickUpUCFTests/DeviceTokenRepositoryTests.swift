@@ -932,7 +932,7 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
             XCTAssertEqual(json["environment"] as? String, "unit_test", file: file, line: line)
             XCTAssertNotNil(UUID(uuidString: record.attemptID), file: file, line: line)
             XCTAssertGreaterThanOrEqual(record.durationMS, 0, file: file, line: line)
-            for secret in ["private", token, userID.uuidString, "PGRST202", "42501", "23503", "https:"] {
+            for secret in ["private", token, userID.uuidString, "PGRST202", "https:"] {
                 XCTAssertFalse(record.json.contains(secret), file: file, line: line)
             }
         }

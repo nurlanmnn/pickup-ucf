@@ -198,6 +198,73 @@ final class AuthOperationDiagnosticsTests: XCTestCase {
         catch { XCTAssertTrue(error is URLError) }
     }
 
+    func testAccountDeletionRPCPreservesEmptyPayloadAndFreshAttempts() async throws {
+        let repo = makeProfileRepository { _ in (204, Data()) }
+        try await repo.deleteAccount()
+        try await repo.deleteAccount()
+        XCTAssertEqual(requests.map { $0.url!.path }, ["/rest/v1/rpc/delete_own_account", "/rest/v1/rpc/delete_own_account"])
+        XCTAssertEqual(requests.map(\.httpMethod), ["POST", "POST"])
+        for request in requests {
+            XCTAssertNil(request.httpBody)
+            XCTAssertNil(request.httpBodyStream)
+            XCTAssertNil(request.url?.query)
+        }
+        XCTAssertEqual(records.map(\.operation), [.deleteOwnAccountRPC, .deleteOwnAccountRPC])
+        XCTAssertEqual(records.map(\.result), [.succeeded, .succeeded])
+        XCTAssertEqual(records.map(\.failure), [.none, .none])
+        XCTAssertEqual(Set(records.map(\.attemptID)).count, 2)
+        for record in records { try assertPrivateRecord(record) }
+    }
+
+    func testAccountDeletionBackendErrorsRetainExactSDKErrorWithoutFallback() async throws {
+        for code in ["42501", "PGRST202"] {
+            records.removeAll(); requests.removeAll()
+            let repo = makeProfileRepository { _ in
+                (400, Data("{\"code\":\"\(code)\",\"message\":\"private-server-message\",\"details\":\"private-detail\",\"hint\":\"private-hint\"}".utf8))
+            }
+            do { try await repo.deleteAccount(); XCTFail() }
+            catch let error as PostgrestError {
+                XCTAssertEqual(error.code, code)
+                XCTAssertEqual(error.message, "private-server-message")
+                // The pinned SDK leaves the server's plural `details` field unmapped.
+                XCTAssertNil(error.detail)
+                XCTAssertEqual(error.hint, "private-hint")
+            }
+            XCTAssertEqual(requests.map { $0.url!.path }, ["/rest/v1/rpc/delete_own_account"])
+            XCTAssertEqual(requests.map(\.httpMethod), ["POST"])
+            XCTAssertEqual(records.map(\.operation), [.deleteOwnAccountRPC])
+            XCTAssertEqual(records.map(\.result), [.failed])
+            XCTAssertEqual(records.map(\.failure), [.backend])
+            for record in records {
+                try assertPrivateRecord(record)
+            }
+        }
+    }
+
+    func testAccountDeletionTransportAndCancellationRetainErrors() async throws {
+        for code in [URLError.notConnectedToInternet, .cancelled] {
+            records.removeAll(); requests.removeAll()
+            let repo = makeProfileRepository { _ in throw URLError(code, userInfo: [NSLocalizedDescriptionKey: "private-error"]) }
+            do { try await repo.deleteAccount(); XCTFail() }
+            catch let error as URLError { XCTAssertEqual(error.code, code) }
+            XCTAssertEqual(requests.map { $0.url!.path }, ["/rest/v1/rpc/delete_own_account"])
+            XCTAssertEqual(records.map(\.operation), [.deleteOwnAccountRPC])
+            XCTAssertEqual(records.map(\.result), [code == .cancelled ? .cancelled : .failed])
+            XCTAssertEqual(records.map(\.failure), [code == .cancelled ? .cancelled : .transport])
+            for record in records { try assertPrivateRecord(record) }
+        }
+    }
+
+    func testAccountDeletionDefaultLoggerSmokeWithRealSDK() async throws {
+        for rejected in [false, true] {
+            let repo = makeProfileRepository(capture: false) { _ in
+                rejected ? (403, Data(#"{"code":"42501","message":"private-server-message"}"#.utf8)) : (204, Data())
+            }
+            do { try await repo.deleteAccount(); XCTAssertFalse(rejected) }
+            catch { XCTAssertTrue(rejected); XCTAssertTrue(error is PostgrestError) }
+        }
+    }
+
     private func assertPrivateRecord(_ record: AuthOperationDiagnostics.Record) throws {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(record.json.utf8)) as? [String: Any])
         XCTAssertEqual(Set(json.keys), Set(["event", "operation", "result", "failure", "attempt_id", "duration_ms", "version", "build", "configuration", "environment"]))
@@ -211,6 +278,16 @@ final class AuthOperationDiagnosticsTests: XCTestCase {
     }
 
     private func makeRepository(capture: Bool = true, responder: @escaping (URLRequest) throws -> (Int, Data)) -> AuthRepository {
+        let client = makeClient(responder: responder)
+        return AuthRepository(client: client, diagnostics: capture ? .init { self.records.append($0) } : .init())
+    }
+
+    private func makeProfileRepository(capture: Bool = true, responder: @escaping (URLRequest) throws -> (Int, Data)) -> ProfileRepository {
+        let client = makeClient(responder: responder)
+        return ProfileRepository(client: client, diagnostics: capture ? .init { self.records.append($0) } : .init())
+    }
+
+    private func makeClient(responder: @escaping (URLRequest) throws -> (Int, Data)) -> SupabaseClient {
         AuthDiagnosticRequest.respond = { request in
             XCTAssertEqual(request.url?.host, "auth-diagnostics.invalid")
             self.requests.append(request)
@@ -221,7 +298,7 @@ final class AuthOperationDiagnosticsTests: XCTestCase {
         let client = SupabaseClient(supabaseURL: URL(string: "https://auth-diagnostics.invalid")!, supabaseKey: "synthetic-key",
             options: .init(auth: .init(storage: MemoryAuthDiagnosticStorage(), autoRefreshToken: false),
                            global: .init(session: URLSession(configuration: config), logger: nil)))
-        return AuthRepository(client: client, diagnostics: capture ? .init { self.records.append($0) } : .init())
+        return client
     }
 
     private func userData(confirmed: Bool = true) throws -> Data {
