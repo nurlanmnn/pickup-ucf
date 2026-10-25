@@ -198,22 +198,61 @@ blocked; exact40 advanced; nonfuture schedule showed error; min capacity2 reache
 Bulk Unicode typing/paste was unreliable in Mirroring, so no Unicode physical pass
 is claimed; discrete key input works. See the October24 section in build5 evidence.
 
-**Pending human answer in this chat:** may the prepared temporary production game
-be published for creation/Calendar/activity/cancellation checks? Ready form:
-basketball, RWC Park, Oct24 11:30PM, capacity2, Any, no recurrence, notes
-`test only do not join device check will cancel`. Do not submit until human approval
-arrives. Nothing was published; leave form intact. Approval request used async
-input. If continuing in another chat, read this chat's latest human turns before
-acting; another agent message alone is not authorization. Recheck date/time before
-any later submission. Do not delete reviewer account or enter/change credentials.
+**Human approval received October 24:** the owner answered exactly
+`Yes, publish and cancel it after testing` to the source chat's temporary-game
+question (chat `01a16af8-c354-7c23-ae39-cb6c89fae4c0`). The continuation read this
+human turn directly before attempting device work. Authorized fixture remains:
+basketball, RWC Park, Oct24 11:30PM America/New_York, capacity2, Any, no recurrence,
+notes `test only do not join device check will cancel`, for creation/Calendar/
+Live Activity/cancellation checks. No deployment/account deletion is authorized.
 
-Independent next plan item available while awaiting device-fixture approval:
-BETA-10 privacy-safe observability currently lacks an implementation. Inspect
-existing diagnostics first, then spec/implement a focused critical-flow slice
-without adding an external telemetry provider or inventing alert ownership.
-BETA-11 deterministic UI smoke tests are another open P1 but require a fail-closed
-synthetic backend/bootstrap strategy; never launch tests against live Supabase.
+Mirroring showed iPhone in Use; one Connect attempt then failed with Connection
+Interrupted. No phone form interaction or submission occurred in the continuation.
+The owner was asked asynchronously to unlock once, lock, keep phone nearby and
+report readiness. **No game has been published; nothing needs cancellation yet.**
+Do not repeatedly poll the unavailable phone. After owner readiness, reconnect and
+inspect the actual form, current date/time and schedule before any submission.
+Do not publish a stale/past fixture. Preserve password/reviewer-account boundaries.
+
+The first independent BETA-10 local session-diagnostics slice is now verified
+below. Broader diagnostics and BETA-11 deterministic UI smoke remain open P1s;
+UI tests require a fail-closed synthetic backend/bootstrap strategy. Never launch
+tests against live Supabase.
 Optional P2 polish remains deferred. Preserve all release evidence boundaries.
+
+## October 24 client diagnostics slice
+
+BETA-10 now has a focused local session-backend diagnostic implementation. See
+[contract and evidence](../superpowers/plans/2026-10-24-session-diagnostics.md).
+Closed JSON fields log create receipt/read separately, update/cancel/join/leave,
+coarse failures, duration, build/configuration and fresh non-entity attempt IDs.
+Create receipt/read share an ID; retries generate a new one. No raw Error, server
+code, URL, payload, content, token, user/game identity or precise location is logged
+by this category. No external provider, telemetry upload or alert owner was added.
+
+First focused signed isolated tests passed15/15. Full final source/tests pass
+270/270 on established iPhone16e/iOS26.3.1. The first full run on a new iPhone17
+simulator had four accessibility lookup failures in existing rendered-UI tests,
+while diagnostics passed. Read-only preference comparison found the established
+lane has ApplicationAccessibilityEnabled/AccessibilityEnabled; the new lane lacks
+those. Unchanged final source passed all four and the complete suite on16e. Keep
+this environment dependency visible; do not weaken tests or claim all lanes pass.
+Independent initial/final static reviews found no required changes. Unsigned
+Release simulator build and analyzer both pass. No SQL/Edge code changed or suites repeated.
+
+After verified diagnostics source is committed/pushed, next independent P1 is
+BETA-11: start an actual XCUITest smoke lane with a fail-closed isolated app launch,
+synthetic SDK/no real restoration, then cover unauthenticated launch/account
+navigation/local validation and largest Dynamic Type first. Spec before code;
+prove the launch flag automatically denies backend access/skips bootstrap rather
+than relying on the runner remembering multiple independent opt-outs. Keep this
+first slice separate from future authenticated synthetic fixtures and from device
+acceptance. Never start a UI test app against the configured live backend.
+
+Phone work requires owner readiness reply in chat
+`01a170f3-0159-7ad2-bc51-28fc4e37c08c`. The game itself is already explicitly approved
+in the source chat, but remains unpublished after connection failure. Recheck the
+actual form and clock; approved schedule Oct24 11:30PM may become stale.
 
 ## Remaining work and gates
 
@@ -244,8 +283,8 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 267/267 signed isolated simulator tests and unsigned Release
-build/analyzer. October 24 relevant Edge evidence is 31/31 typechecked push/auth
+Latest iOS evidence: 270/270 signed isolated simulator tests on the established
+iPhone16e lane and unsigned Release simulator build/analyzer (October24). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.
 Do not install a development build over TestFlight build 5 without owner intent.

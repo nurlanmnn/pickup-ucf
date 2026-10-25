@@ -45,6 +45,7 @@ final class SessionCreationTests: XCTestCase {
     }
 
     func testLostReadResponseCanRetryTheSameCreationReceipt() async throws {
+        var records: [SessionMutationDiagnostics.Record] = []
         var requestIDs: [String] = []
         var payloads: [Data] = []
         var failReads = true
@@ -59,7 +60,7 @@ final class SessionCreationTests: XCTestCase {
             if failReads { throw URLError(.networkConnectionLost) }
             return (200, try self.sessionData())
         }
-        let repository = makeRepository()
+        let repository = makeRepository(diagnostics: .init(sink: { records.append($0) }))
         do { _ = try await repository.createSession(input); XCTFail("Expected a lost response") }
         catch { XCTAssertTrue(error is URLError) }
         failReads = false
@@ -68,6 +69,12 @@ final class SessionCreationTests: XCTestCase {
         XCTAssertEqual(requestIDs.count, 2)
         XCTAssertEqual(Set(requestIDs).count, 1)
         XCTAssertEqual(Set(payloads).count, 1, "Recurring settings must serialize identically on retry")
+        XCTAssertEqual(records.map(\.operation), [.create, .createRead, .create, .createRead])
+        XCTAssertEqual(records.map(\.result), [.succeeded, .failed, .succeeded, .succeeded])
+        XCTAssertEqual(records[1].failure, .transport)
+        XCTAssertEqual(records[0].attemptID, records[1].attemptID)
+        XCTAssertEqual(records[2].attemptID, records[3].attemptID)
+        XCTAssertNotEqual(records[0].attemptID, records[2].attemptID)
     }
 
     func testLostRPCResponseRetriesTheSameCommittedRequest() async throws {
@@ -118,12 +125,16 @@ final class SessionCreationTests: XCTestCase {
     }
 
     func testEditRenamesExistingOtherSport() async throws {
+        var records: [SessionMutationDiagnostics.Record] = []
         let updated = try await applyEdit(
             existing: ["sport": "other", "custom_sport_name": "Old sport", "notes": "Other sport: Old sport"],
-            sport: .other, customSportName: "  Badminton  "
+            sport: .other, customSportName: "  Badminton  ",
+            diagnostics: .init(sink: { records.append($0) })
         )
         XCTAssertEqual(updated.customSportName, "Badminton")
         XCTAssertEqual(updated.sportDisplayName, "Badminton")
+        XCTAssertEqual(records.map(\.operation), [.update])
+        XCTAssertEqual(records.map(\.result), [.succeeded])
     }
 
     func testEditClearsCustomSportWhenChoosingStandardSport() async throws {
@@ -172,11 +183,87 @@ final class SessionCreationTests: XCTestCase {
         XCTAssertEqual(requestCount, 1)
     }
 
+    func testCreateReceiptSuccessAndReadFailureAreDistinctAndPrivate() async throws {
+        var records: [SessionMutationDiagnostics.Record] = []
+        let diagnostics = SessionMutationDiagnostics(sink: { records.append($0) })
+        let input = makeInput()
+        let secret = "private@example.com token_secret precise_location private_message"
+        let failure = NSError(domain: secret, code: 99, userInfo: [NSLocalizedDescriptionKey: secret])
+        AtomicCreationRequest.respond = { request in
+            if request.url!.path.hasSuffix("/rpc/create_session") {
+                return (200, Data("\"\(self.createdId.uuidString)\"".utf8))
+            }
+            throw failure
+        }
+        do {
+            _ = try await makeRepository(diagnostics: diagnostics).createSession(input)
+            XCTFail("Expected read failure")
+        } catch { XCTAssertEqual((error as NSError).domain, secret) }
+        XCTAssertEqual(records.map(\.operation), [.create, .createRead])
+        XCTAssertEqual(records.map(\.result), [.succeeded, .failed])
+        XCTAssertEqual(records.map(\.failure), [.none, .unknown])
+        XCTAssertEqual(Set(records.map(\.attemptID)).count, 1)
+        for record in records {
+            let data = try XCTUnwrap(record.json.data(using: .utf8))
+            let fields = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            XCTAssertEqual(Set(fields.keys), ["event", "operation", "result", "failure", "attempt_id",
+                                             "duration_ms", "version", "build", "configuration", "environment"])
+            XCTAssertEqual(fields["environment"] as? String, "unit_test")
+            XCTAssertEqual(fields["version"] as? String, "1.0")
+            XCTAssertEqual(fields["build"] as? String, "5")
+            XCTAssertNotNil(UUID(uuidString: record.attemptID))
+            XCTAssertGreaterThanOrEqual(record.durationMS, 0)
+            XCTAssertFalse(record.json.contains(secret))
+            XCTAssertFalse(record.json.contains(createdId.uuidString))
+            XCTAssertFalse(record.json.contains(input.requestId.uuidString))
+        }
+    }
+
+    func testMutationDiagnosticsPreserveSuccessAndBackendFailures() async throws {
+        var records: [SessionMutationDiagnostics.Record] = []
+        let repository = makeRepository(diagnostics: .init(sink: { records.append($0) }))
+        AtomicCreationRequest.respond = { request in
+            if request.url!.path.hasSuffix("/rpc/join_session") { return (200, Data("\"waitlist\"".utf8)) }
+            return (204, Data())
+        }
+        let status = try await repository.joinSession(id: createdId)
+        XCTAssertEqual(status, .waitlist)
+        try await repository.leaveSession(id: createdId)
+        try await repository.cancelSession(id: createdId)
+        XCTAssertEqual(records.map(\.operation), [.join, .leave, .cancel])
+        XCTAssertTrue(records.allSatisfy { $0.result == .succeeded && $0.failure == .none })
+        AtomicCreationRequest.respond = { _ in
+            (403, Data(#"{"code":"42501","message":"private_server_text","details":"private@example.com","hint":null}"#.utf8))
+        }
+        do { try await repository.leaveSession(id: createdId); XCTFail("Expected backend failure") }
+        catch { XCTAssertEqual((error as? PostgrestError)?.code, "42501") }
+        XCTAssertEqual(records.last?.failure, .backend)
+        XCTAssertFalse(records.last!.json.contains("private"))
+    }
+
+    func testDiagnosticsClassifyCancellationTransportAndDecodingWithoutDescriptions() async throws {
+        var records: [SessionMutationDiagnostics.Record] = []
+        let diagnostics = SessionMutationDiagnostics(sink: { records.append($0) })
+        let errors: [Error] = [CancellationError(), URLError(.cancelled), URLError(.timedOut),
+            DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "secret_payload"))]
+        for error in errors {
+            do { _ = try await diagnostics.record(.update) { () async throws -> Int in throw error } }
+            catch { XCTAssertEqual(String(reflecting: type(of: error)), String(reflecting: type(of: errors[records.count - 1])) ) }
+        }
+        XCTAssertEqual(records.map(\.result), [.cancelled, .cancelled, .failed, .failed])
+        XCTAssertEqual(records.map(\.failure), [.cancelled, .cancelled, .transport, .decoding])
+        XCTAssertFalse(records.contains { $0.json.contains("secret_payload") })
+        // Exercise the real system sink as well; inspect simulator output by subsystem/category.
+        let value = await SessionMutationDiagnostics().record(.join) { 7 }
+        XCTAssertEqual(value, 7)
+    }
+
     /// Model PostgREST PATCH: absent keys retain stored values; explicit null clears them.
     private func applyEdit(
         existing: [String: Any], sport: SportType = .basketball,
         customSportName: String? = nil, venueId: UUID? = nil,
-        customLocation: CustomLocationSelection? = nil, notes: String? = nil
+        customLocation: CustomLocationSelection? = nil, notes: String? = nil,
+        diagnostics: SessionMutationDiagnostics = .init()
     ) async throws -> PickupSession {
         var stored = try XCTUnwrap(JSONSerialization.jsonObject(with: sessionData()) as? [String: Any])
         stored.merge(existing) { _, new in new }
@@ -195,7 +282,7 @@ final class SessionCreationTests: XCTestCase {
             return (200, try JSONSerialization.data(withJSONObject: stored))
         }
         defer { AtomicCreationRequest.respond = nil }
-        let updated = try await makeRepository().updateSession(id: createdId, input: UpdateSessionInput(
+        let updated = try await makeRepository(diagnostics: diagnostics).updateSession(id: createdId, input: UpdateSessionInput(
             sport: sport, customSportName: customSportName,
             venueId: customLocation == nil ? (venueId ?? UUID()) : nil,
             customLocation: customLocation, startsAt: .now.addingTimeInterval(7200),
@@ -221,13 +308,13 @@ final class SessionCreationTests: XCTestCase {
         return try encoder.encode(session)
     }
 
-    private func makeRepository() -> SessionRepository {
+    private func makeRepository(diagnostics: SessionMutationDiagnostics = .init()) -> SessionRepository {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [AtomicCreationRequest.self]
         return SessionRepository(client: SupabaseClient(supabaseURL: URL(string: "https://creation-tests.invalid")!,
             supabaseKey: "synthetic-test-key", options: .init(
                 auth: .init(storageKey: UUID().uuidString, autoRefreshToken: false),
-                global: .init(session: URLSession(configuration: configuration)))))
+                global: .init(session: URLSession(configuration: configuration)))), diagnostics: diagnostics)
     }
 
     private func body(_ request: URLRequest) throws -> Data {

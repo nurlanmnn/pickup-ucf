@@ -129,6 +129,7 @@
 		A0E81D54A61D0F53C93DA226 /* UserContentPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 330868CAE9A7109639D4EC92 /* UserContentPolicy.swift */; };
 		A3A36A5D8458436832523D20 /* EditPreferredSportsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA58F4B6692B9044A0CC111 /* EditPreferredSportsViewModelTests.swift */; };
 		A74FDB5E362ED35C05D66127 /* PickupSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699CE3048C4ED16348EC4831 /* PickupSession.swift */; };
+		A775975E51AE475743E7D98B /* SessionMutationDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */; };
 		ABFFCD9B900B41F45058CB31 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */; };
 		AD064081E6C1D35BE53D3157 /* GameLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B3B7BB32179124147A7E8C /* GameLiveActivityWidget.swift */; };
 		AD2D11E213D7A2580CF4644E /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAFA31181F35F9C4D81D29A /* SignUpViewModel.swift */; };
@@ -398,6 +399,7 @@
 		EB22EFA9B510696F61750AD5 /* WeatherSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherSnapshotTests.swift; sourceTree = "<group>"; };
 		EBEF481716494044A60A7446 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		ED2EE6CAED5981B8240F7AEF /* SessionMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMessage.swift; sourceTree = "<group>"; };
+		EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMutationDiagnostics.swift; sourceTree = "<group>"; };
 		EECC9097C151B4A1D73E9C16 /* StepperNumberFieldRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperNumberFieldRow.swift; sourceTree = "<group>"; };
 		EF6296C1331592FD98797241 /* BlockedUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUser.swift; sourceTree = "<group>"; };
 		EFB3BB5184646C277155E04F /* ChangePasswordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordViewModel.swift; sourceTree = "<group>"; };
@@ -791,6 +793,7 @@
 				A3BDBBA8B4B1D9ADE3AD5131 /* PushNotificationService.swift */,
 				86FC3258DCC109C54C88586E /* SessionDateFormatter.swift */,
 				E97A586CC650E5E91A8734BB /* SessionLocationResolver.swift */,
+				EE99AD1AA61AE66AF401679E /* SessionMutationDiagnostics.swift */,
 				DEE3A9A4AE1C7819AEF1E57B /* SessionShareLink.swift */,
 				14A57198420B50B36CA6070A /* SupabaseManager.swift */,
 				AEE3D90F9016C3AAB6C5B572 /* Validators */,
@@ -1115,6 +1118,7 @@
 				B7CB91B04CA9DE2164619C13 /* SessionLocationResolver.swift in Sources */,
 				E2BAFA9722623C8B71F69A49 /* SessionMapAnnotation.swift in Sources */,
 				1FCA653716B1F4393E14EEB0 /* SessionMessage.swift in Sources */,
+				A775975E51AE475743E7D98B /* SessionMutationDiagnostics.swift in Sources */,
 				3DB20B32CFBBDD6DCBAB65DB /* SessionParticipant.swift in Sources */,
 				ADC7102007A4BB723B0CB63C /* SessionRepository.swift in Sources */,
 				965EF1A9EE9B4DDCA381C386 /* SessionRoster.swift in Sources */,

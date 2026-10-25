@@ -1,3 +1,18 @@
+October 24: BETA-10 first local diagnostics slice now covers session create RPC,
+post-create read, edit/cancel/join/leave. Closed JSON fields, coarse error classes,
+monotonic duration and fresh attempt IDs (shared receipt/read, distinct retries)
+exclude raw errors and user data. Signed isolated suite passes 270/270 on the
+established iPhone16e lane; initial iPhone17 accessibility lookup failures and
+lane prerequisites are documented. Unsigned Release simulator build and analyzer both pass.
+See [diagnostics scope/evidence](../docs/superpowers/plans/2026-10-24-session-diagnostics.md).
+Other BETA-10 flows, centralized reporting/health/alert ownership remain open.
+
+Owner approved publishing/cancelling the prepared temporary game directly in the
+source chat. Mirroring reconnect failed before submission; no game was published.
+An async phone-readiness request is pending in diagnostics continuation chat
+`01a170f3-0159-7ad2-bc51-28fc4e37c08c`. Recheck latest human turns and actual date/time
+before any later submit; the Oct24 11:30PM form can become stale.
+
 October 24, 10:39–10:43 PM: owner made phone available; Mirroring reconnected to
 installed build 1.0 (5). Empty/over-limit Other-name validation, exact40-character
 progression, nonfuture schedule error and min capacity2 were observed on device.

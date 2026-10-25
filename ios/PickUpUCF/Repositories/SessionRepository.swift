@@ -52,6 +52,7 @@ protocol SessionRepositoryProtocol {
 
 final class SessionRepository: SessionRepositoryProtocol {
     private let client: SupabaseClient
+    private let diagnostics: SessionMutationDiagnostics
     /// `*` keeps sessions compatible before `custom_sport_name` exists; embeds stay explicit.
     private let sessionSelect = """
         *, \
@@ -59,8 +60,9 @@ final class SessionRepository: SessionRepositoryProtocol {
         host:profiles!sessions_host_id_fkey(id, display_name, username)
         """
 
-    init(client: SupabaseClient = SupabaseManager.shared) {
+    init(client: SupabaseClient = SupabaseManager.shared, diagnostics: SessionMutationDiagnostics = .init()) {
         self.client = client
+        self.diagnostics = diagnostics
     }
 
     /// Stored name when `sport == .other`; otherwise `nil` (clears any previous custom name on update).
@@ -264,11 +266,16 @@ final class SessionRepository: SessionRepositoryProtocol {
             recurrenceRule: recurrenceRuleJSON
         )
 
-        let createdId: UUID = try await client
-            .rpc("create_session", params: CreateSessionRPCParams(requestId: input.requestId, input: payload))
-            .execute()
-            .value
-        let created = try await fetchSession(id: createdId)
+        let attempt = SessionMutationDiagnostics.Attempt()
+        let createdId: UUID = try await diagnostics.record(.create, attempt: attempt) {
+            try await client
+                .rpc("create_session", params: CreateSessionRPCParams(requestId: input.requestId, input: payload))
+                .execute()
+                .value
+        }
+        let created = try await diagnostics.record(.createRead, attempt: attempt) {
+            try await fetchSession(id: createdId)
+        }
 
         if let withWeather = try? await attachWeatherSnapshotIfNeeded(to: created) {
             return withWeather
@@ -312,33 +319,38 @@ final class SessionRepository: SessionRepositoryProtocol {
             notes: notesToStore
         )
 
-        return try await client
-            .from("sessions")
-            .update(payload)
-            .eq("id", value: id.uuidString)
-            .select(sessionSelect)
-            .single()
-            .execute()
-            .value
+        return try await diagnostics.record(.update) {
+            try await client
+                .from("sessions")
+                .update(payload)
+                .eq("id", value: id.uuidString)
+                .select(sessionSelect)
+                .single()
+                .execute()
+                .value
+        }
     }
 
     func cancelSession(id: UUID) async throws {
         struct StatusPatch: Encodable {
             let status: SessionStatus
         }
-        try await client
-            .from("sessions")
-            .update(StatusPatch(status: .cancelled))
-            .eq("id", value: id.uuidString)
-            .execute()
+        try await diagnostics.record(.cancel) {
+            _ = try await client
+                .from("sessions")
+                .update(StatusPatch(status: .cancelled))
+                .eq("id", value: id.uuidString)
+                .execute()
+        }
     }
 
     func joinSession(id: UUID) async throws -> ParticipantStatus {
-        let status: ParticipantStatus = try await client
-            .rpc("join_session", params: JoinSessionParams(pSessionId: id))
-            .execute()
-            .value
-        return status
+        return try await diagnostics.record(.join) {
+            try await client
+                .rpc("join_session", params: JoinSessionParams(pSessionId: id))
+                .execute()
+                .value
+        }
     }
 
     func leaveSession(id: UUID) async throws {
@@ -348,7 +360,9 @@ final class SessionRepository: SessionRepositoryProtocol {
                 case pSessionId = "p_session_id"
             }
         }
-        try await client.rpc("leave_session", params: LeaveParams(pSessionId: id)).execute()
+        try await diagnostics.record(.leave) {
+            _ = try await client.rpc("leave_session", params: LeaveParams(pSessionId: id)).execute()
+        }
     }
 
     func fetchRoster(sessionId: UUID) async throws -> SessionRoster {

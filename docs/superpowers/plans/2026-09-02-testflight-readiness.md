@@ -615,6 +615,15 @@ Account changes clear navigation, create prefills, banners and account-linked de
 - [ ] Configure alert ownership and a triage workflow for P0/P1 beta issues.
 - [x] Verify debug logging is not accidentally shipped at an unsafe verbosity (raw SDK payload logging removed in both configurations on October 22).
 
+**Local evidence (October 24):** the first focused slice adds closed-schema local
+Apple unified logs for session create RPC, post-create read, update/cancel/join/
+leave. Attempts use ephemeral local correlation IDs; raw errors, server codes,
+identities and content are excluded. Signed isolated simulator suite passes
+270/270 on the established iPhone16e lane. See
+[scope, privacy, environment prerequisite and evidence](2026-10-24-session-diagnostics.md).
+This covers only session backend boundaries and local diagnostic collection;
+the broad structured-diagnostics task and other BETA-10 gates remain open.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
