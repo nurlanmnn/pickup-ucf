@@ -1,3 +1,13 @@
+October 24: BETA-10 explicit-auth diagnostics now cover sign-up/sign-in/sign-out,
+verification resend/OTP, recovery request/password update, staged change-password
+and accepted callback exchange. Closed local JSON excludes inputs/identities/raw
+errors; original requests/errors/cleanup remain. Focused16/16 and full signed
+isolated289/289 tests pass; unsigned Release simulator build/analyzer pass;
+fresh-context design/final reviews found no required issues. See
+[contract and evidence](../docs/superpowers/plans/2026-10-24-auth-diagnostics.md).
+Session restoration diagnostics, other critical flows, centralized reporting and
+alert ownership remain open. No deployment/upload/device/account mutation.
+
 October 24: BETA-11 first isolated XCUITest slice passes 4/4 with backend URL/key
 absent: Welcome intro/relaunch, account route replacement/email carry, blank
 sign-in validation and actual accessibility5 navigation. One Debug simulator-only

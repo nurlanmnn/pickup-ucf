@@ -624,6 +624,14 @@ identities and content are excluded. Signed isolated simulator suite passes
 This covers only session backend boundaries and local diagnostic collection;
 the broad structured-diagnostics task and other BETA-10 gates remain open.
 
+**Additional local evidence (October 24):** explicit auth operations now emit
+closed local auth_operation records; change-password reauthentication/write share
+an ephemeral attempt ID, while retries get fresh IDs. No credentials, identities,
+URLs or raw SDK errors are serialized. Focused16/16/full signed isolated289/289,
+unsigned Release simulator build/analyzer and independent review pass. See
+[scope and evidence](2026-10-24-auth-diagnostics.md). Restoration diagnostics,
+other flows, centralized reporting/metrics/alert ownership remain open.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
