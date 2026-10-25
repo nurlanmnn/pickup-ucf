@@ -405,6 +405,43 @@ fixture strategy is another open useful slice. No P2/broad abstraction.
 BETA-10/11 remain partial. October24 game fixture is past and unpublished; no new
 readiness check/reconnect. New fixture time requires owner approval.
 
+## October25 device-token backend diagnostics
+
+DeviceTokenRepository now emits local device_token_operation records for
+register_rpc, unregister_rpc and the PGRST202-only delete_owned_token fallback.
+RPC/delete share a fresh invocation UUID; each stage has its own duration.
+Exactly ten closed fields exclude tokens/IDs/payloads/URLs/error text/codes.
+Success describes only that stage returning (DELETE may affect zero rows under
+RLS), never APNs delivery or full account cleanup. Original payloads, filters,
+missing-user guard, thrown errors and order remain. PushNotificationService and
+LiveActivityTokenRepository unchanged. See [contract/evidence](../superpowers/plans/2026-10-25-device-token-diagnostics.md).
+
+Initial real-SDK nine-test red run failed 29 absent-record assertions while
+behavior assertions passed. Focused33/33 and final full signed isolated **322/322**
+pass (11 new tests, including actual-repository rotation, quarantine and both
+account-transition retry outcomes). Established16e AX1/1 verified before and after
+restart. Unsigned Release build/analyzer pass. Actual focused/full default Logger
+six records each passed exact schema/privacy checks. Fresh-context design/final
+reviews found no required issues; optional smoke-test naming suggestion accepted,
+final additional tests reviewed. Cross-model skipped for autonomous continuation;
+no external CLI invoked. Artifacts /tmp/pickup-device-{red,focused,full}.log,
+focused/full xcresults and release-analyze.log. No unchanged UI/SQL/Edge repeats.
+
+Next independent P1: investigate realtime subscription lifecycle diagnostics or
+deterministic authenticated UI fixtures. ChatViewModel.startRealtime establishes
+change/status streams before subscribeWithError; status .subscribed triggers
+refresh; catch preserves existing syncError; stop cancels tasks and unsubscribes/
+removes channel. Existing tests exercise stop/catch-up but no real subscription.
+Pinned SDK has configurable connectOnSubscribe/timeout but websocket transport
+injection is internal; avoid assuming HTTP URLProtocol denies websocket traffic.
+Any realtime harness must be provably loopback/synthetic with no configured backend
+connection. Spec and meaningful red test before instrumentation; preserve current
+lifecycleVersion/cancellation/refresh/order. Do not simply label subscription as
+successful delivery. Remaining service cleanup decisions/live-activity registration
+are separate diagnostic surfaces, not included in this backend-stage slice.
+BETA-10/11 remain partial. No new phone readiness check/reconnect or publication;
+October24 fixture remains past/unpublished and needs owner-approved future time.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -434,7 +471,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 311/311 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
+Latest iOS evidence: 322/322 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

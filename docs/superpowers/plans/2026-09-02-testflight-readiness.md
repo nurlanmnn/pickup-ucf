@@ -652,6 +652,16 @@ flows and reporting/metrics/alert ownership keep BETA-10 partial.
 
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
+October25 local device-token diagnostic slice: register/unregister RPCs and the
+PGRST202-only owner-filtered delete emit separate closed backend-stage records.
+No token/identity/error inputs logged; original calls/filters/errors and service
+rotation/retry/quarantine/account-transition behavior retained. Real-SDK red proof,
+focused33/33 and final full signed isolated322/322; Release build/analyzer,
+fresh-context final review and actual Logger schema/privacy check pass. See
+[contract/evidence](2026-10-25-device-token-diagnostics.md). Success means only a
+backend stage returned, not delivery or affected rows. Service decisions, realtime
+health, reporting/metrics/alerts and physical/provider acceptance remain open.
+
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
 
 **Problem:** Unit coverage is strong, but there is no automated UI suite covering the release-critical user journey.

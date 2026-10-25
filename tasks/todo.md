@@ -1,3 +1,12 @@
+October25: BETA-10 device-token backend diagnostics now distinguish register RPC,
+unregister RPC and the PGRST202-only owner-filtered fallback delete. Closed ten-field
+local JSON excludes tokens/identities/raw errors; original payloads, filters,
+errors and service retry/quarantine/account-transition behavior remain. Red proof
+29 missing-record assertions; focused33/33 and final full signed isolated322/322,
+unsigned Release build/analyzer and fresh-context review pass. Actual default
+Logger JSON schema/privacy checked. See [scope/evidence](../docs/superpowers/plans/2026-10-25-device-token-diagnostics.md).
+No APNs delivery or whole-account-cleanup claim; BETA-10/11 remain partial.
+
 October25: BETA-10 local auth restoration now emits one closed auth_operation
 record per currentSession invocation, distinguishing SDK session_missing,
 unavailable, verified, rejected cached/remote, invalidated, superseded and cached
