@@ -749,6 +749,84 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         do { try await repo.unregister(token: token); XCTFail() } catch {}
     }
 
+    func testLiveActivityRPCPreservesOriginalPayloadAndFreshAttemptForEveryInvocation() async throws {
+        let sessionID = UUID()
+        let (_, client) = makeClient { _ in (204, Data()) }
+        let repo = LiveActivityTokenRepository(client: client, diagnostics: .init { self.records.append($0) })
+        for _ in 0..<2 { try await repo.register(sessionId: sessionID, token: "  \(token)  ") }
+        XCTAssertEqual(requests.map { $0.url!.path }, Array(repeating: "/rest/v1/rpc/register_live_activity_token", count: 2))
+        for request in requests {
+            XCTAssertEqual(request.httpMethod, "POST")
+            let payload = try body(request)
+            XCTAssertEqual(Set(payload.keys), Set(["p_session_id", "p_apns_token"]))
+            XCTAssertEqual(payload["p_session_id"] as? String, sessionID.uuidString)
+            XCTAssertEqual(payload["p_apns_token"] as? String, "  \(token)  ")
+        }
+        XCTAssertEqual(records.map(\.operation), [.registerLiveActivityRPC, .registerLiveActivityRPC])
+        XCTAssertEqual(records.map(\.result), [.succeeded, .succeeded])
+        XCTAssertEqual(records.map(\.failure), [.none, .none])
+        XCTAssertEqual(Set(records.map(\.attemptID)).count, 2)
+        try assertLiveActivityPrivate(sessionID)
+    }
+
+    func testLiveActivityRPCRejectionPreservesErrorAndNeverUsesDeviceTokenFallback() async throws {
+        let sessionID = UUID()
+        for code in ["42501", "PGRST202"] {
+            records.removeAll(); requests.removeAll()
+            let (_, client) = makeClient { _ in self.failure(code, status: 404) }
+            let repo = LiveActivityTokenRepository(client: client, diagnostics: .init { self.records.append($0) })
+            do { try await repo.register(sessionId: sessionID, token: token); XCTFail() }
+            catch let error as PostgrestError {
+                XCTAssertEqual(error.code, code)
+                XCTAssertEqual(error.message, "private-server-message")
+            }
+            XCTAssertEqual(requests.map(\.httpMethod), ["POST"])
+            XCTAssertEqual(requests.map { $0.url!.path }, ["/rest/v1/rpc/register_live_activity_token"])
+            XCTAssertEqual(records.map(\.operation), [.registerLiveActivityRPC])
+            XCTAssertEqual(records.map(\.result), [.failed])
+            XCTAssertEqual(records.map(\.failure), [.backend])
+            try assertLiveActivityPrivate(sessionID)
+        }
+    }
+
+    func testLiveActivityTransportAndCancellationRetainOriginalErrors() async throws {
+        let sessionID = UUID()
+        for code in [URLError.notConnectedToInternet, .cancelled] {
+            records.removeAll(); requests.removeAll()
+            let (_, client) = makeClient { _ in throw URLError(code, userInfo: [NSLocalizedDescriptionKey: "private-error"]) }
+            let repo = LiveActivityTokenRepository(client: client, diagnostics: .init { self.records.append($0) })
+            do { try await repo.register(sessionId: sessionID, token: token); XCTFail() }
+            catch let error as URLError { XCTAssertEqual(error.code, code) }
+            XCTAssertEqual(requests.map(\.httpMethod), ["POST"])
+            XCTAssertEqual(records.map(\.operation), [.registerLiveActivityRPC])
+            XCTAssertEqual(records.map(\.result), [code == .cancelled ? .cancelled : .failed])
+            XCTAssertEqual(records.map(\.failure), [code == .cancelled ? .cancelled : .transport])
+            try assertLiveActivityPrivate(sessionID)
+        }
+    }
+
+    func testLiveActivityDefaultLoggerSmokeWithActualSDK() async throws {
+        var attempts = 0
+        let (_, client) = makeClient { _ in
+            attempts += 1
+            return attempts == 1 ? (204, Data()) : self.failure("42501")
+        }
+        let repo = LiveActivityTokenRepository(client: client)
+        let sessionID = UUID()
+        try await repo.register(sessionId: sessionID, token: token)
+        do { try await repo.register(sessionId: sessionID, token: token); XCTFail() }
+        catch let error as PostgrestError { XCTAssertEqual(error.code, "42501") }
+        XCTAssertEqual(requests.count, 2)
+    }
+
+    private func assertLiveActivityPrivate(_ sessionID: UUID) throws {
+        try assertPrivate()
+        for record in records {
+            XCTAssertFalse(record.json.contains(sessionID.uuidString))
+            XCTAssertNotEqual(record.attemptID, sessionID.uuidString)
+        }
+    }
+
     private func failure(_ code: String, status: Int = 403) -> (Int, Data) {
         (status, try! JSONSerialization.data(withJSONObject: ["code": code, "message": "private-server-message", "details": token, "hint": "private-url"]))
     }

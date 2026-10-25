@@ -1,3 +1,13 @@
+October25 evening: LiveActivityTokenRepository now uses existing closed local
+DeviceTokenDiagnostics for register_live_activity_rpc. Original RPC/payload/
+whitespace/errors remain; no fallback/retry/auth/ActivityKit change. Focused32/32
+and final full signed isolated340/340 pass, AX1/1 verified around restart and
+suite; unsigned Release build/analyzer pass. Actual focused/full Logger8 records
+each (2 activity-stage) checked for exact schema/privacy. Independent final review
+found no required issue. See [scope/evidence](../docs/superpowers/plans/2026-10-25-live-activity-token-diagnostics.md).
+This is backend-stage local evidence, not APNs delivery or physical lifecycle
+acceptance. Owner resumed work with15 percent remaining-usage stop threshold.
+
 October25: BETA-11 now has a bounded authenticated Debug-simulator UI fixture:
 one exact flag selects synthetic SDK session/in-memory storage/HTTP response
 allowlist and all existing isolation guards before views initialize. Real

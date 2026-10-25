@@ -95,26 +95,30 @@ protocol LiveActivityTokenRepositoryProtocol {
 
 final class LiveActivityTokenRepository: LiveActivityTokenRepositoryProtocol {
     private let client: SupabaseClient
+    private let diagnostics: DeviceTokenDiagnostics
 
-    init(client: SupabaseClient = SupabaseManager.shared) {
+    init(client: SupabaseClient = SupabaseManager.shared, diagnostics: DeviceTokenDiagnostics = .init()) {
+        self.diagnostics = diagnostics
         self.client = client
     }
 
     func register(sessionId: UUID, token: String) async throws {
-        try await client.rpc(
-            "register_live_activity_token",
-            params: LiveActivityTokenRegistrationParams(
-                sessionId: sessionId,
-                apnsToken: token
-            )
-        ).execute()
+        try await diagnostics.record(.registerLiveActivityRPC) {
+            try await client.rpc(
+                "register_live_activity_token",
+                params: LiveActivityTokenRegistrationParams(
+                    sessionId: sessionId,
+                    apnsToken: token
+                )
+            ).execute()
+        }
     }
 }
 
 /// An allowlisted local log schema: never serialize Error, SDK payloads or entity IDs.
 // Success describes only this backend stage returning, never delivery or affected rows.
 struct DeviceTokenDiagnostics {
-    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token" }
+    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token", registerLiveActivityRPC = "register_live_activity_rpc" }
     enum Result: String, Encodable { case succeeded, failed, cancelled }
     enum Failure: String, Encodable { case none, cancelled, transport, backend, decoding, localPolicy = "local_policy", unknown }
 

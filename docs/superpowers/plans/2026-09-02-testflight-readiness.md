@@ -650,6 +650,15 @@ and independent final review pass. Actual logs retain the closed privacy schema.
 See [scope and evidence](2026-10-25-restoration-diagnostics.md). Other critical
 flows and reporting/metrics/alert ownership keep BETA-10 partial.
 
+**Additional local evidence (October25 evening):** Live Activity token
+registration now emits an allowlisted register_live_activity_rpc operation in the
+existing device-token category. Exact RPC/params/errors remain, with no fallback,
+retry or ActivityKit changes. Focused32/32/full signed isolated340/340, Release
+build/analyzer, actual Logger schema/privacy checks and independent review pass.
+See [scope and evidence](2026-10-25-live-activity-token-diagnostics.md).
+This confirms only the backend stage, not physical ActivityKit/APNs lifecycle;
+broader diagnostic/reporting/alert gates remain open.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 October25 local device-token diagnostic slice: register/unregister RPCs and the

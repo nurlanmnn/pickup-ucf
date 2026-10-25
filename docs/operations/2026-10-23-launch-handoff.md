@@ -533,6 +533,34 @@ not its own file; only params encoding has explicit existing coverage. Source
 GameLiveActivityManager.registerPushToken currently catches repository failure via
 try?. No new spec/implementation for that next slice has been written.
 
+## October25 evening authorized resume and Live Activity token diagnostics
+
+Owner resumed continuous work, authorized Mirroring again, continuation chats
+when context fills, and requested stop at15 percent remaining usage. Treat this
+as overriding the previous paused state. Check account usage at major boundaries;
+stop if either applicable window reaches85 percent used. Never buy credits or
+consume reset credits. At resume, five-hour usage0 percent used and weekly15
+percent used (100/85 percent remaining). No new external CLI review authorized.
+
+Owner also authorized safe main push earlier in this parent chat: reviewed source
+througha828cdd was fast-forwarded to origin/main, verified. Later authenticated UI
+source93a4c18 is on codex/calendar-write-only. This does not authorize deployment,
+upload, invitations, credentials or deletion. Preserve exact source/physical gates.
+
+Completed the previously paused LiveActivityTokenRepository diagnostics WIP in
+existing DeviceTokenRepository.swift/tests: one additive register_live_activity_rpc
+operation uses existing closed ten-field schema. Exact RPC/params/whitespace,
+Void/errors remain; no fallback/retry/auth/ActivityKit caller changes. Focused
+32/32 evidence reused; final full signed isolated340/340, Release build/analyzer,
+actual focused/full Logger8 records each (2 activity-stage), and fresh-context
+final source/test review all pass. AX1/1 verified before/after restart and suite.
+See [contract/evidence](../superpowers/plans/2026-10-25-live-activity-token-diagnostics.md).
+Artifacts /tmp/pickup-activity-token-{red,focused,full}.{log,xcresult},
+/tmp/pickup-activity-token-release-analyze.log. No unchanged UI/SQL/Edge reruns.
+Broader BETA-10/11 gates remain partial. Next local P1: actual push-service cleanup/
+retry/quarantine decision diagnostics or a bounded additional authenticated UI
+workflow with explicit isolation; spec and meaningful red proof before changes.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -562,7 +590,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 336/336 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
+Latest iOS evidence: 340/340 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.
