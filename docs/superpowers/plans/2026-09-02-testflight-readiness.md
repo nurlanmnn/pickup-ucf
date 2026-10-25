@@ -681,7 +681,7 @@ reporting/metrics/alerts and other critical flows remain open.
 
 **Tasks:**
 
-- [ ] Create deterministic test accounts/data or a dedicated test backend strategy.
+- [x] Create deterministic test accounts/data or a dedicated test backend strategy (bounded synthetic read-only UI transport; broader workflows remain open).
 - [ ] Cover launch, authentication, onboarding, Discover, create, join, leave, chat, profile, block/report, sign-out, and account deletion.
 - [ ] Add accessibility identifiers without exposing implementation details to users.
 - [ ] Cover permission alerts and denial paths using controllable test state.
@@ -703,6 +703,15 @@ adding blank sign-up and password-reset blank/non-school-email validation and
 return to original sign-in. Backend URL/key remain absent; new screenshots
 inspected. Test-only increment; authenticated flows/permissions/CI/device gates
 remain open. See the same [UI plan](2026-10-24-ui-smoke.md).
+
+**October25 bounded authenticated evidence:** isolated UI gate7/7 adds real
+Discover/My Games upcoming/history/Profile reads and authenticated relaunch using
+a synthetic SDK session and in-memory HTTP fixture allowlist. No backend
+credentials; mutation/auth/unknown HTTP denied. My Games ActivityKit refresh is
+suppressed in UI mode. Signed isolated units336/336 and unsigned Release
+build/analyzer pass; screenshots and final fresh-context review verified. This
+covers synthetic tab navigation, not provider sign-in, authenticated mutation,
+permissions, CI or physical acceptance. See [contract/evidence](2026-10-25-authenticated-ui-smoke.md).
 
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 

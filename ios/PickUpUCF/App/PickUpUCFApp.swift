@@ -8,6 +8,13 @@ struct PickUpUCFApp: App {
 
     init() {
         AppTestMode.current.preparePreferences()
+        #if DEBUG && targetEnvironment(simulator)
+        if AppTestMode.current == .uiSmokeAuthenticated {
+            let state = AppState()
+            state.session = AuthenticatedUISmokeFixture.appSession
+            _appState = State(initialValue: state)
+        }
+        #endif
     }
 
     var body: some Scene {

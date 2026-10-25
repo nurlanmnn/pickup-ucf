@@ -5,14 +5,14 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(largestType: Bool = false) throws -> XCUIApplication {
+    private func launch(largestType: Bool = false, authenticated: Bool = false) throws -> XCUIApplication {
         #if !DEBUG || !targetEnvironment(simulator)
         throw XCTSkip("UI smoke requires a Debug simulator; do not launch the normal app")
         #endif
         let app = XCUIApplication()
         // This single argument must activate every isolation guard in the app.
         app.launchEnvironment.removeValue(forKey: "PICKUP_UNIT_TESTS")
-        app.launchArguments = ["--pickup-ui-smoke"]
+        app.launchArguments = [authenticated ? "--pickup-ui-smoke-authenticated" : "--pickup-ui-smoke"]
         if largestType {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
@@ -38,6 +38,28 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testAuthenticatedTabsReadSyntheticDataAndRelaunch() throws {
+        let app = try launch(authenticated: true)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))
+        attach(app, name: "Synthetic Discover")
+        tap(app.tabBars.buttons["My Games"], in: app)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))
+        tap(app.buttons.containing(.staticText, identifier: "Past games").firstMatch, in: app)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000022"].waitForExistence(timeout: 10))
+        attach(app, name: "Synthetic My Games history")
+        tap(app.tabBars.buttons["Profile"], in: app)
+        XCTAssertTrue(app.staticTexts["UI Smoke Student"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["profile-stat-games"].exists)
+        XCTAssertTrue(app.buttons["profile-stat-games"].label.contains("7"))
+        attach(app, name: "Synthetic Profile")
+        app.terminate()
+        let relaunched = try launch(authenticated: true)
+        XCTAssertTrue(relaunched.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))
+        let original = try launch()
+        XCTAssertTrue(original.buttons["welcome-continue"].exists)
+        XCTAssertFalse(original.tabBars.buttons["Profile"].exists)
     }
 
     func testIntroAndRelaunchStartDeterministically() throws {

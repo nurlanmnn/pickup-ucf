@@ -488,6 +488,51 @@ Broader BETA-10/11 remain partial; no production/device acceptance claimed.
 No phone readiness check/reconnect/publication; October24 fixture remains past and
 unpublished, and new future fixture time still requires owner approval.
 
+## October25 bounded authenticated UI fixture and navigation
+
+October25: BETA-11 now has a bounded authenticated Debug-simulator UI fixture:
+one exact flag selects synthetic SDK session/in-memory storage/HTTP response
+allowlist and all existing isolation guards before views initialize. Real
+Discover/My Games upcoming+history/Profile repositories and screens render
+synthetic data; My Games ActivityKit refresh is suppressed in UI mode. Auth,
+writes and unknown HTTP fail closed; no websocket isolation claim. Gate7/7 with
+built backend URL/key empty; new screenshots inspected. Final signed isolated
+units336/336 (AppConfig11/11, existing Keychain/four renderedAX), unsigned Release
+build/analyzer and final fresh-context review pass. Unsupported host builds ignore
+flag; Release fixture literals absent. See [scope/evidence](../superpowers/plans/2026-10-25-authenticated-ui-smoke.md).
+Broader workflows/permissions/CI/device/provider acceptance remain open; BETA-11
+partial. No production/phone/deployment/upload/account action.
+
+Factory and fixture remain in existing Core/SupabaseManager.swift, compiled only
+for Debug simulator. The new exact `--pickup-ui-smoke-authenticated` alternative
+alone selects all UI guards; original `--pickup-ui-smoke` remains unauthenticated.
+AppState is seeded directly from nil in app init, never via bootstrap coordinator.
+SDK session has explicit memory-only storageKey and fresh future expiry; no real
+restoration or persistent storage. One future/one past basketball game use launch-
+relative dates. UI uses existing session-open/profile-stat IDs and original controls.
+Only allowlisted synthetic-origin HTTP receives fixture JSON. Do not open chat
+under an assumption that URLProtocol blocks websocket. Non-HTTP effects outside
+the current tested tab navigation still need inspection before extending scope.
+
+Red policy test failed2 assertions; first focused SDK/repository path passed,
+while denial/storage test assumed local-scope SDK sign-out avoided HTTP. Corrected
+test now expects denied logout plus cleared local memory and independent clients.
+Final review caught fixture tests missing matching Debug/simulator compilation
+guards; fixed and re-reviewed. No remaining required issue. Cross-model skipped
+for autonomous continuation, no external CLI used. Artifacts:
+/tmp/pickup-auth-ui-{red,focused,smoke,full}.{log,xcresult};
+/tmp/pickup-auth-ui-release.log, /tmp/pickup-auth-ui-attachments/. UI run AX0/0
+was restored/restarted to1/1, verified before and after final full units.
+
+Next useful independent P1: remaining LiveActivityTokenRepository backend or
+PushNotificationService cleanup/retry-decision diagnostics, or another bounded UI
+workflow with explicit system-effect isolation and red proof. Avoid P2 polish and
+avoid pretending this fixture is full authenticated workflow coverage. Actual
+LiveActivityTokenRepository lives in Repositories/DeviceTokenRepository.swift,
+not its own file; only params encoding has explicit existing coverage. Source
+GameLiveActivityManager.registerPushToken currently catches repository failure via
+try?. No new spec/implementation for that next slice has been written.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -517,7 +562,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 333/333 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
+Latest iOS evidence: 336/336 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

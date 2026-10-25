@@ -209,6 +209,7 @@ enum GameLiveActivityCoordinator {
     }
 
     static func refresh(upcomingSessions: [PickupSession], now: Date = Date()) {
+        guard !AppTestMode.current.isUISmoke else { return }
         if #available(iOS 16.2, *) {
             Task { @MainActor in GameLiveActivityManager.refresh(upcomingSessions: upcomingSessions, now: now) }
         }

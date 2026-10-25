@@ -1,3 +1,16 @@
+October25: BETA-11 now has a bounded authenticated Debug-simulator UI fixture:
+one exact flag selects synthetic SDK session/in-memory storage/HTTP response
+allowlist and all existing isolation guards before views initialize. Real
+Discover/My Games upcoming+history/Profile repositories and screens render
+synthetic data; My Games ActivityKit refresh is suppressed in UI mode. Auth,
+writes and unknown HTTP fail closed; no websocket isolation claim. Gate7/7 with
+built backend URL/key empty; new screenshots inspected. Final signed isolated
+units336/336 (AppConfig11/11, existing Keychain/four renderedAX), unsigned Release
+build/analyzer and final fresh-context review pass. Unsupported host builds ignore
+flag; Release fixture literals absent. See [scope/evidence](../docs/superpowers/plans/2026-10-25-authenticated-ui-smoke.md).
+Broader workflows/permissions/CI/device/provider acceptance remain open; BETA-11
+partial. No production/phone/deployment/upload/account action.
+
 October25: BETA-10 local realtime subscription diagnostics now distinguish returned,
 failed, caller-cancelled and superseded attempts plus finite channel-status
 observations. Closed ten-field JSON excludes identifiers/content/URLs/raw errors;

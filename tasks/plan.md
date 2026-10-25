@@ -1,3 +1,5 @@
+October25 latest local increment: [authenticated UI smoke scope and verification](../docs/superpowers/plans/2026-10-25-authenticated-ui-smoke.md). Real repository-backed synthetic tab navigation passes7/7 UI and336/336 signed isolated units. BETA-11 remains partial; no release/deployment/device action.
+
 # Current work — Production deployed; iOS candidate acceptance next
 
 The owner authorized pushing current source and deploying required changes on

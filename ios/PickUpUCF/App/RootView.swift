@@ -28,7 +28,7 @@ struct RootView: View {
         .globalBannerOverlay(appState: appState)
         .overlay(alignment: .topLeading) {
             #if DEBUG && targetEnvironment(simulator)
-            if AppTestMode.current == .uiSmoke {
+            if AppTestMode.current.isUISmoke {
                 Color.clear.frame(width: 1, height: 1)
                     .accessibilityElement()
                     .accessibilityLabel("Isolated UI smoke")
