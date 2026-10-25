@@ -636,8 +636,18 @@ the broad structured-diagnostics task and other BETA-10 gates remain open.
 - [ ] Cover launch, authentication, onboarding, Discover, create, join, leave, chat, profile, block/report, sign-out, and account deletion.
 - [ ] Add accessibility identifiers without exposing implementation details to users.
 - [ ] Cover permission alerts and denial paths using controllable test state.
-- [ ] Add at least one largest-Dynamic-Type smoke path.
-- [ ] Run the suite in CI or as a documented release-gate command.
+- [x] Add at least one largest-Dynamic-Type smoke path.
+- [x] Run the suite in CI or as a documented release-gate command.
+
+**October 24 partial evidence:** First Debug simulator XCUITest lane passes 4/4
+with backend URL/key absent. A single UI flag selects the synthetic HTTP-denying
+client, no persistent auth storage, and skips restore/lifecycle/push side effects.
+The runner rejects unsupported builds before launch and verifies its isolation
+marker before actions. Actual Welcome intro/relaunch, account route replacement/
+email carry, blank sign-in validation and accessibility5 navigation are covered;
+retained screenshots inspected. See [scope, local gate and evidence](2026-10-24-ui-smoke.md).
+Authenticated workflows, controllable permission paths, CI and physical acceptance
+remain open. This does not close BETA-11.
 
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 

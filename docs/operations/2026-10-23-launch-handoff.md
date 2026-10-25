@@ -254,6 +254,38 @@ Phone work requires owner readiness reply in chat
 in the source chat, but remains unpublished after connection failure. Recheck the
 actual form and clock; approved schedule Oct24 11:30PM may become stale.
 
+## October 24 isolated UI smoke slice
+
+BETA-11 first slice is complete locally: 4/4 signed XCUITests with empty backend
+URL/key in the built app. Welcome intro/relaunch, account route replacement/email
+carry, blank sign-in validation and actual accessibility5 navigation pass. See
+[contract, command, reviews, screenshots and lane setup](../superpowers/plans/2026-10-24-ui-smoke.md).
+A single explicit Debug simulator-only flag selects the synthetic HTTP-denying
+client, discards auth storage, resets only welcomeIntroCompleted before Welcome
+construction, and skips restore/foreground/deep-link/push side effects. Root AX
+marker is required before test actions; unsupported runners skip before app launch.
+Normal/Release behavior remains unchanged. Original project IDs/order are preserved.
+
+The first post-UI full unit run reproduced four existing AX lookup failures; the
+established simulator now had ApplicationAccessibilityEnabled0/AccessibilityEnabled
+false. Restore 1/true and restart before the unit lane, as documented. Unchanged
+final source then passed **273/273**, including all four. No source/test weakening.
+Final UI run4/4 and unsigned Release simulator build/analyzer pass; final independent
+review found no required findings. Initial UI test query/transition failures are
+recorded in the plan. No SQL/Edge suites repeated or external/physical action taken.
+
+BETA-11 remains partial: authenticated flows/fixtures, permission paths, CI and
+physical acceptance are still open. Next useful independent P1: a focused remaining
+BETA-10 critical-auth diagnostic increment, with the same privacy/external-provider
+boundaries, or remaining deterministic BETA-11 paths. Spec, reproduce/test, review,
+commit and feature-branch push; execute concrete work, not only planning.
+
+Phone readiness still requires the human reply in chat
+`01a170f3-0159-7ad2-bc51-28fc4e37c08c`. No Mirroring reconnect or game publication
+occurred in this UI-smoke continuation. The approved Oct24 11:30PM fixture may
+become stale; inspect clock/form before submission and do not shift its time
+without owner approval. Continue independent work while readiness is absent.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -283,7 +315,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 270/270 signed isolated simulator tests on the established
+Latest iOS evidence: 273/273 signed isolated simulator tests plus 4/4 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October24). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.

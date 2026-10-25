@@ -48,11 +48,11 @@ enum AppConfig {
     }
 
     static var currentLaunchMode: AppLaunchMode {
-        launchMode(isConfigured: isConfigured)
+        launchMode(isConfigured: isConfigured, testMode: AppTestMode.current)
     }
 
-    static func launchMode(isConfigured: Bool) -> AppLaunchMode {
-        isConfigured ? .ready : .serviceUnavailable
+    static func launchMode(isConfigured: Bool, testMode: AppTestMode = .normal) -> AppLaunchMode {
+        (testMode == .uiSmoke || isConfigured) ? .ready : .serviceUnavailable
     }
 
     static func validatedSupabaseConfiguration(

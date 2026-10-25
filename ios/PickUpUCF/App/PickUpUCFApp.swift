@@ -6,6 +6,10 @@ struct PickUpUCFApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var appState = AppState()
 
+    init() {
+        AppTestMode.current.preparePreferences()
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -29,12 +33,13 @@ struct PickUpUCFApp: App {
                 if let url = activity.webpageURL { handleDeepLink(url) }
             }
             .onReceive(NotificationCenter.default.publisher(for: .pushDeepLink)) { note in
+                guard !AppTestMode.current.isIsolated else { return }
                 guard let target = note.object as? PushNavigationTarget else { return }
                 appState.queueSessionDeepLink(id: target.sessionId, openChat: target.openChat)
             }
             .task {
-                // Unit-test hosts must not restore a real account or touch the live backend.
-                guard !SupabaseManager.isUnitTestMode else { return }
+                // Isolated test hosts must not restore a real account or touch system/backend state.
+                guard !AppTestMode.current.isIsolated else { return }
                 await GameLiveActivityCoordinator.endExpired()
                 guard AppConfig.currentLaunchMode == .ready else { return }
                 if let session = await AuthRepository().currentSession() {
@@ -45,7 +50,7 @@ struct PickUpUCFApp: App {
                 }
             }
             .task(id: scenePhase) {
-                guard scenePhase == .active else { return }
+                guard !AppTestMode.current.isIsolated, scenePhase == .active else { return }
                 while !Task.isCancelled {
                     await GameLiveActivityCoordinator.endExpired()
                     await SessionNotificationCleanup.removeDelivered()
@@ -55,7 +60,7 @@ struct PickUpUCFApp: App {
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active else { return }
+                guard !AppTestMode.current.isIsolated, newPhase == .active else { return }
                 Task {
                     await GameLiveActivityCoordinator.endExpired()
                     await SessionNotificationCleanup.removeDelivered(resolveSessions: appState.isAuthenticated)
@@ -69,7 +74,7 @@ struct PickUpUCFApp: App {
     }
 
     private func handleDeepLink(_ url: URL) {
-        guard AppConfig.currentLaunchMode == .ready else { return }
+        guard !AppTestMode.current.isIsolated, AppConfig.currentLaunchMode == .ready else { return }
         guard let destination = DeepLinkRouter.destination(from: url) else { return }
         switch destination {
         case .confirmEmail, .resetPassword:

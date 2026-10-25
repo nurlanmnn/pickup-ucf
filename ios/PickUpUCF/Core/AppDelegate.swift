@@ -31,7 +31,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        UNUserNotificationCenter.current().delegate = self
+        if !AppTestMode.current.isIsolated {
+            UNUserNotificationCenter.current().delegate = self
+        }
         configureNavigationAppearance()
         return true
     }
@@ -57,6 +59,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
+        guard !AppTestMode.current.isIsolated else { return }
         Task { await PushNotificationService.shared.handleDeviceToken(deviceToken) }
     }
 
@@ -66,6 +69,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         defer { completionHandler() }
+        guard !AppTestMode.current.isIsolated else { return }
         let userInfo = response.notification.request.content.userInfo
         cleanUpCancelledSessionNotification(userInfo)
         guard let urlString = userInfo["url"] as? String,
@@ -83,6 +87,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
+        guard !AppTestMode.current.isIsolated else { completionHandler([]); return }
         cleanUpCancelledSessionNotification(notification.request.content.userInfo)
         // Preserve the existing behavior of suppressing banners while foregrounded.
         completionHandler([])
@@ -93,6 +98,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
+        guard !AppTestMode.current.isIsolated else { completionHandler(.noData); return }
         guard let sessionId = PushNotificationPayload.cleanupSessionId(from: userInfo) else {
             completionHandler(.noData)
             return

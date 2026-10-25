@@ -27,6 +27,7 @@
 		10E80F6B7F724F98164630C8 /* MyGamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166AA222FC219277946F518C /* MyGamesView.swift */; };
 		1128AC53CBBFB3A2F64C6B39 /* ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1361D112819B3647AC788DA8 /* ErrorBanner.swift */; };
 		186FB3C211DA4598B59FB99A /* ReportRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE62E7C4110693912E134B2 /* ReportRepository.swift */; };
+		198C61D34BE91684BF124228 /* AppTestMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B86A17B006B4D4F9607B152 /* AppTestMode.swift */; };
 		199B28EC70FCB85F00D90137 /* LocationGeocoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814D5D13EC16A4C047B628EB /* LocationGeocoding.swift */; };
 		1B672E71D18393A951CD9B3C /* AppSheetChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0B6B7F9F53ADF5895693D60 /* AppSheetChrome.swift */; };
 		1BD4A8F827E57FC5526C2E2D /* CustomLocationSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B1B677E948D2B276B4A142 /* CustomLocationSelection.swift */; };
@@ -183,6 +184,7 @@
 		E8A02339F8D72552982E891B /* SessionRosterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FEA5C6C56E7CA3C4380EAEE /* SessionRosterTests.swift */; };
 		EA561775D30DC16DE4F724A2 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15866006217050F82E09128A /* Colors.swift */; };
 		EAA822CF05AF2B43ED2BB315 /* Loadable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB3B21A7FC682C24BAB27D4 /* Loadable.swift */; };
+		EB4F82A3AE0D5789AB67FDA4 /* UnauthenticatedSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C25DE01E40F679D535C5B /* UnauthenticatedSmokeTests.swift */; };
 		EB726FF3D8A2726297F6352B /* AppScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C56623A93BFBBCA3EC1655B /* AppScreenBackground.swift */; };
 		ECCF1886BFFAC342354F8467 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA8D8C12AF455D452FF406E7 /* ChatViewModelTests.swift */; };
 		ED3EE1D7E2165A81F4613D9A /* PickUpUCFApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4AD665ACFD87DBEA7604F0 /* PickUpUCFApp.swift */; };
@@ -210,6 +212,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 60A522ED59512D6AAA70817B;
 			remoteInfo = PickUpUCFWidget;
+		};
+		BF77ABF0DC71CF6056BD708D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 12D276D6E5F3D157A24FE6F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A80EF440122C0DB25714CAA3;
+			remoteInfo = PickUpUCF;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -270,6 +279,7 @@
 		46639F1C4419568BEE244DE4 /* SessionShareLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareLinkTests.swift; sourceTree = "<group>"; };
 		46FED4FBE447F638AA69D5AE /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */ = {isa = PBXFileReference; path = Config.xcconfig.example; sourceTree = "<group>"; };
+		4EB5283FCF3490C4FE789585 /* PickUpUCFUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PickUpUCFUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F5FD253D340B1DE5C911072 /* CampusCoordinates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampusCoordinates.swift; sourceTree = "<group>"; };
 		5209F76A09A9DB9F3595EC3B /* HostProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostProfileView.swift; sourceTree = "<group>"; };
 		5462824DB4B20FBD66C9C7CE /* DiscoverMapZoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverMapZoomTests.swift; sourceTree = "<group>"; };
@@ -287,6 +297,7 @@
 		681E4E9B83433C28768915D6 /* SessionMapAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMapAnnotation.swift; sourceTree = "<group>"; };
 		699CE3048C4ED16348EC4831 /* PickupSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickupSession.swift; sourceTree = "<group>"; };
 		6A5616A4F608EF165021BC94 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		6B86A17B006B4D4F9607B152 /* AppTestMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTestMode.swift; sourceTree = "<group>"; };
 		6C46444DC8B9DB494A9E836E /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		6CE62E7C4110693912E134B2 /* ReportRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportRepository.swift; sourceTree = "<group>"; };
 		6EB3B21A7FC682C24BAB27D4 /* Loadable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loadable.swift; sourceTree = "<group>"; };
@@ -343,6 +354,7 @@
 		AE9C534A6A70166FEAB9A938 /* PickUpUCFWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PickUpUCFWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0B3B7BB32179124147A7E8C /* GameLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLiveActivityWidget.swift; sourceTree = "<group>"; };
 		B1503E7E8AF27404D42D8BFE /* AuthHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHeaderView.swift; sourceTree = "<group>"; };
+		B55C25DE01E40F679D535C5B /* UnauthenticatedSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnauthenticatedSmokeTests.swift; sourceTree = "<group>"; };
 		B61707B2862496D74F6D9F1B /* CommunityRulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityRulesView.swift; sourceTree = "<group>"; };
 		B62E8779F4471C7B04CC3240 /* AppErrorMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppErrorMapperTests.swift; sourceTree = "<group>"; };
 		B9DB577456BB3A11721D3025 /* GameCardButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCardButtonStyle.swift; sourceTree = "<group>"; };
@@ -575,6 +587,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5C5A7E46A9FDC4C912C501C7 /* PickUpUCFUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B55C25DE01E40F679D535C5B /* UnauthenticatedSmokeTests.swift */,
+			);
+			path = PickUpUCFUITests;
+			sourceTree = "<group>";
+		};
 		602C64A3F76F219E1178D3A5 /* CreateSession */ = {
 			isa = PBXGroup;
 			children = (
@@ -679,6 +699,7 @@
 			children = (
 				2CA8AE43E1632088B2201AAC /* PickUpUCF.app */,
 				A2EA57C67B7667952BF6E609 /* PickUpUCFTests.xctest */,
+				4EB5283FCF3490C4FE789585 /* PickUpUCFUITests.xctest */,
 				AE9C534A6A70166FEAB9A938 /* PickUpUCFWidget.appex */,
 			);
 			name = Products;
@@ -769,6 +790,7 @@
 				48AA0EB2FB453FBF2B14317C /* Config.xcconfig.example */,
 				D0C313F876C35242852CB8DE /* PickUpUCF */,
 				6097B8A860D25B72684D298C /* PickUpUCFTests */,
+				5C5A7E46A9FDC4C912C501C7 /* PickUpUCFUITests */,
 				CEB0FE613B94B40066A5D28F /* PickUpUCFWidget */,
 				03E3AB1542BA81DBAF8B8C37 /* Frameworks */,
 				83EF6F3D1A1631B4131B6BA7 /* Products */,
@@ -783,6 +805,7 @@
 				C75AEC731C5AE3F7108F2530 /* AppDelegate.swift */,
 				D41C9E0E6D554536AB5ED058 /* AppErrorMapper.swift */,
 				E25C9DBC7CDA3338A67BA0C7 /* AppPagination.swift */,
+				6B86A17B006B4D4F9607B152 /* AppTestMode.swift */,
 				8B86BB666C32A9DD066C8D55 /* AuthenticatedSessionCoordinator.swift */,
 				13875AD4C449C9382A26337D /* BlockedMessageFilter.swift */,
 				8B71AB4257B8B7D0256A1058 /* CalendarExportService.swift */,
@@ -873,7 +896,7 @@
 			path = MyGames;
 			sourceTree = "<group>";
 		};
-		"TEMP_ACFDE3FA-C2EC-42AC-BFDD-9EE55551D767" /* ios */ = {
+		"TEMP_4F3F376F-C736-4A7C-A2EB-500AFEE477F6" /* ios */ = {
 			isa = PBXGroup;
 			children = (
 				DAB46240077BFF47D91FFC1E /* Config.xcconfig */,
@@ -884,6 +907,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3A733130FE74A212C2ACC41B /* PickUpUCFUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A78970FDEB8B305E0C0BEB5F /* Build configuration list for PBXNativeTarget "PickUpUCFUITests" */;
+			buildPhases = (
+				326A98B29B159D013C30D6AF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21572727DEBC936CC7159F3A /* PBXTargetDependency */,
+			);
+			name = PickUpUCFUITests;
+			packageProductDependencies = (
+			);
+			productName = PickUpUCFUITests;
+			productReference = 4EB5283FCF3490C4FE789585 /* PickUpUCFUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		60A522ED59512D6AAA70817B /* PickUpUCFWidget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 29E23FFB918F702009E645D0 /* Build configuration list for PBXNativeTarget "PickUpUCFWidget" */;
@@ -951,6 +992,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					3A733130FE74A212C2ACC41B = {
+						DevelopmentTeam = AS53KCG63V;
+						ProvisioningStyle = Automatic;
+						TestTargetID = A80EF440122C0DB25714CAA3;
+					};
 					60A522ED59512D6AAA70817B = {
 						DevelopmentTeam = AS53KCG63V;
 						ProvisioningStyle = Automatic;
@@ -984,6 +1030,7 @@
 			targets = (
 				A80EF440122C0DB25714CAA3 /* PickUpUCF */,
 				8538E3DE7279F378E6E8724C /* PickUpUCFTests */,
+				3A733130FE74A212C2ACC41B /* PickUpUCFUITests */,
 				60A522ED59512D6AAA70817B /* PickUpUCFWidget */,
 			);
 		};
@@ -1015,6 +1062,7 @@
 				0D732B02EED4B7C11D5CD88E /* AppPagination.swift in Sources */,
 				EB726FF3D8A2726297F6352B /* AppScreenBackground.swift in Sources */,
 				1B672E71D18393A951CD9B3C /* AppSheetChrome.swift in Sources */,
+				198C61D34BE91684BF124228 /* AppTestMode.swift in Sources */,
 				BC2AF7D74E416D99689F8177 /* AppTheme.swift in Sources */,
 				CB2953FFC00998A4DCD1D9E3 /* AttendanceRepository.swift in Sources */,
 				EDF2ED66A840CFB60818DEF9 /* AttendanceSheet.swift in Sources */,
@@ -1149,6 +1197,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		326A98B29B159D013C30D6AF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB4F82A3AE0D5789AB67FDA4 /* UnauthenticatedSmokeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		77A9E68EB82A3B065F722284 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1210,6 +1266,11 @@
 			target = 60A522ED59512D6AAA70817B /* PickUpUCFWidget */;
 			targetProxy = 98180433862019A90552C752 /* PBXContainerItemProxy */;
 		};
+		21572727DEBC936CC7159F3A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A80EF440122C0DB25714CAA3 /* PickUpUCF */;
+			targetProxy = BF77ABF0DC71CF6056BD708D /* PBXContainerItemProxy */;
+		};
 		8061871CF18D21FA37B81F71 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A80EF440122C0DB25714CAA3 /* PickUpUCF */;
@@ -1218,6 +1279,27 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3F222D72798E7A32C778F5CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = AS53KCG63V;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PickUpUCF;
+			};
+			name = Debug;
+		};
 		63AC2EADE8F259FC9E6348BD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1404,6 +1486,27 @@
 			};
 			name = Release;
 		};
+		D6AE07D97C20E285C7C8C68D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = AS53KCG63V;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				PRODUCT_BUNDLE_IDENTIFIER = edu.ucf.pickup.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PickUpUCF;
+			};
+			name = Release;
+		};
 		F55B29C7775447D0C63186B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1486,6 +1589,15 @@
 			buildConfigurations = (
 				7E116C5F1D11A50746E3A2DB /* Debug */,
 				6672BDAA9155EA586673DEC4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A78970FDEB8B305E0C0BEB5F /* Build configuration list for PBXNativeTarget "PickUpUCFUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F222D72798E7A32C778F5CC /* Debug */,
+				D6AE07D97C20E285C7C8C68D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

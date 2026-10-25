@@ -124,6 +124,21 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: AS53KCG63V
+  PickUpUCFUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PickUpUCFUITests
+    dependencies:
+      - target: PickUpUCF
+    settings:
+      base:
+        SUPPORTED_PLATFORMS: iphonesimulator
+        PRODUCT_BUNDLE_IDENTIFIER: edu.ucf.pickup.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: AS53KCG63V
 schemes:
   PickUpUCF:
     build:
@@ -144,3 +159,11 @@ schemes:
       config: Debug
     archive:
       config: Release
+  PickUpUCFUISmoke:
+    build:
+      targets:
+        PickUpUCF: all
+    test:
+      config: Debug
+      targets:
+        - PickUpUCFUITests

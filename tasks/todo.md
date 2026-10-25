@@ -1,3 +1,15 @@
+October 24: BETA-11 first isolated XCUITest slice passes 4/4 with backend URL/key
+absent: Welcome intro/relaunch, account route replacement/email carry, blank
+sign-in validation and actual accessibility5 navigation. One Debug simulator-only
+flag automatically selects a synthetic HTTP-denying client, discards auth storage
+and skips restore/lifecycle/push side effects. Runner rejects unsupported builds
+before launch and asserts an isolation marker before actions. Screenshots inspected;
+independent review has no required findings. Signed isolated unit suite passes
+273/273 after restoring the simulator Accessibility prerequisite (post-UI run was
+0/false and reproduced four existing AX lookup failures). Unsigned Release
+simulator build/analyzer pass. See [scope, gate command and lane setup](../docs/superpowers/plans/2026-10-24-ui-smoke.md).
+Authenticated UI/permissions, CI and physical acceptance remain open; BETA-11 is partial.
+
 October 24: BETA-10 first local diagnostics slice now covers session create RPC,
 post-create read, edit/cancel/join/leave. Closed JSON fields, coarse error classes,
 monotonic duration and fresh attempt IDs (shared receipt/read, distinct retries)
@@ -19,8 +31,8 @@ progression, nonfuture schedule error and min capacity2 were observed on device.
 Physical Unicode input remains unverified due to Mirroring entry limitations.
 A labeled test-game form is prepared but unpublished, pending owner's explicit
 answer before creating a production-visible game. See updated build5 evidence.
-Next independent P1 work while waiting: focused BETA-10 privacy-safe diagnostics
-or BETA-11 fail-closed deterministic UI testing; keep optional P2 work deferred.
+Next independent P1 work while waiting: expand BETA-10 privacy-safe critical-auth
+diagnostics or the remaining isolated BETA-11 paths; keep optional P2 work deferred.
 
 October 24: push outbox transport failure no longer aborts later recipients;
 failed database acknowledgements no longer inflate the sent count. Both defects
