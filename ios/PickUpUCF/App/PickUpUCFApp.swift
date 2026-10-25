@@ -117,6 +117,12 @@ struct PushNavigationTarget: Equatable {
 
 @Observable
 final class AppState {
+    private let linkDiagnostics: SessionLinkDiagnostics
+
+    init(linkDiagnostics: SessionLinkDiagnostics = .init()) {
+        self.linkDiagnostics = linkDiagnostics
+    }
+
     var session: AppSession? {
         didSet {
             if let previous = oldValue, previous.userId != session?.userId {
@@ -199,21 +205,33 @@ final class AppState {
     }
 
     func queueSessionDeepLink(id: UUID, openChat: Bool = false) {
+        let attempt = SessionLinkDiagnostics.Attempt()
         sessionDetailOpenChatId = openChat ? id : nil
         if isAuthenticated {
             presentSessionDetail(id: id, on: .discover)
+            linkDiagnostics.finish(.queueAssigned, attempt: attempt)
         } else {
             pendingSessionDeepLink = id
             pendingSessionDeepLinkOpenChat = openChat
+            linkDiagnostics.finish(.queueDeferred, attempt: attempt)
         }
     }
 
     func consumePendingSessionDeepLinkIfNeeded() {
-        guard let id = pendingSessionDeepLink, isAuthenticated else { return }
+        let attempt = SessionLinkDiagnostics.Attempt()
+        guard let id = pendingSessionDeepLink else {
+            linkDiagnostics.finish(.resumeNoPending, attempt: attempt)
+            return
+        }
+        guard isAuthenticated else {
+            linkDiagnostics.finish(.resumeWaitingForAuth, attempt: attempt)
+            return
+        }
         let openChat = pendingSessionDeepLinkOpenChat
         pendingSessionDeepLink = nil
         pendingSessionDeepLinkOpenChat = false
         queueSessionDeepLink(id: id, openChat: openChat)
+        linkDiagnostics.finish(.resumeAssigned, attempt: attempt)
     }
 
     func consumeSessionDetailOpenChat(for sessionId: UUID) -> Bool {

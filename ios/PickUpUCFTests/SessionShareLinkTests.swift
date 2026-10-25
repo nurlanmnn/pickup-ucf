@@ -144,3 +144,147 @@ private final class RecoveryAuthSpy: AuthRepositoryProtocol {
     func handleAuthDeepLink(url: URL) async throws {}
     func currentSession() async -> AppSession? { nil }
 }
+
+final class SessionLinkDiagnosticsTests: XCTestCase {
+    private var records: [SessionLinkDiagnostics.Record] = []
+
+    func testConfirmedQueueAssignsBeforeEmissionAndPreservesOneShotChat() throws {
+        let id = UUID()
+        let state = AppState(linkDiagnostics: .init { self.records.append($0) })
+        state.session = AppSession(userId: UUID(), email: "private@ucf.edu", isEmailConfirmed: true)
+        state.queueSessionDeepLink(id: id, openChat: true)
+        XCTAssertEqual(state.sessionDetailDeepLink, id)
+        XCTAssertEqual(state.sessionDetailDeepLinkTarget, .discover)
+        XCTAssertNil(state.pendingSessionDeepLink)
+        state.clearSessionDetailDeepLink()
+        XCTAssertTrue(state.consumeSessionDetailOpenChat(for: id))
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: id))
+        XCTAssertEqual(records.map(\.operation), [.queueSession])
+        XCTAssertEqual(records.map(\.result), [.assigned])
+        try assertPrivate([id])
+    }
+
+    func testMissingAndUnconfirmedAuthenticationDeferAndReplacePendingIntent() throws {
+        let first = UUID(), second = UUID()
+        let state = AppState(linkDiagnostics: .init { self.records.append($0) })
+        state.queueSessionDeepLink(id: first, openChat: true)
+        XCTAssertEqual(state.pendingSessionDeepLink, first)
+        XCTAssertTrue(state.pendingSessionDeepLinkOpenChat)
+        state.session = AppSession(userId: UUID(), email: "private@ucf.edu", isEmailConfirmed: false)
+        state.queueSessionDeepLink(id: second)
+        XCTAssertEqual(state.pendingSessionDeepLink, second)
+        XCTAssertFalse(state.pendingSessionDeepLinkOpenChat)
+        XCTAssertNil(state.sessionDetailDeepLink)
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: first))
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: second))
+        XCTAssertEqual(records.map(\.result), [.deferred, .deferred])
+        XCTAssertEqual(Set(records.map(\.attemptID)).count, 2)
+        try assertPrivate([first, second])
+    }
+
+    func testResumeGuardPrecedenceKeepsPendingStateUntilConfirmed() throws {
+        let id = UUID(), user = UUID()
+        let state = AppState(linkDiagnostics: .init { self.records.append($0) })
+        state.consumePendingSessionDeepLinkIfNeeded()
+        state.queueSessionDeepLink(id: id, openChat: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        state.session = AppSession(userId: user, email: "private@ucf.edu", isEmailConfirmed: false)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertEqual(state.pendingSessionDeepLink, id)
+        XCTAssertTrue(state.pendingSessionDeepLinkOpenChat)
+        XCTAssertNil(state.sessionDetailDeepLink)
+        state.session = AppSession(userId: user, email: "private@ucf.edu", isEmailConfirmed: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertNil(state.pendingSessionDeepLink)
+        XCTAssertFalse(state.pendingSessionDeepLinkOpenChat)
+        XCTAssertEqual(state.sessionDetailDeepLink, id)
+        XCTAssertTrue(state.consumeSessionDetailOpenChat(for: id))
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: id))
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertEqual(records.map(\.operation), [.resumePending, .queueSession, .resumePending, .resumePending, .queueSession, .resumePending, .resumePending])
+        XCTAssertEqual(records.map(\.result), [.noPending, .deferred, .waitingForAuth, .waitingForAuth, .assigned, .resumed, .noPending])
+        XCTAssertEqual(Set(records.map(\.attemptID)).count, 7)
+        try assertPrivate([id, user])
+    }
+
+    func testCompletionSinkObservesStateUpdatesAndNestedResumeOrder() throws {
+        let id = UUID()
+        weak var observedState: AppState?
+        let state = AppState(linkDiagnostics: .init { record in
+            guard let state = observedState else { return XCTFail("Missing state") }
+            switch record.result {
+            case .deferred:
+                XCTAssertEqual(state.pendingSessionDeepLink, id)
+                XCTAssertTrue(state.pendingSessionDeepLinkOpenChat)
+            case .assigned, .resumed:
+                XCTAssertNil(state.pendingSessionDeepLink)
+                XCTAssertFalse(state.pendingSessionDeepLinkOpenChat)
+                XCTAssertEqual(state.sessionDetailDeepLink, id)
+            default: XCTFail("Unexpected completion")
+            }
+            self.records.append(record)
+        })
+        observedState = state
+        state.queueSessionDeepLink(id: id, openChat: true)
+        state.session = AppSession(userId: UUID(), email: "private@ucf.edu", isEmailConfirmed: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertEqual(records.map(\.result), [.deferred, .assigned, .resumed])
+        try assertPrivate([id])
+    }
+
+    func testAccountChangeStillClearsDeferredNavigationAndChatIntent() throws {
+        let id = UUID(), user = UUID()
+        let state = AppState(linkDiagnostics: .init { self.records.append($0) })
+        state.session = AppSession(userId: user, email: "private@ucf.edu", isEmailConfirmed: false)
+        state.queueSessionDeepLink(id: id, openChat: true)
+        state.session = AppSession(userId: UUID(), email: "other-private@ucf.edu", isEmailConfirmed: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertNil(state.pendingSessionDeepLink)
+        XCTAssertFalse(state.pendingSessionDeepLinkOpenChat)
+        XCTAssertNil(state.sessionDetailDeepLink)
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: id))
+        XCTAssertEqual(records.map(\.result), [.deferred, .noPending])
+        try assertPrivate([id, user])
+    }
+
+    func testAuthenticatedQueueRetainsExistingPendingAndReplacesChatIntent() throws {
+        let pending = UUID(), current = UUID()
+        let state = AppState(linkDiagnostics: .init { self.records.append($0) })
+        state.queueSessionDeepLink(id: pending, openChat: true)
+        state.session = AppSession(userId: UUID(), email: "private@ucf.edu", isEmailConfirmed: true)
+        state.queueSessionDeepLink(id: current)
+        XCTAssertEqual(state.pendingSessionDeepLink, pending)
+        XCTAssertTrue(state.pendingSessionDeepLinkOpenChat)
+        XCTAssertEqual(state.sessionDetailDeepLink, current)
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: pending))
+        XCTAssertFalse(state.consumeSessionDetailOpenChat(for: current))
+        XCTAssertEqual(records.map(\.result), [.deferred, .assigned])
+        try assertPrivate([pending, current])
+    }
+
+    func testDefaultLoggerAtActualStateHandoff() {
+        let state = AppState(), id = UUID()
+        state.consumePendingSessionDeepLinkIfNeeded()
+        state.queueSessionDeepLink(id: id, openChat: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        state.session = AppSession(userId: UUID(), email: "private@ucf.edu", isEmailConfirmed: true)
+        state.consumePendingSessionDeepLinkIfNeeded()
+        XCTAssertEqual(state.sessionDetailDeepLink, id)
+    }
+
+    private func assertPrivate(_ ids: [UUID], file: StaticString = #filePath, line: UInt = #line) throws {
+        XCTAssertFalse(records.isEmpty, file: file, line: line)
+        for record in records {
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(record.json.utf8)) as? [String: Any])
+            XCTAssertEqual(Set(json.keys), Set(["event", "operation", "result", "failure", "attempt_id", "duration_ms", "version", "build", "configuration", "environment"]), file: file, line: line)
+            XCTAssertEqual(json["event"] as? String, "session_link_handoff", file: file, line: line)
+            XCTAssertEqual(json["failure"] as? String, "none", file: file, line: line)
+            XCTAssertEqual(json["environment"] as? String, "unit_test", file: file, line: line)
+            XCTAssertNotNil(UUID(uuidString: record.attemptID), file: file, line: line)
+            XCTAssertGreaterThanOrEqual(record.durationMS, 0, file: file, line: line)
+            for secret in ids.map(\.uuidString) + ["private", "https:", "pickupucf:", "open_chat"] {
+                XCTAssertFalse(record.json.contains(secret), file: file, line: line)
+            }
+        }
+    }
+}

@@ -686,3 +686,15 @@ severity omission and timing-test scheduling flake; no remaining findings. See
 [scope/evidence](../superpowers/plans/2026-10-25-push-registration-decisions.md).
 BETA-10/11 remain partial; no production/provider/device acceptance or deployment.
 
+## October25 session-link handoff diagnostics
+
+October25 evening: AppState session-link queue/resume now emits closed local
+handoff decisions (assigned/deferred/no pending/waiting for auth/resumed) after
+existing state updates. IDs/URLs/chat intent excluded; original auth guard,
+pending replacement/retention, nested queue order, reset and one-shot chat remain.
+Red16 missing-record assertions, focused17/17, final signed isolated365/365,
+unsigned Release build/analyzer, actual Logger7 records/all5 decisions schema/
+privacy and independent design/final review pass. AX1/1 around restart/suite. See
+[scope/evidence](../superpowers/plans/2026-10-25-session-link-handoff-diagnostics.md).
+Assignment does not prove rendered destination, authorization, delivery or device
+acceptance; BETA-10/11 remain partial. No external/production/provider/phone action.

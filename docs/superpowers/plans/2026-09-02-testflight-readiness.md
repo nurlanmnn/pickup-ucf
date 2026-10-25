@@ -709,6 +709,13 @@ privacy and independent review pass. See
 [scope and limits](2026-10-25-push-registration-decisions.md).
 Local service decisions do not prove APNs delivery; BETA-10 remains partial.
 
+**October25 session-link handoff:** actual AppState queue/resume emits finite
+local decisions after existing state updates. Identifiers/URLs/intent excluded;
+no parsing/auth/UI behavior changed. Focused17/17, final signed isolated365/365,
+unsigned Release build/analyzer, actual Logger schema/privacy and independent
+reviews pass. See [scope/evidence](2026-10-25-session-link-handoff-diagnostics.md).
+Assigned navigation is not rendered destination or delivery; BETA-10 partial.
+
 ## BETA-11 — Add an XCUITest smoke suite (**P1**)
 
 **Problem:** Unit coverage is strong, but there is no automated UI suite covering the release-critical user journey.
