@@ -10,8 +10,15 @@ struct AuthOperationDiagnostics {
         case passwordReset = "password_reset", passwordUpdate = "password_update"
         case changePasswordReauthenticate = "change_password_reauthenticate"
         case changePasswordUpdate = "change_password_update", callbackExchange = "callback_exchange"
+        case restore
     }
-    enum Result: String, Encodable { case succeeded, failed, cancelled }
+    enum Result: String, Encodable {
+        case succeeded, failed, cancelled
+        // Restoration decisions, never inferred from a successful SDK substep.
+        case sessionMissing = "session_missing", unavailable, verified
+        case rejectedCached = "rejected_cached", rejectedRemote = "rejected_remote"
+        case invalidated, superseded, cachedFallback = "cached_fallback"
+    }
     enum Failure: String, Encodable { case none, cancelled, transport, backend, decoding, localPolicy = "local_policy", unknown }
 
     /// Generated per repository invocation; change-password's reauthentication/write share it. Retries get a new ID.
@@ -75,16 +82,25 @@ struct AuthOperationDiagnostics {
             emit(.succeeded, .none)
             return value
         } catch {
-            let failure: Failure
-            if error is CancellationError || (error as? URLError)?.code == .cancelled { failure = .cancelled }
-            else if error is URLError { failure = .transport }
-            else if error is AuthError { failure = .backend }
-            else if error is AuthRepositoryError { failure = .localPolicy }
-            else if error is DecodingError { failure = .decoding }
-            else { failure = .unknown }
+            let failure = Self.failure(for: error)
             emit(failure == .cancelled ? .cancelled : .failed, failure)
             throw error
         }
+    }
+
+    func finishRestoration(result: Result, failure: Failure, attempt: Attempt, startedAt: TimeInterval) {
+        sink(Record(operation: .restore, result: result, failure: failure,
+                    attemptID: attempt.id.uuidString,
+                    durationMS: Int(max(0, ProcessInfo.processInfo.systemUptime - startedAt) * 1000)))
+    }
+
+    static func failure(for error: Error) -> Failure {
+        if error is CancellationError || (error as? URLError)?.code == .cancelled { return .cancelled }
+        if error is URLError { return .transport }
+        if error is AuthError { return .backend }
+        if error is AuthRepositoryError { return .localPolicy }
+        if error is DecodingError { return .decoding }
+        return .unknown
     }
 
     private static func write(_ record: Record) {

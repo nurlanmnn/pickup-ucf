@@ -369,6 +369,42 @@ read existing tests and SDK boundaries, spec and reproduce useful cases first.
 Remaining deterministic authenticated UI fixture strategy is also open; never
 launch against live backend. Preserve all deployment/upload/owner-only gates.
 
+## October25 auth restoration diagnostics
+
+currentSession now emits one finite auth_operation restoration decision after
+original guards/cleanup: session_missing (SDK cause unavailable), unavailable,
+verified, rejected_cached/rejected_remote, invalidated, superseded or
+cached_fallback. Never generic succeeded for nil or cached fallback. Original
+SDK requests, mapping, local signout/error suppression and account guards remain.
+Superseded includes SDK-cleared cache; cleanup outcomes do not claim removal.
+See [contract/evidence](../superpowers/plans/2026-10-25-restoration-diagnostics.md).
+
+Eight initial real-SDK red tests failed only on absent records. First focused27
+had two expectation failures from automatic SDK invalidation cleanup; corrected
+explicit SDK-versus-repository cleanup expectations, no policy/assertion weakening.
+Focused28/28 then passed. Final review caught absent-cache cause overclaim; renamed
+the result session_missing and added expired refresh invalidation plus failing
+logout regressions. Final full signed isolated **311/311** passes (11 restore,
+16 existing auth diagnostics and three persistence/Keychain cases). Restarted
+established16e and verified AX1/1 first. Unsigned Release build/analyzer pass.
+Actual focused/full auth log records checked for exact ten fields/privacy.
+Independent final follow-up review reports no required issues. Cross-model option
+offered asynchronously, no CLI invoked. Artifacts /tmp/pickup-restore-{red,focused,
+verified,full}.log, focused/verified/full xcresults and release-analyze.log.
+No unchanged UI/SQL/Edge suites repeated or phone/backend/account action taken.
+
+Next concrete independent P1: inspect notification token registration/cleanup
+observability at actual DeviceTokenRepository/PushNotificationService boundaries,
+including unregister RPC's owner-filtered PGRST202 fallback, ignored token-rotation
+cleanup, retry/quarantine and account-transition ordering. Avoid claiming backend
+registration means APNs delivery or whole local cleanup succeeded; preserve every
+payload/filter/order/guard/error and never log APNs/entity tokens or SDK errors.
+Spec before code; meaningful synthetic regressions, fresh review, appropriate
+checks and authorized feature-branch commit/push. Deterministic authenticated UI
+fixture strategy is another open useful slice. No P2/broad abstraction.
+BETA-10/11 remain partial. October24 game fixture is past and unpublished; no new
+readiness check/reconnect. New fixture time requires owner approval.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -398,8 +434,8 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 300/300 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
-iPhone16e lane and unsigned Release simulator build/analyzer (October24). October 24 relevant Edge evidence is 31/31 typechecked push/auth
+Latest iOS evidence: 311/311 signed isolated simulator tests plus 6/6 credential-free XCUITests on the established
+iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.
 Do not install a development build over TestFlight build 5 without owner intent.

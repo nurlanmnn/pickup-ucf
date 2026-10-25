@@ -629,8 +629,7 @@ closed local auth_operation records; change-password reauthentication/write shar
 an ephemeral attempt ID, while retries get fresh IDs. No credentials, identities,
 URLs or raw SDK errors are serialized. Focused16/16/full signed isolated289/289,
 unsigned Release simulator build/analyzer and independent review pass. See
-[scope and evidence](2026-10-24-auth-diagnostics.md). Restoration diagnostics,
-other flows, centralized reporting/metrics/alert ownership remain open.
+[scope and evidence](2026-10-24-auth-diagnostics.md). Other flows, centralized reporting/metrics/alert ownership remain open.
 
 **Additional local evidence (October25):** chat repository first/older pages,
 send and targeted updates now emit closed local chat_operation JSON. Requests,
@@ -640,6 +639,16 @@ unsigned Release simulator build/analyzer pass; independent reviews have no
 required findings. See [scope and evidence](2026-10-25-chat-diagnostics.md).
 This does not establish realtime subscription/delivery or full refresh health;
 remaining flows/reporting/metrics/alerts keep BETA-10 open.
+
+**Additional local evidence (October25):** currentSession restoration now emits
+one finite decision after original guards/cleanup: SDK session_missing (cause
+unknown), unavailable, verified, rejected cached/remote, invalidated, superseded
+(including SDK-cleared cache), or cached fallback. No false succeeded result;
+requests, policy, cleanup and error suppression remain. Focused28/28 before final
+additions and final full signed isolated311/311, unsigned Release build/analyzer
+and independent final review pass. Actual logs retain the closed privacy schema.
+See [scope and evidence](2026-10-25-restoration-diagnostics.md). Other critical
+flows and reporting/metrics/alert ownership keep BETA-10 partial.
 
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 

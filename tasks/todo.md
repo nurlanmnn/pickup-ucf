@@ -1,3 +1,13 @@
+October25: BETA-10 local auth restoration now emits one closed auth_operation
+record per currentSession invocation, distinguishing SDK session_missing,
+unavailable, verified, rejected cached/remote, invalidated, superseded and cached
+fallback. Original SDK requests, guards, cleanup and error suppression remain;
+SDK-cleared cache/absence causes are not inferred. Focused28/28 before final
+additions, final full signed isolated311/311 (11 restore tests), unsigned Release
+build/analyzer and independent final review pass. Actual Logger schema/privacy
+checked. See [contract/evidence](../docs/superpowers/plans/2026-10-25-restoration-diagnostics.md).
+No deployment/upload/phone/account action. BETA-10/11 remain partial.
+
 October25: BETA-10 local chat diagnostics now distinguish first/older page reads,
 send (session lookup+insert), and targeted message/author reconciliation reads.
 Closed ten-field local chat_operation JSON excludes content/identities/cursors/

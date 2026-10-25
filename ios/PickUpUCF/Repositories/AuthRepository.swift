@@ -137,9 +137,32 @@ final class AuthRepository: AuthRepositoryProtocol {
     }
 
     func currentSession() async -> AppSession? {
-        guard let session = try? await client.auth.session,
-              let cached = try? mapSession(session) else { return nil }
+        let attempt = AuthOperationDiagnostics.Attempt()
+        let startedAt = ProcessInfo.processInfo.systemUptime
+        var result = AuthOperationDiagnostics.Result.unavailable
+        var failure = AuthOperationDiagnostics.Failure.none
+        defer { diagnostics.finishRestoration(result: result, failure: failure, attempt: attempt, startedAt: startedAt) }
+
+        let session: Session
+        do { session = try await client.auth.session }
+        catch {
+            if let error = error as? AuthError, case .sessionMissing = error {
+                result = .sessionMissing
+            } else {
+                failure = AuthOperationDiagnostics.failure(for: error)
+            }
+            return nil
+        }
+        let cached: AppSession
+        do { cached = try mapSession(session) }
+        catch {
+            result = .rejectedCached
+            failure = AuthOperationDiagnostics.failure(for: error)
+            return nil
+        }
         guard cached.isEmailConfirmed else {
+            result = .rejectedCached
+            failure = .localPolicy
             try? await client.auth.signOut(scope: .local)
             return nil
         }
@@ -147,19 +170,35 @@ final class AuthRepository: AuthRepositoryProtocol {
             // A persisted JWT can outlive account deletion. Check the current
             // server user before restoring it, without treating offline as deletion.
             let user = try await client.auth.user(jwt: session.accessToken)
-            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            guard client.auth.currentUser?.id == session.user.id else {
+                result = .superseded
+                return nil
+            }
             let current = try mapUser(user)
             guard current.userId == cached.userId, current.isEmailConfirmed else {
+                result = .rejectedRemote
+                failure = .localPolicy
                 try? await client.auth.signOut(scope: .local)
                 return nil
             }
+            result = .verified
             return current
         } catch let error as AuthError where [ErrorCode.userNotFound, .sessionNotFound, .sessionExpired, .badJWT, .refreshTokenNotFound].contains(error.errorCode) {
-            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            failure = AuthOperationDiagnostics.failure(for: error)
+            guard client.auth.currentUser?.id == session.user.id else {
+                result = .superseded
+                return nil
+            }
+            result = .invalidated
             try? await client.auth.signOut(scope: .local)
             return nil
         } catch {
-            guard client.auth.currentUser?.id == session.user.id else { return nil }
+            failure = AuthOperationDiagnostics.failure(for: error)
+            guard client.auth.currentUser?.id == session.user.id else {
+                result = .superseded
+                return nil
+            }
+            result = .cachedFallback
             return cached
         }
     }
