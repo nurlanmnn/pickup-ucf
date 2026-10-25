@@ -30,6 +30,7 @@ final class UserDefaultsDeviceTokenStore: DeviceTokenStoring {
 final class PushNotificationService: NSObject {
     static let shared = PushNotificationService()
     private let tokenRepository: DeviceTokenRepositoryProtocol
+    private let diagnostics: DeviceTokenDiagnostics
     private let tokenStore: DeviceTokenStoring
     private let registerForRemoteNotifications: @MainActor () -> Void
     private let unregisterForRemoteNotifications: @MainActor () -> Void
@@ -52,10 +53,12 @@ final class PushNotificationService: NSObject {
         endLiveActivities: @escaping @MainActor () async -> Void = {
             await GameLiveActivityCoordinator.endAllForAccountTransition()
         },
+        diagnostics: DeviceTokenDiagnostics = .init(),
         authorizationStatus: @escaping @MainActor () async -> UNAuthorizationStatus = {
             await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         }
     ) {
+        self.diagnostics = diagnostics
         self.tokenRepository = tokenRepository
         self.tokenStore = tokenStore
         self.registerForRemoteNotifications = registerForRemoteNotifications
@@ -115,6 +118,7 @@ final class PushNotificationService: NSObject {
     }
 
     func unregisterForAccountTransition() async throws {
+        let attempt = DeviceTokenDiagnostics.Attempt()
         acceptsTokenRegistration = false
         let token = tokenStore.token
         await endLiveActivities()
@@ -122,22 +126,27 @@ final class PushNotificationService: NSObject {
         await pendingRegistration?.value
         guard let token else {
             tokenStore.requiresServerRecovery = false
+            diagnostics.finishCleanup(.noStoredToken, attempt: attempt)
             return
         }
 
+        var returnedAfterRetry = false
         do {
             try await tokenRepository.unregister(token: token)
         } catch {
             do {
                 try await tokenRepository.unregister(token: token)
+                returnedAfterRetry = true
             } catch {
                 tokenStore.requiresServerRecovery = true
+                diagnostics.finishCleanup(.recoveryRequired(error), attempt: attempt)
                 throw error
             }
         }
 
         tokenStore.token = nil
         tokenStore.requiresServerRecovery = false
+        diagnostics.finishCleanup(returnedAfterRetry ? .returnedAfterRetry : .returnedFirstAttempt, attempt: attempt)
     }
 
     func prepareForMissingSession() async {

@@ -659,6 +659,15 @@ See [scope and evidence](2026-10-25-live-activity-token-diagnostics.md).
 This confirms only the backend stage, not physical ActivityKit/APNs lifecycle;
 broader diagnostic/reporting/alert gates remain open.
 
+**Additional local evidence (October25 evening):** account-transition push token
+cleanup emits one finite completion decision: no stored token, first return,
+return after retry, or recovery required. Original ordering, captured token,
+bounded retry and second-error identity preserved; gated queue/activity/timing
+and cancellation coverage. Focused44/44, final signed isolated347/347, Release
+build/analyzer, actual Logger schema/privacy and fresh reviews pass. See
+[scope/evidence](2026-10-25-push-cleanup-diagnostics.md). Other service decisions,
+whole-account/device/provider health and reporting/metrics/alerts remain open.
+
 **Done when:** The team can diagnose critical beta failures from privacy-safe evidence without asking testers to reproduce everything manually.
 
 October25 local device-token diagnostic slice: register/unregister RPCs and the

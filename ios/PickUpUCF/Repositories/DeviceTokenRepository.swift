@@ -118,12 +118,22 @@ final class LiveActivityTokenRepository: LiveActivityTokenRepositoryProtocol {
 /// An allowlisted local log schema: never serialize Error, SDK payloads or entity IDs.
 // Success describes only this backend stage returning, never delivery or affected rows.
 struct DeviceTokenDiagnostics {
-    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token", registerLiveActivityRPC = "register_live_activity_rpc" }
-    enum Result: String, Encodable { case succeeded, failed, cancelled }
+    enum Operation: String, Encodable { case registerRPC = "register_rpc", unregisterRPC = "unregister_rpc", deleteOwnedToken = "delete_owned_token", registerLiveActivityRPC = "register_live_activity_rpc", accountTransitionCleanup = "account_transition_cleanup" }
+    enum Result: String, Encodable { case succeeded, failed, cancelled
+        case noStoredToken = "no_stored_token", returnedFirstAttempt = "returned_first_attempt", returnedAfterRetry = "returned_after_retry", recoveryRequired = "recovery_required"
+    }
     enum Failure: String, Encodable { case none, cancelled, transport, backend, decoding, localPolicy = "local_policy", unknown }
 
     /// Fresh per invocation; unregister RPC and optional compatibility delete share it.
-    struct Attempt { fileprivate let id = UUID() }
+    struct Attempt {
+        fileprivate let id = UUID()
+        fileprivate let start = ProcessInfo.processInfo.systemUptime
+    }
+
+    enum CleanupOutcome {
+        case noStoredToken, returnedFirstAttempt, returnedAfterRetry
+        case recoveryRequired(Error)
+    }
 
     struct Record: Encodable {
         let event = "device_token_operation"
@@ -183,21 +193,39 @@ struct DeviceTokenDiagnostics {
             emit(.succeeded, .none)
             return value
         } catch {
-            let failure: Failure
-            if error is CancellationError || (error as? URLError)?.code == .cancelled { failure = .cancelled }
-            else if error is URLError { failure = .transport }
-            else if error is PostgrestError || error is AuthError { failure = .backend }
-            else if error is DeviceTokenRepositoryError { failure = .localPolicy }
-            else if error is DecodingError { failure = .decoding }
-            else { failure = .unknown }
+            let failure = Self.classify(error)
             emit(failure == .cancelled ? .cancelled : .failed, failure)
             throw error
         }
     }
 
+    /// Service completion, including local cleanup and queued-registration wait.
+    func finishCleanup(_ outcome: CleanupOutcome, attempt: Attempt) {
+        let result: Result
+        let failure: Failure
+        switch outcome {
+        case .noStoredToken: result = .noStoredToken; failure = .none
+        case .returnedFirstAttempt: result = .returnedFirstAttempt; failure = .none
+        case .returnedAfterRetry: result = .returnedAfterRetry; failure = .none
+        case .recoveryRequired(let error): result = .recoveryRequired; failure = Self.classify(error)
+        }
+        sink(Record(operation: .accountTransitionCleanup, result: result, failure: failure,
+                    attemptID: attempt.id.uuidString,
+                    durationMS: Int(max(0, ProcessInfo.processInfo.systemUptime - attempt.start) * 1000)))
+    }
+
+    private static func classify(_ error: Error) -> Failure {
+        if error is CancellationError || (error as? URLError)?.code == .cancelled { return .cancelled }
+        if error is URLError { return .transport }
+        if error is PostgrestError || error is AuthError { return .backend }
+        if error is DeviceTokenRepositoryError { return .localPolicy }
+        if error is DecodingError { return .decoding }
+        return .unknown
+    }
+
     private static func write(_ record: Record) {
         // Public only because every field above is closed/allowlisted; no raw error or input.
-        if record.result == .failed { logger.error("\(record.json, privacy: .public)") }
+        if record.result == .failed || record.result == .recoveryRequired { logger.error("\(record.json, privacy: .public)") }
         else { logger.info("\(record.json, privacy: .public)") }
     }
 }

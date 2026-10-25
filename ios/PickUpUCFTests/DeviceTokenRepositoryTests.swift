@@ -371,6 +371,7 @@ private final class InMemoryDeviceTokenStore: DeviceTokenStoring {
 }
 
 private final class RecordingDeviceTokenRepository: DeviceTokenRepositoryProtocol {
+    private let registerHook: (() async -> Void)?
     private let registerError: Error?
     private let unregisterError: Error?
     private var registerResults: [Result<Void, Error>]
@@ -383,8 +384,10 @@ private final class RecordingDeviceTokenRepository: DeviceTokenRepositoryProtoco
         registerError: Error? = nil,
         unregisterError: Error? = nil,
         registerResults: [Result<Void, Error>] = [],
-        unregisterResults: [Result<Void, Error>] = []
+        unregisterResults: [Result<Void, Error>] = [],
+        registerHook: (() async -> Void)? = nil
     ) {
+        self.registerHook = registerHook
         self.registerError = registerError
         self.unregisterError = unregisterError
         self.registerResults = registerResults
@@ -394,6 +397,7 @@ private final class RecordingDeviceTokenRepository: DeviceTokenRepositoryProtoco
     func register(token: String) async throws {
         registeredTokens.append(token)
         actions.append("register:\(token)")
+        await registerHook?()
         if !registerResults.isEmpty {
             try registerResults.removeFirst().get()
             return
@@ -740,6 +744,200 @@ final class DeviceTokenDiagnosticsTests: XCTestCase {
         try assertPrivate()
     }
 
+    @MainActor
+    func testCleanupDecisionReportsFirstReturnThenNoStoredTokenWithFreshIDs() async throws {
+        let (repo, _) = makeClient { _ in (204, Data()) }
+        let store = InMemoryDeviceTokenStore(token: token, requiresServerRecovery: true)
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        var events: [String] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: { events.append("local") },
+            endLiveActivities: { events.append("activity") }, diagnostics: .init {
+                XCTAssertNil(store.token)
+                XCTAssertFalse(store.requiresServerRecovery)
+                events.append("diagnostic")
+                cleanup.append($0)
+            })
+        try await service.unregisterForAccountTransition()
+        try await service.unregisterForAccountTransition()
+        XCTAssertEqual(events, ["activity", "local", "diagnostic", "activity", "local", "diagnostic"])
+        XCTAssertEqual(requests.map { $0.url!.lastPathComponent }, ["unregister_device_token"])
+        XCTAssertEqual(cleanup.map(\.result), [.returnedFirstAttempt, .noStoredToken])
+        XCTAssertEqual(cleanup.map(\.failure), [.none, .none])
+        XCTAssertEqual(Set(cleanup.map(\.attemptID)).count, 2)
+        XCTAssertTrue(Set(cleanup.map(\.attemptID)).isDisjoint(with: records.map(\.attemptID)))
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupDecisionReportsRetryReturnAfterStateCleared() async throws {
+        var attempts = 0
+        let (repo, _) = makeClient { _ in
+            attempts += 1
+            return attempts == 1 ? self.failure("42501") : (204, Data())
+        }
+        let store = InMemoryDeviceTokenStore(token: token, requiresServerRecovery: true)
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init {
+                XCTAssertNil(store.token)
+                XCTAssertFalse(store.requiresServerRecovery)
+                cleanup.append($0)
+            })
+        try await service.unregisterForAccountTransition()
+        XCTAssertEqual(requests.map { $0.url!.lastPathComponent }, ["unregister_device_token", "unregister_device_token"])
+        XCTAssertEqual(records.map(\.result), [.failed, .succeeded])
+        XCTAssertEqual(cleanup.map(\.result), [.returnedAfterRetry])
+        XCTAssertEqual(cleanup.map(\.failure), [.none])
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupDecisionReportsRecoveryAndPreservesSecondSDKError() async throws {
+        var attempts = 0
+        let (repo, _) = makeClient { _ in
+            attempts += 1
+            return self.failure(attempts == 1 ? "42501" : "23503")
+        }
+        let store = InMemoryDeviceTokenStore(token: token)
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init {
+                XCTAssertEqual(store.token, self.token)
+                XCTAssertTrue(store.requiresServerRecovery)
+                cleanup.append($0)
+            })
+        do { try await service.unregisterForAccountTransition(); XCTFail() }
+        catch let error as PostgrestError { XCTAssertEqual(error.code, "23503"); XCTAssertEqual(error.message, "private-server-message") }
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(cleanup.map(\.result), [.recoveryRequired])
+        XCTAssertEqual(cleanup.map(\.failure), [.backend])
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(store.token, "ab")
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupDecisionRetainsRetryPolicyAndCancellationErrorIdentity() async throws {
+        let first = NSError(domain: "private-first", code: 17)
+        let second = NSError(domain: NSURLErrorDomain, code: URLError.cancelled.rawValue,
+                             userInfo: [NSLocalizedDescriptionKey: "private-second"])
+        let repo = RecordingDeviceTokenRepository(unregisterResults: [.failure(first), .failure(second)])
+        let store = InMemoryDeviceTokenStore(token: token)
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init { cleanup.append($0) })
+        do { try await service.unregisterForAccountTransition(); XCTFail() }
+        catch { XCTAssertTrue(error as NSError === second) }
+        XCTAssertEqual(repo.unregisteredTokens, [token, token])
+        XCTAssertEqual(store.token, token)
+        XCTAssertTrue(store.requiresServerRecovery)
+        XCTAssertEqual(cleanup.map(\.result), [.recoveryRequired])
+        XCTAssertEqual(cleanup.map(\.failure), [.cancelled])
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupWaitsForPendingRegistrationAndKeepsCapturedToken() async throws {
+        let gate = DeviceRegistrationGate()
+        let activityGate = DeviceRegistrationGate()
+        let repo = RecordingDeviceTokenRepository(registerHook: { await gate.wait() })
+        let store = InMemoryDeviceTokenStore(token: token)
+        let localCleanup = expectation(description: "local cleanup before queued wait")
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        var events: [String] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {
+                events.append("local"); localCleanup.fulfill()
+            }, endLiveActivities: { events.append("activity"); await activityGate.wait() },
+            diagnostics: .init { events.append("diagnostic"); cleanup.append($0) })
+        let registration = Task { await service.registerStoredTokenIfAvailable() }
+        await gate.waitUntilStarted()
+        let transition = Task { try await service.unregisterForAccountTransition() }
+        await activityGate.waitUntilStarted()
+        let activityStart = ProcessInfo.processInfo.systemUptime
+        try await Task.sleep(nanoseconds: 30_000_000)
+        let activityHeld = ProcessInfo.processInfo.systemUptime - activityStart
+        XCTAssertEqual(events, ["activity"])
+        XCTAssertTrue(cleanup.isEmpty)
+        await activityGate.release()
+        await fulfillment(of: [localCleanup], timeout: 2)
+        XCTAssertEqual(events, ["activity", "local"])
+        XCTAssertTrue(repo.unregisteredTokens.isEmpty)
+        XCTAssertTrue(cleanup.isEmpty)
+        // A post-transition callback persists a replacement but cannot upload it.
+        await service.handleDeviceToken(Data([0xab]))
+        XCTAssertEqual(store.token, "ab")
+        XCTAssertEqual(repo.registeredTokens, [token])
+        let registrationStart = ProcessInfo.processInfo.systemUptime
+        try await Task.sleep(nanoseconds: 30_000_000)
+        let registrationHeld = ProcessInfo.processInfo.systemUptime - registrationStart
+        await gate.release()
+        await registration.value
+        try await transition.value
+        XCTAssertEqual(repo.actions, ["register:\(token)", "unregister:\(token)"])
+        XCTAssertEqual(events, ["activity", "local", "diagnostic"])
+        XCTAssertNil(store.token)
+        XCTAssertFalse(store.requiresServerRecovery)
+        XCTAssertEqual(cleanup.map(\.result), [.returnedFirstAttempt])
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(cleanup.first).durationMS,
+                                    Int((activityHeld + registrationHeld) * 1000) - 2)
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupRetriesFirstAttemptCancellationAndReturnsAfterRetry() async throws {
+        let repo = RecordingDeviceTokenRepository(unregisterResults: [.failure(CancellationError()), .success(())])
+        let store = InMemoryDeviceTokenStore(token: token, requiresServerRecovery: true)
+        var cleanup: [DeviceTokenDiagnostics.Record] = []
+        let service = PushNotificationService(tokenRepository: repo, tokenStore: store,
+            registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {},
+            diagnostics: .init { cleanup.append($0) })
+        try await service.unregisterForAccountTransition()
+        XCTAssertEqual(repo.unregisteredTokens, [token, token])
+        XCTAssertNil(store.token)
+        XCTAssertFalse(store.requiresServerRecovery)
+        XCTAssertEqual(cleanup.map(\.result), [.returnedAfterRetry])
+        XCTAssertEqual(cleanup.map(\.failure), [.none])
+        try assertCleanupPrivate(cleanup)
+    }
+
+    @MainActor
+    func testCleanupDefaultLoggerSmokeAtActualServiceBoundary() async throws {
+        for outcome in 0..<3 {
+            var calls = 0
+            let (repo, _) = makeClient { _ in
+                calls += 1
+                return outcome == 0 || (outcome == 1 && calls > 1) ? (204, Data()) : self.failure("42501")
+            }
+            let service = PushNotificationService(tokenRepository: repo, tokenStore: InMemoryDeviceTokenStore(token: token),
+                registerForRemoteNotifications: {}, unregisterForRemoteNotifications: {}, endLiveActivities: {})
+            do { try await service.unregisterForAccountTransition(); XCTAssertNotEqual(outcome, 2) }
+            catch { XCTAssertEqual(outcome, 2) }
+            if outcome == 0 { try await service.unregisterForAccountTransition() }
+        }
+    }
+
+    private func assertCleanupPrivate(_ cleanup: [DeviceTokenDiagnostics.Record], file: StaticString = #filePath, line: UInt = #line) throws {
+        XCTAssertFalse(cleanup.isEmpty, file: file, line: line)
+        for record in cleanup {
+            XCTAssertEqual(record.operation, .accountTransitionCleanup, file: file, line: line)
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(record.json.utf8)) as? [String: Any])
+            XCTAssertEqual(Set(json.keys), Set(["event", "operation", "result", "failure", "attempt_id", "duration_ms", "version", "build", "configuration", "environment"]), file: file, line: line)
+            XCTAssertEqual(json["event"] as? String, "device_token_operation", file: file, line: line)
+            XCTAssertEqual(json["environment"] as? String, "unit_test", file: file, line: line)
+            XCTAssertNotNil(UUID(uuidString: record.attemptID), file: file, line: line)
+            XCTAssertGreaterThanOrEqual(record.durationMS, 0, file: file, line: line)
+            for secret in ["private", token, userID.uuidString, "PGRST202", "42501", "23503", "https:"] {
+                XCTAssertFalse(record.json.contains(secret), file: file, line: line)
+            }
+        }
+    }
+
     func testDefaultLoggerSmokeWithRealSDKStages() async throws {
         let (repo, _) = makeClient(capture: false) { request in
             if request.url!.path.hasSuffix("/register_device_token") { return (204, Data()) }
@@ -908,4 +1106,27 @@ private final class DeviceDiagnosticRequest: URLProtocol {
         } catch { client?.urlProtocol(self, didFailWithError: error) }
     }
     override func stopLoading() {}
+}
+
+private actor DeviceRegistrationGate {
+    private var pending: CheckedContinuation<Void, Never>?
+    private var started: CheckedContinuation<Void, Never>?
+
+    func wait() async {
+        await withCheckedContinuation { continuation in
+            pending = continuation
+            started?.resume()
+            started = nil
+        }
+    }
+
+    func waitUntilStarted() async {
+        if pending != nil { return }
+        await withCheckedContinuation { started = $0 }
+    }
+
+    func release() {
+        pending?.resume()
+        pending = nil
+    }
 }

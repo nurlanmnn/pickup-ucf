@@ -1,3 +1,15 @@
+October25 evening: PushNotificationService account-transition cleanup now emits
+one closed device-token diagnostic after original state updates: no stored token,
+first return, return after existing retry, or recovery required after second error.
+Local/queued cleanup duration and fresh non-entity UUID; exact token capture,
+retry/error precedence, registration guard and recovery behavior preserved. Red14
+missing-record assertions; focused44/44 and final signed isolated347/347, Release
+build/analyzer, actual Logger20 records (12 cleanup) schema/privacy and independent
+review pass. Review coverage gaps fixed with gated activity/pending registration,
+captured-token/timing and first-attempt cancellation tests. See
+[scope/evidence](../docs/superpowers/plans/2026-10-25-push-cleanup-diagnostics.md).
+BETA-10/11 remain partial; no production/provider/phone/deployment/upload action.
+
 October25 evening physical follow-up: owner-approved8PM temporary game was
 published and app-reported Calendar export succeeded. Mirroring then disconnected;
 Calendar details/physical cancellation/Live Activity remain unverified. The exact

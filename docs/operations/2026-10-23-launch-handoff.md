@@ -595,6 +595,20 @@ at major boundaries, compare remaining=100-used (15 percent used is NOT stop).
 Never buy/consume reset credits. New phone work requires actual reconnection;
 there is no current approval to publish another game or shift the approved time.
 
+## October25 push-service cleanup diagnostics
+
+October25 evening: PushNotificationService account-transition cleanup now emits
+one closed device-token diagnostic after original state updates: no stored token,
+first return, return after existing retry, or recovery required after second error.
+Local/queued cleanup duration and fresh non-entity UUID; exact token capture,
+retry/error precedence, registration guard and recovery behavior preserved. Red14
+missing-record assertions; focused44/44 and final signed isolated347/347, Release
+build/analyzer, actual Logger20 records (12 cleanup) schema/privacy and independent
+review pass. Review coverage gaps fixed with gated activity/pending registration,
+captured-token/timing and first-attempt cancellation tests. See
+[scope/evidence](../superpowers/plans/2026-10-25-push-cleanup-diagnostics.md).
+BETA-10/11 remain partial; no production/provider/phone/deployment/upload action.
+
 ## Remaining work and gates
 
 The focused independent BETA-13 client edit/read audit is complete for the
@@ -624,7 +638,7 @@ launch-critical defect first and keep compatibility/legacy cancellation intact.
 
 For iOS tests preserve `PICKUP_UNIT_TESTS=1`, bootstrap skip, synthetic shared
 client and HTTP-denying URLProtocol. Never run a test host against live bootstrap.
-Latest iOS evidence: 340/340 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
+Latest iOS evidence: 347/347 signed isolated simulator tests plus 7/7 credential-free XCUITests on the established
 iPhone16e lane and unsigned Release simulator build/analyzer (October25). October 24 relevant Edge evidence is 31/31 typechecked push/auth
 tests; the unchanged weather tests retain prior evidence. New Swift
 changes justify appropriate focused/full verification.
