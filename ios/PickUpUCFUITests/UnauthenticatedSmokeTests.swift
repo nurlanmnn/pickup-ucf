@@ -62,6 +62,58 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         XCTAssertFalse(original.tabBars.buttons["Profile"].exists)
     }
 
+    func testAuthenticatedCreateDraftValidationBackAndDiscard() throws {
+        let app = try launch(authenticated: true)
+        tap(app.tabBars.buttons["Create"], in: app)
+        XCTAssertTrue(app.navigationBars["Create session"].waitForExistence(timeout: 5))
+        // Discover's filter has the same label behind the sheet; scope to this step.
+        let sportStep = app.scrollViews.containing(.staticText, identifier: "What are you playing?").firstMatch
+        tap(sportStep.buttons["Other"], in: app)
+        tap(app.buttons["Next"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Enter a sport name (e.g. pickleball)."].waitForExistence(timeout: 5))
+        attach(app, name: "Create draft empty sport validation")
+
+        let sportName = app.textFields["Sport name"]
+        tap(sportName, in: app)
+        sportName.typeText("Smoke badminton")
+        tap(app.buttons["Done"], in: app)
+        tap(app.buttons["In 2 hours"], in: app)
+        tap(app.buttons["Next"], in: app)
+        XCTAssertTrue(app.staticTexts["No campus venues are available. Choose a custom location below."].waitForExistence(timeout: 5))
+        tap(app.buttons["Next"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Search on the map and choose where you're playing."].waitForExistence(timeout: 5))
+        attach(app, name: "Create draft missing location validation")
+
+        tap(app.buttons["Back"], in: app)
+        XCTAssertTrue(sportName.waitForExistence(timeout: 5))
+        XCTAssertEqual(sportName.value as? String, "Smoke badminton")
+        tap(app.navigationBars["Create session"].buttons["Close"], in: app)
+        XCTAssertTrue(app.buttons["Discard"].waitForExistence(timeout: 5))
+        attach(app, name: "Create draft discard confirmation")
+        // This iOS popover omits the cancel-role button; tapping outside cancels.
+        // The field is intentionally blocked by the modal, so use its visible
+        // position as an outside-popover tap rather than asking XCTest to hit it.
+        sportName.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let confirmationGone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: app.buttons["Discard"])
+        wait(for: [confirmationGone], timeout: 5)
+        XCTAssertTrue(sportName.waitForExistence(timeout: 5))
+        XCTAssertEqual(sportName.value as? String, "Smoke badminton")
+        tap(app.navigationBars["Create session"].buttons["Close"], in: app)
+        tap(app.buttons["Discard"], in: app)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.navigationBars["Create session"].exists)
+
+        tap(app.tabBars.buttons["Create"], in: app)
+        XCTAssertTrue(app.navigationBars["Create session"].waitForExistence(timeout: 5))
+        tap(sportStep.buttons["Other"], in: app)
+        XCTAssertTrue(sportName.waitForExistence(timeout: 5))
+        XCTAssertEqual(sportName.value as? String, "Sport name", "Discard must remove the unsaved sport name")
+        attach(app, name: "Create draft reopened without discarded name")
+        tap(app.navigationBars["Create session"].buttons["Close"], in: app)
+        tap(app.buttons["Discard"], in: app)
+    }
+
     func testIntroAndRelaunchStartDeterministically() throws {
         let app = try launch()
         XCTAssertTrue(app.buttons["welcome-continue"].exists)

@@ -1,3 +1,12 @@
+October26: create-draft credential-free UI smoke now covers actual Other-name
+validation, empty-venue/missing-pin validation, Back retention, cancel/discard and
+reopen reset. Focused1/1 and expanded signed UI8/8 pass; screenshots inspected,
+built backend URL/key empty, final independent review clean. Test-only change;
+prior product365/365/Release evidence retained. Sport error exists below initial
+viewport; separate validation-scroll regression follows. No submission/provider/
+physical acceptance or external action. BETA-11 partial. See
+[scope/evidence](../docs/superpowers/plans/2026-10-25-create-draft-ui-smoke.md).
+
 October25 evening: AppState session-link queue/resume now emits closed local
 handoff decisions (assigned/deferred/no pending/waiting for auth/resumed) after
 existing state updates. IDs/URLs/chat intent excluded; original auth guard,

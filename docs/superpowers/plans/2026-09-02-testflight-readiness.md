@@ -754,6 +754,13 @@ build/analyzer pass; screenshots and final fresh-context review verified. This
 covers synthetic tab navigation, not provider sign-in, authenticated mutation,
 permissions, CI or physical acceptance. See [contract/evidence](2026-10-25-authenticated-ui-smoke.md).
 
+**October26 draft-navigation evidence:** credential-free signed UI gate8/8 adds
+Other-name/missing-pin validation, Back retention, confirmation cancellation,
+discard and reopen reset. Actual screenshots inspected; no submit/fixture change.
+Error AX existence does not prove visibility; observed sport-error scroll target
+is tracked separately. No product source change; prior365/365/Release retained.
+See [scope/evidence](2026-10-25-create-draft-ui-smoke.md). Broader BETA-11 stays open.
+
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
 ## BETA-12 — Match the launch screen to the app experience (**P2**)
