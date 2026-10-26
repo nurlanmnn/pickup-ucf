@@ -760,3 +760,16 @@ shapes. HTTP URLProtocol interception alone does not prove websocket isolation.
 This is a next-slice review requirement, not a reproduced defect in the existing
 bounded tab/form/draft smoke contract. No implementation started. Latest UI lane
 left simulator AX0/0; restore/restart/check before any later signed full unit run.
+
+## October26 manual simulator/physical-phone check
+
+Current local Release simulator plus signed-in physical phone passed the bounded
+two-account core: creation/discovery after refresh, join/full roster, leave/rejoin,
+two-way chat and host notes persistence. Owner confirmed Lock Screen Live Activity
+appearance and disappearance after host cancellation. Exact fixture is cancelled
+and has zero active Activity tokens. Background chat alert did not arrive despite
+two B-recipient chat rows marked sent and one registered alert token; do not close
+notification delivery/navigation. Block/unblock, B edited-notes rendering, exact
+phone candidate parity and iOS17/two-physical-device acceptance remain open.
+No source/deploy/upload/provider change. See
+[manual evidence](../testflight/2026-10-26-hybrid-device-check.md).

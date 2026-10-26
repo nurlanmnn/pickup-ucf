@@ -1,3 +1,14 @@
+October26 manual hybrid check: current local Release simulator A plus physical
+phone B passed create/discover after refresh, join/full roster, leave/rejoin,
+two-way chat, host notes persistence, owner-attested Lock Screen Live Activity
+appearance and disappearance after cancellation. Background chat notification
+did not arrive; delivery remains open despite sent outbox rows and B having one
+alert token. Exact fixture cancelled through host UI; server confirmed cancelled
+and zero active Activity tokens. Block/unblock and edited-notes rendering on B
+remain untested. Phone exact-candidate parity and iOS17/two-physical-device gates
+remain open. No deploy/upload/source change. See
+[manual evidence](../docs/testflight/2026-10-26-hybrid-device-check.md).
+
 October26: unauthenticated account-route UI now verifies two test-authored Sign In
 password drafts are discarded across Sign Up replacement and Back-to-Welcome,
 while email carries unchanged and destination password fields remain empty.
