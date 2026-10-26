@@ -1,3 +1,13 @@
+October26: unauthenticated account-route UI now verifies two test-authored Sign In
+password drafts are discarded across Sign Up replacement and Back-to-Welcome,
+while email carries unchanged and destination password fields remain empty.
+Focused1/1 and final credential-free UI10/10 pass; screenshots inspected, built
+URL/key empty, final review clean. Exact native Save/Update Password sheets are
+declined using Not Now only. Sign Up Strong Password entry remains unclaimed.
+Test-only change; prior367/367/Release retained. BETA-11 partial; no real account/
+provider/phone action. See
+[scope/evidence](../docs/superpowers/plans/2026-10-26-account-route-drafts.md).
+
 October26: actual synthetic Settings password/username local validation UI exposed
 password draft retention after Back/reopen. Bound-value red confirmed by old
 mismatch feedback after completed transition. Clear only three password strings

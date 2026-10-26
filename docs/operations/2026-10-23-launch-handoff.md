@@ -733,3 +733,15 @@ Release build/analyzer and fresh reviews pass. Review found/fixed gate-hang risk
 Screenshots inspected, built UI URL/key empty, AX restored/restarted1/1 around
 units. No valid account submission/provider/phone action; BETA-11 remains partial.
 See [scope/evidence](../superpowers/plans/2026-10-26-account-form-ui-smoke.md).
+
+## October26 Sign In drafts across account navigation
+
+October26: unauthenticated account-route UI now verifies two test-authored Sign In
+password drafts are discarded across Sign Up replacement and Back-to-Welcome,
+while email carries unchanged and destination password fields remain empty.
+Focused1/1 and final credential-free UI10/10 pass; screenshots inspected, built
+URL/key empty, final review clean. Exact native Save/Update Password sheets are
+declined using Not Now only. Sign Up Strong Password entry remains unclaimed.
+Test-only change; prior367/367/Release retained. BETA-11 partial; no real account/
+provider/phone action. See
+[scope/evidence](../superpowers/plans/2026-10-26-account-route-drafts.md).

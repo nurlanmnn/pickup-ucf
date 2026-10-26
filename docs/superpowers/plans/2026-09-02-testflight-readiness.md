@@ -776,6 +776,14 @@ build/analyzer and independent review pass. Screenshots inspected, URL/key empty
 See [scope/evidence](2026-10-26-account-form-ui-smoke.md). No actual account/provider
 update, deletion/signout or physical acceptance; broader BETA-11 remains partial.
 
+**October26 account-route draft evidence:** two authored Sign In password drafts
+are discarded across route replacement/Welcome; email carry and empty destination
+password fields pass. Exact native save/update sheets declined with Not Now.
+Focused1/1 and final credential-free UI10/10, inspected screenshots and independent
+review pass. Test-only; prior367/367/Release retained. Sign Up Strong Password entry
+and provider/physical acceptance remain open. See
+[scope/evidence](2026-10-26-account-route-drafts.md).
+
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
 ## BETA-12 — Match the launch screen to the app experience (**P2**)

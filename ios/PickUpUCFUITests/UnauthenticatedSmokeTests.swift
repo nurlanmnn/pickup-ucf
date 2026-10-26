@@ -226,21 +226,60 @@ final class UnauthenticatedSmokeTests: XCTestCase {
 
     func testAccountSwitchCarriesEmailAndReplacesRoute() throws {
         let app = try launch()
+        func declinePasswordPromptIfPresented() {
+            let prompt = app.sheets.matching(NSPredicate(
+                format: "label IN %@", ["Save Password?", "Update Password?"])).firstMatch
+            guard prompt.waitForExistence(timeout: 2) else { return }
+            prompt.buttons["Not Now"].tap()
+            let promptGone = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "exists == false"), object: prompt)
+            wait(for: [promptGone], timeout: 5)
+        }
         tap(app.buttons["welcome-sign-in"], in: app)
         let email = app.textFields["UCF email"]
         XCTAssertTrue(email.waitForExistence(timeout: 5))
         email.tap()
         email.typeText("ui-smoke@ucf.edu")
+        tap(app.secureTextFields["Password"], in: app)
+        let signInDraft = "synthetic-signin-draft"
+        app.secureTextFields["Password"].typeText(signInDraft)
+        XCTAssertEqual((app.secureTextFields["Password"].value as? String)?.count, signInDraft.count)
         tap(app.buttons["Done"], in: app)
         tap(app.buttons["sign-in-switch-to-sign-up"], in: app)
         XCTAssertTrue(app.textFields["Display name"].waitForExistence(timeout: 5))
+        let signInGone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: app.buttons["sign-in-switch-to-sign-up"])
+        wait(for: [signInGone], timeout: 5)
+        declinePasswordPromptIfPresented()
         XCTAssertEqual(app.textFields["UCF email"].value as? String, "ui-smoke@ucf.edu")
+        XCTAssertEqual(app.secureTextFields["Password"].value as? String, "Password")
+        XCTAssertEqual(app.secureTextFields["Confirm password"].value as? String, "Confirm password")
+        attach(app, name: "Account switch carries email without sign in password")
         tap(app.buttons["sign-up-switch-to-sign-in"], in: app)
         XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.textFields["Display name"].exists)
+        declinePasswordPromptIfPresented()
+        let signUpGone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: app.textFields["Display name"])
+        wait(for: [signUpGone], timeout: 5)
+        let signInPasswordEmpty = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "Password"), object: app.secureTextFields["Password"])
+        wait(for: [signInPasswordEmpty], timeout: 5)
         XCTAssertEqual(app.textFields["UCF email"].value as? String, "ui-smoke@ucf.edu")
+        attach(app, name: "Account switch keeps original sign in draft discarded")
+        tap(app.secureTextFields["Password"], in: app)
+        let welcomeDraft = "synthetic-welcome-draft"
+        app.secureTextFields["Password"].typeText(welcomeDraft)
+        XCTAssertEqual((app.secureTextFields["Password"].value as? String)?.count, welcomeDraft.count)
+        tap(app.buttons["Done"], in: app)
         app.navigationBars.buttons.firstMatch.tap()
+        declinePasswordPromptIfPresented()
         XCTAssertTrue(app.buttons["welcome-sign-in"].waitForExistence(timeout: 5), "Switch must replace the account route, not stack forms")
+        tap(app.buttons["welcome-sign-in"], in: app)
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 5))
+        let reopenedPasswordEmpty = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "Password"), object: app.secureTextFields["Password"])
+        wait(for: [reopenedPasswordEmpty], timeout: 5)
+        XCTAssertEqual(app.textFields["UCF email"].value as? String, "ui-smoke@ucf.edu")
     }
 
     func testBlankSignInShowsLocalValidation() throws {
