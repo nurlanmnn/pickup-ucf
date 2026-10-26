@@ -745,3 +745,18 @@ declined using Not Now only. Sign Up Strong Password entry remains unclaimed.
 Test-only change; prior367/367/Release retained. BETA-11 partial; no real account/
 provider/phone action. See
 [scope/evidence](../superpowers/plans/2026-10-26-account-route-drafts.md).
+
+## Next local UI slice: review detail isolation before adding fixture reads
+
+October26 read-only inspection: the authenticated fixture currently rejects the
+`GET sessions?id=eq.<id>` single-object read used by SessionRepository.fetchSession;
+`get_session_roster` is also outside the fixture allowlist. No detail success is
+claimed by the10-test UI gate. SessionDetailView's task loads, then starts realtime;
+SessionDetailViewModel.load can call Live Activity start/end, and its realtime
+entry currently checks loaded state. GameLiveActivityCoordinator's existing UI
+mode guard is on refresh, not its start/end entrypoints. Before allowing detail
+reads, specify and test ActivityKit/socket isolation and exact bounded response
+shapes. HTTP URLProtocol interception alone does not prove websocket isolation.
+This is a next-slice review requirement, not a reproduced defect in the existing
+bounded tab/form/draft smoke contract. No implementation started. Latest UI lane
+left simulator AX0/0; restore/restart/check before any later signed full unit run.
