@@ -136,6 +136,81 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         tap(app.buttons["Discard"], in: app)
     }
 
+    func testAuthenticatedAccountFormsRejectInvalidInputsAndResetOnReturn() throws {
+        let app = try launch(authenticated: true)
+        tap(app.tabBars.buttons["Profile"], in: app)
+        tap(app.buttons.containing(.staticText, identifier: "Settings").firstMatch, in: app)
+        tap(app.buttons.containing(.staticText, identifier: "Change password").firstMatch, in: app)
+        let currentPassword = app.secureTextFields["Current password"]
+        XCTAssertTrue(currentPassword.waitForExistence(timeout: 5))
+        XCTAssertEqual(currentPassword.value as? String, "Current password")
+        tap(app.buttons["Update password"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Current password is required"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Error: Password must be at least 8 characters"].exists)
+        attach(app, name: "Account blank password validation")
+
+        tap(app.secureTextFields["New password"], in: app)
+        app.secureTextFields["New password"].typeText("short")
+        tap(app.secureTextFields["Confirm new password"], in: app)
+        app.secureTextFields["Confirm new password"].typeText("different")
+        tap(app.buttons["Done"], in: app)
+        // Keep current empty: this path must stay in local validation.
+        XCTAssertEqual(currentPassword.value as? String, "Current password")
+        tap(app.buttons["Update password"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Passwords do not match"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Error: Current password is required"].exists)
+        XCTAssertTrue(app.staticTexts["Error: Password must be at least 8 characters"].exists)
+        XCTAssertFalse(app.staticTexts["Password updated successfully."].exists)
+        attach(app, name: "Account short and mismatched password validation")
+        app.navigationBars["Change password"].buttons.firstMatch.tap()
+        let passwordFormGone = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: app.buttons["Update password"])
+        wait(for: [passwordFormGone], timeout: 5)
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        tap(app.buttons.containing(.staticText, identifier: "Change password").firstMatch, in: app)
+        XCTAssertTrue(currentPassword.waitForExistence(timeout: 5))
+        XCTAssertEqual(currentPassword.value as? String, "Current password")
+        tap(app.buttons["Update password"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Current password is required"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Error: Passwords do not match"].exists,
+                       "Reopened empty fields must not validate the abandoned mismatched draft")
+        let reopenedPasswordsEmpty = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                currentPassword.value as? String == "Current password"
+                    && app.secureTextFields["New password"].value as? String == "New password"
+                    && app.secureTextFields["Confirm new password"].value as? String == "Confirm new password"
+            }, object: nil)
+        wait(for: [reopenedPasswordsEmpty], timeout: 5)
+        app.navigationBars["Change password"].buttons.firstMatch.tap()
+
+        tap(app.buttons.containing(.staticText, identifier: "Edit username").firstMatch, in: app)
+        let username = app.textFields["Username"]
+        let existingUsername = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "ui_smoke"), object: username)
+        wait(for: [existingUsername], timeout: 5)
+        tap(username, in: app)
+        username.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "ui_smoke".count))
+        tap(app.buttons["Done"], in: app)
+        XCTAssertEqual(username.value as? String, "Username")
+        tap(app.buttons["Save"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Username is required"].waitForExistence(timeout: 5))
+        tap(username, in: app)
+        username.typeText("bad!name")
+        tap(app.buttons["Done"], in: app)
+        XCTAssertEqual(username.value as? String, "bad!name", "Never submit a valid username in this smoke path")
+        tap(app.buttons["Save"], in: app)
+        XCTAssertTrue(app.staticTexts["Error: Use 3–20 characters: letters, numbers, underscore"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Username saved."].exists)
+        attach(app, name: "Account invalid username validation")
+        app.navigationBars["Username"].buttons.firstMatch.tap()
+        tap(app.buttons.containing(.staticText, identifier: "Edit username").firstMatch, in: app)
+        let unchangedUsername = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "ui_smoke"), object: username)
+        wait(for: [unchangedUsername], timeout: 5)
+        XCTAssertFalse(app.staticTexts["Username saved."].exists)
+        attach(app, name: "Account username unchanged after invalid draft")
+    }
+
     func testIntroAndRelaunchStartDeterministically() throws {
         let app = try launch()
         XCTAssertTrue(app.buttons["welcome-continue"].exists)

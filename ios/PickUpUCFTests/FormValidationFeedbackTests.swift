@@ -193,6 +193,70 @@ final class FormValidationFeedbackTests: XCTestCase {
     }
 
     @MainActor
+    func testClearedPasswordDraftCannotSubmitPreviousCredentials() async {
+        let repository = RecordingAuthRepository()
+        let viewModel = ChangePasswordViewModel(authRepository: repository)
+        viewModel.currentPassword = "synthetic-old"
+        viewModel.newPassword = "synthetic-new"
+        viewModel.confirmPassword = "synthetic-new"
+        XCTAssertTrue(viewModel.canSubmit)
+
+        viewModel.clearPasswordDraft()
+        await viewModel.updatePassword(email: "synthetic@ucf.edu")
+
+        XCTAssertEqual(viewModel.currentPassword, "")
+        XCTAssertEqual(viewModel.newPassword, "")
+        XCTAssertEqual(viewModel.confirmPassword, "")
+        XCTAssertFalse(viewModel.canSubmit)
+        XCTAssertEqual(repository.changePasswordCallCount, 0)
+    }
+
+    @MainActor
+    func testClearingPasswordDraftPreservesPendingRequestAndLoadingGuard() async {
+        let repository = RecordingAuthRepository()
+        let started = expectation(description: "synthetic request began")
+        var finishRequest: CheckedContinuation<Void, Never>?
+        var shouldSuspend = true
+        repository.changePasswordBody = {
+            guard shouldSuspend else { return }
+            shouldSuspend = false
+            await withCheckedContinuation { continuation in
+                finishRequest = continuation
+                started.fulfill()
+            }
+        }
+        let viewModel = ChangePasswordViewModel(authRepository: repository)
+        viewModel.currentPassword = "synthetic-old"
+        viewModel.newPassword = "synthetic-new"
+        viewModel.confirmPassword = "synthetic-new"
+        let request = Task { await viewModel.updatePassword(email: "synthetic@ucf.edu") }
+        await fulfillment(of: [started], timeout: 2)
+
+        viewModel.clearPasswordDraft()
+        XCTAssertEqual(viewModel.currentPassword, "")
+        XCTAssertEqual(viewModel.newPassword, "")
+        XCTAssertEqual(viewModel.confirmPassword, "")
+        XCTAssertTrue(viewModel.isLoading)
+        // Even a newly entered valid draft must not start a second request.
+        viewModel.currentPassword = "synthetic-other-old"
+        viewModel.newPassword = "synthetic-other-new"
+        viewModel.confirmPassword = "synthetic-other-new"
+        await viewModel.updatePassword(email: "synthetic@ucf.edu")
+        XCTAssertEqual(repository.changePasswordCallCount, 1)
+        viewModel.clearPasswordDraft()
+        XCTAssertEqual(repository.changePasswordArguments?.email, "synthetic@ucf.edu")
+        XCTAssertEqual(repository.changePasswordArguments?.currentPassword, "synthetic-old")
+        XCTAssertEqual(repository.changePasswordArguments?.newPassword, "synthetic-new")
+        finishRequest?.resume()
+        await request.value
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertTrue(viewModel.didSucceed)
+        XCTAssertEqual(viewModel.currentPassword, "")
+        XCTAssertEqual(viewModel.newPassword, "")
+        XCTAssertEqual(viewModel.confirmPassword, "")
+    }
+
+    @MainActor
     func testEditUsernameFieldErrorsDoNotSetBanner() async {
         let repository = StubProfileRepository()
         let viewModel = EditUsernameViewModel(repository: repository)
@@ -281,6 +345,8 @@ private final class RecordingAuthRepository: AuthRepositoryProtocol {
     var signUpCallCount = 0
     var signInCallCount = 0
     var changePasswordCallCount = 0
+    var changePasswordArguments: (email: String, currentPassword: String, newPassword: String)?
+    var changePasswordBody: (() async -> Void)?
     var signUpError: Error?
 
     func signUp(email: String, password: String, displayName: String) async throws {
@@ -303,6 +369,8 @@ private final class RecordingAuthRepository: AuthRepositoryProtocol {
     func updatePassword(_ newPassword: String) async throws {}
     func changePassword(email: String, currentPassword: String, newPassword: String) async throws {
         changePasswordCallCount += 1
+        changePasswordArguments = (email, currentPassword, newPassword)
+        await changePasswordBody?()
     }
     func handleAuthDeepLink(url: URL) async throws {}
     func currentSession() async -> AppSession? { nil }

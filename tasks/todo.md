@@ -1,3 +1,13 @@
+October26: actual synthetic Settings password/username local validation UI exposed
+password draft retention after Back/reopen. Bound-value red confirmed by old
+mismatch feedback after completed transition. Clear only three password strings
+on disappearance; preserve model/loading/in-flight captured request and results.
+New pending-request guard unit, focused9/9, UI10/10, final signed isolated367/367,
+Release build/analyzer and fresh reviews pass. Review found/fixed gate-hang risk.
+Screenshots inspected, built UI URL/key empty, AX restored/restarted1/1 around
+units. No valid account submission/provider/phone action; BETA-11 remains partial.
+See [scope/evidence](../docs/superpowers/plans/2026-10-26-account-form-ui-smoke.md).
+
 October26: reproduced empty Other-sport validation feedback below the visible
 Create viewport at normal and accessibility5. Moved only the existing sport
 scroll ID from the heading to the custom-name field. Both UI visibility tests red

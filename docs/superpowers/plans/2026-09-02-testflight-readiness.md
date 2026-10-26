@@ -768,6 +768,14 @@ expanded credential-free UI9/9, final signed isolated365/365, Release build/anal
 and fresh reviews pass. See [scope/evidence](2026-10-26-create-validation-scroll.md).
 No full create/provider/physical acceptance; broader BETA-11 remains partial.
 
+**October26 account-form evidence:** synthetic Settings password/username local
+validation and reopen UI exposed retained password drafts. Lifecycle cleanup now
+clears only three strings; pending request/loading/arguments/results preserved.
+Gated regression, focused9/9, expanded UI10/10, signed isolated367/367, Release
+build/analyzer and independent review pass. Screenshots inspected, URL/key empty.
+See [scope/evidence](2026-10-26-account-form-ui-smoke.md). No actual account/provider
+update, deletion/signout or physical acceptance; broader BETA-11 remains partial.
+
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
 ## BETA-12 — Match the launch screen to the app experience (**P2**)

@@ -71,6 +71,9 @@ struct ChangePasswordView: View {
             onNext: { focusNext() },
             onDone: { focusedField = nil }
         )
+        .onDisappear {
+            viewModel.clearPasswordDraft()
+        }
     }
 
     @MainActor

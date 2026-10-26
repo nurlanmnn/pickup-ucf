@@ -22,6 +22,12 @@ final class ChangePasswordViewModel {
             && !isLoading
     }
 
+    func clearPasswordDraft() {
+        currentPassword = ""
+        newPassword = ""
+        confirmPassword = ""
+    }
+
     @MainActor
     func updatePassword(email: String) async {
         errorMessage = nil
