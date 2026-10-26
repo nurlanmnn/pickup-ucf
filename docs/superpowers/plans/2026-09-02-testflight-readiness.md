@@ -761,6 +761,13 @@ Error AX existence does not prove visibility; observed sport-error scroll target
 is tracked separately. No product source change; prior365/365/Release retained.
 See [scope/evidence](2026-10-25-create-draft-ui-smoke.md). Broader BETA-11 stays open.
 
+**October26 validation visibility fix:** actual UI red tests reproduced the Other
+sport-name error below the viewport at normal/accessibility5. Relocated one
+existing scroll ID; both errors now visible, screenshots inspected. Focused2/2,
+expanded credential-free UI9/9, final signed isolated365/365, Release build/analyzer
+and fresh reviews pass. See [scope/evidence](2026-10-26-create-validation-scroll.md).
+No full create/provider/physical acceptance; broader BETA-11 remains partial.
+
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
 ## BETA-12 — Match the launch screen to the app experience (**P2**)

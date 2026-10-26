@@ -709,3 +709,15 @@ prior product365/365/Release evidence retained. Sport error exists below initial
 viewport; separate validation-scroll regression follows. No submission/provider/
 physical acceptance or external action. BETA-11 partial. See
 [scope/evidence](../superpowers/plans/2026-10-25-create-draft-ui-smoke.md).
+
+## October26 visible create validation
+
+October26: reproduced empty Other-sport validation feedback below the visible
+Create viewport at normal and accessibility5. Moved only the existing sport
+scroll ID from the heading to the custom-name field. Both UI visibility tests red
+before fix, focused2/2 and expanded credential-free UI9/9 green; screenshots show
+complete readable error. Final signed isolated365/365, unsigned Release build/
+analyzer and independent reviews pass. AX restored/restarted1/1 before units,
+verified afterward. No validator/state/network change or external action. See
+[scope/evidence](../superpowers/plans/2026-10-26-create-validation-scroll.md).
+BETA-11 remains partial; simulator evidence is not physical acceptance.

@@ -31,7 +31,6 @@ struct CreateSessionSportTimeStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.l) {
             sectionHeader("What are you playing?")
-                .id(CreateSessionScrollAnchor.sport)
 
             SportPickerSingleSelect(selectedSport: $viewModel.sport) {
                 viewModel.markDirty()
@@ -47,6 +46,7 @@ struct CreateSessionSportTimeStep: View {
                     .padding(Spacing.m)
                     .background(AppColor.surface(colorScheme))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .id(CreateSessionScrollAnchor.sport)
 
                 ContentFieldFeedback(value: viewModel.customSportName, field: .customSport)
 

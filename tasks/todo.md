@@ -1,3 +1,13 @@
+October26: reproduced empty Other-sport validation feedback below the visible
+Create viewport at normal and accessibility5. Moved only the existing sport
+scroll ID from the heading to the custom-name field. Both UI visibility tests red
+before fix, focused2/2 and expanded credential-free UI9/9 green; screenshots show
+complete readable error. Final signed isolated365/365, unsigned Release build/
+analyzer and independent reviews pass. AX restored/restarted1/1 before units,
+verified afterward. No validator/state/network change or external action. See
+[scope/evidence](../docs/superpowers/plans/2026-10-26-create-validation-scroll.md).
+BETA-11 remains partial; simulator evidence is not physical acceptance.
+
 October26: create-draft credential-free UI smoke now covers actual Other-name
 validation, empty-venue/missing-pin validation, Back retention, cancel/discard and
 reopen reset. Focused1/1 and expanded signed UI8/8 pass; screenshots inspected,

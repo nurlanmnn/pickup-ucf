@@ -71,6 +71,11 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         tap(sportStep.buttons["Other"], in: app)
         tap(app.buttons["Next"], in: app)
         XCTAssertTrue(app.staticTexts["Error: Enter a sport name (e.g. pickleball)."].waitForExistence(timeout: 5))
+        let errorVisible = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                app.staticTexts["Error: Enter a sport name (e.g. pickleball)."].isHittable
+            }, object: nil)
+        wait(for: [errorVisible], timeout: 5)
         attach(app, name: "Create draft empty sport validation")
 
         let sportName = app.textFields["Sport name"]
@@ -110,6 +115,23 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         XCTAssertTrue(sportName.waitForExistence(timeout: 5))
         XCTAssertEqual(sportName.value as? String, "Sport name", "Discard must remove the unsaved sport name")
         attach(app, name: "Create draft reopened without discarded name")
+        tap(app.navigationBars["Create session"].buttons["Close"], in: app)
+        tap(app.buttons["Discard"], in: app)
+    }
+
+    func testLargestDynamicTypeCreateValidationRevealsSportNameError() throws {
+        let app = try launch(largestType: true, authenticated: true)
+        tap(app.tabBars.buttons["Create"], in: app)
+        XCTAssertTrue(app.navigationBars["Create session"].waitForExistence(timeout: 5))
+        let sportStep = app.scrollViews.containing(.staticText, identifier: "What are you playing?").firstMatch
+        tap(sportStep.buttons["Other"], in: app)
+        tap(app.buttons["Next"], in: app)
+        let error = app.staticTexts["Error: Enter a sport name (e.g. pickleball)."]
+        XCTAssertTrue(error.waitForExistence(timeout: 5))
+        let errorVisible = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in error.isHittable }, object: nil)
+        wait(for: [errorVisible], timeout: 5)
+        attach(app, name: "Largest Dynamic Type visible create validation")
         tap(app.navigationBars["Create session"].buttons["Close"], in: app)
         tap(app.buttons["Discard"], in: app)
     }
