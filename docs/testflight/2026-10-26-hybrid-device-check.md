@@ -58,6 +58,28 @@ recipient/event with provider diagnostics. Do not silently change settings or
 provider configuration. Retest background delivery and notification navigation
 under a newly approved fixture; current fixture is already cancelled.
 
+### Read-only follow-up later October 26
+
+The deployed `send-push` worker was version18. Its bounded logs showed a single
+400/BadDeviceToken rejection at14:11:01Z, **before** either B-recipient chat row
+was created. It cannot be attributed to B's missing alert. No function Log events
+were returned for14:11:30–14:17:00Z. B's first chat row was created14:11:35Z and
+marked sent14:12:02Z; the background test row was created14:15:10Z and marked
+sent14:16:01Z. A retest must wait for the dispatch cycle before asking the owner
+about presentation. The original owner observation is retained; observation time
+was subsequently correlated: the owner reply was recorded at14:15:48.852Z,
+approximately13 seconds **before** the worker's14:16:01.504Z sent marker. That
+observation cannot establish delivery failure. Notification acceptance is
+inconclusive and requires a dispatch-aware retest; no app defect is established.
+
+Read-only iPhone Settings inspection showed Allow Notifications on; Lock Screen,
+Notification Center and Banners selected; Sounds, Badges and Show on Mac on.
+Show Previews was When Unlocked. Scheduled Summary was off. Focus overview was
+inspected but does not establish the active mode at the original send; its
+“Focus Status On” setting shares status and must not be mistaken for an active
+Focus. No settings were changed, and no new fixture or push was sent in this
+follow-up. Delivery remains unproven, rather than a proven app defect.
+
 ## Cleanup and remaining release gates
 
 Final production check: cancelled fixture, 0 active Live Activity tokens. B's

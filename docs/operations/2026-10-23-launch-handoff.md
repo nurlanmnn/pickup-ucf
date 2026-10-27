@@ -767,9 +767,11 @@ Current local Release simulator plus signed-in physical phone passed the bounded
 two-account core: creation/discovery after refresh, join/full roster, leave/rejoin,
 two-way chat and host notes persistence. Owner confirmed Lock Screen Live Activity
 appearance and disappearance after host cancellation. Exact fixture is cancelled
-and has zero active Activity tokens. Background chat alert did not arrive despite
-two B-recipient chat rows marked sent and one registered alert token; do not close
-notification delivery/navigation. Block/unblock, B edited-notes rendering, exact
+and has zero active Activity tokens. Background chat delivery is inconclusive:
+later correlation found the owner's no-alert observation13 seconds before worker
+dispatch. Phone alert switches are on, Scheduled Summary off; no app defect is
+established. Retest after dispatch before closing delivery/navigation.
+Block/unblock, B edited-notes rendering, exact
 phone candidate parity and iOS17/two-physical-device acceptance remain open.
 No source/deploy/upload/provider change. See
 [manual evidence](../testflight/2026-10-26-hybrid-device-check.md).
