@@ -38,3 +38,11 @@ candidate provenance, backend scope, remaining device gates and approval
 boundaries. The continuation's App Store Connect audit reached an unauthenticated
 login page; current store/build selection is still unverified. Native UI access
 reported the Mac locked. No new fixture, deployment, upload or store change.
+
+October 27 update: owner sign-in restored read-only store access. Build 5 remains
+the latest Complete upload; source candidate 1.0 (6) is now packaged locally,
+with signatures/configuration/provenance verified. No upload or installation.
+See [candidate record](../testflight/2026-10-27-build-6.md) and
+[listing audit/draft](../testflight/2026-10-27-store-listing-draft.md).
+Production migration head and function versions are unchanged on fresh read;
+the pending backend/device/review gates remain open.

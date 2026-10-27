@@ -28,7 +28,7 @@ this packet. Feature-branch documentation/source pushes remain authorized.
 
 | Step | Concrete work | Evidence required before advancing | Authorization |
 | --- | --- | --- | --- |
-| 1. Store inventory | Read Apps/TestFlight and release metadata without saving changes | Latest uploaded/processing builds, internal/external assignments, review state, declarations and selected release build | Read-only audit allowed; current session needs owner sign-in |
+| 1. Store inventory | Read Apps/TestFlight and release metadata without saving changes | Latest uploaded/processing builds, internal/external assignments, review state, declarations and selected release build | Read-only audit allowed; October 27 check completed for builds/basic listing |
 | 2. Freeze candidate | Select exact reviewed source; choose an unused build number after step 1; update app/widget together; record source/dependency/signing provenance | Clean reviewed candidate diff, normal linked-backend Release configuration, expected app/extension identifiers and entitlements | Local preparation/source push allowed; merge remains separate |
 | 3. Prepare backend window | Recheck migration history, deployed worker source/configuration, role/API surface and recent cron health; capture protected recovery material and define forward repair | Exact pending set, unchanged reviewed SQL/worker diff, compatibility with build 5 and new candidate, named operator/backup and recovery decisions | Read-only/preparation allowed; obtain specific rollout approval before mutation |
 | 4. Roll out backend | Apply only the ten ordered migrations below and reviewed send-push fix in the approved window | Migration parity; intended grants/RLS/private-schema exposure; ordinary/moderator/blocked/deleted-role API matrix; cron/outbox health without test pushes | Explicit production approval required |
@@ -104,12 +104,26 @@ credentials were entered and no store fields changed. Native UI inventory report
 the Mac locked; no phone checks were attempted. Owner sign-in is needed to finish
 the current store audit before numbering a candidate.
 
-The existing ownership question in the preceding chat remains unanswered: urgent
-safety escalation, Supabase operations, push delivery and release decisions need
-confirmed primaries/backups and a private escalation path. Support/moderation
-ownership already recorded elsewhere does not assign these other roles. Recovery
-retention/RPO/RTO decisions also remain open. Do not duplicate or silently close
-that question.
+October 26 ownership confirmation is now recorded in external-beta-operations:
+Nurlan owns urgent safety escalation, Supabase operations, push delivery and
+release decisions; no backup is assigned. Backup coverage, a private escalation
+path and recovery retention/RPO/RTO decisions remain open.
+
+## October 27 candidate preparation
+
+After owner sign-in, current store inventory again showed build 5 as the latest
+upload, Complete and internally assigned; no processing/newer upload or external
+group was listed. The public version remains Prepare for Submission with no build
+selected. Basic listing/category/age-rating gaps are recorded in the
+[local listing draft](../testflight/2026-10-27-store-listing-draft.md).
+
+Source candidate `2d4310d`, version 1.0 (6), is archived and exported locally with
+signature/entitlement/version/symbol/configuration checks passed. See
+[candidate provenance](../testflight/2026-10-27-build-6.md). No upload/internal
+assignment, installation or deployment occurred. The read-only backend baseline
+remains migration head20261022170532/send-push v18; all ten migrations are pending.
+Current candidate preparation supersedes the historical build-5 source version
+and login blocker above without changing the release authorization boundaries.
 
 References: [checkpoint](2026-10-26-release-checkpoint.md),
 [launch handoff](2026-10-23-launch-handoff.md),

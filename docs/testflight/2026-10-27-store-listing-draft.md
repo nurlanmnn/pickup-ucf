@@ -1,0 +1,77 @@
+# Store listing draft and audit — October 27
+
+Local copy only. No App Store Connect fields changed, no assets uploaded and no
+declarations submitted. Confirm the exact shipped candidate before using this.
+
+## Read-only audit
+
+- Public iOS 1.0 remains Prepare for Submission with no selected build.
+- Description, keywords, support URL, copyright and reviewer/contact fields were
+  empty in the public-version form. Subtitle was empty in App Information.
+- Primary category remained the Primary placeholder; age ratings displayed
+  Set Up Age Ratings; content rights displayed Set Up Content Rights Information.
+  Owner decisions are still needed before entering those declarations.
+- The version form currently selects Automatically release this version.
+  No release preference changed; obtain the owner's intended release timing
+  before eventual submission.
+- App Privacy is published with the expected privacy-policy URL and nine linked
+  data types: name, email address, fitness, precise location, emails/text messages,
+  other user content, user ID, device ID and product interaction. This records
+  existing declarations; accuracy against the final binary still needs review.
+- Screenshot slots, accessibility declarations and pricing/territories were not
+  audited in this pass. Do not infer completion or absence from this record.
+
+## Copy for review
+
+Name: **PickUp UCF**
+
+Subtitle: **Find your next campus game**
+
+Suggested primary category: **Sports**. Leave secondary unset unless the owner
+selects a useful fit. This is a proposal, not a saved category.
+
+Promotional text:
+
+Find pickup sports around UCF, join a game, and coordinate with other players.
+Create a session when you have a sport, time, and place in mind.
+
+Description:
+
+PickUp UCF helps the UCF community find and organize pickup sports games.
+
+Browse upcoming games, see where and when people are playing, and join a session
+with an open spot. Organizing a game? Choose a sport, time, venue, and player limit,
+then share the details with your group.
+
+- Discover games in list and map views.
+- Create, edit, and cancel games you host.
+- Join or leave games and check the roster.
+- Coordinate in session chat and manage game notifications.
+- Add an independent copy of a game to your calendar.
+- Use reporting and blocking controls when you need them.
+
+Sign up with an eligible UCF email address. Location, Calendar, and notification
+permissions are optional for basic browsing and sign-in. Calendar copies are
+independent of the game and do not update when a host edits or cancels it.
+
+Keywords:
+
+`UCF,pickup,sports,basketball,soccer,volleyball,tennis,campus,games`
+
+Copyright proposal: **2026 Nurlan Mammadli**; owner to confirm rights holder.
+
+Support URL: select a public page with usable support information after checking
+its rendered content; do not use a mailto URL in the URL field. Marketing URL is
+optional and remains unproposed here.
+
+## Candidate-specific internal testing note
+
+Build 6 includes more reliable session edits, visible sport-name validation, and
+clearing of abandoned password drafts. It also adds privacy-safe diagnostics and
+isolated UI coverage. Test game creation/editing, two-account chat and notification
+routing, Calendar copy behavior, offline recovery, accessibility, and account
+switching on the exact candidate. The compatible backend rollout and device
+acceptance remain separate gates; do not present them as complete.
+
+Reviewer credentials/contact details must be entered privately. Existing October 4
+reviewer game descriptions require a specifically approved refresh before review.
