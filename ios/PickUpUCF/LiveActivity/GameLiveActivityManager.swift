@@ -186,7 +186,15 @@ private extension Data {
 }
 
 enum GameLiveActivityCoordinator {
-    static func refreshForCurrentUser(userId: UUID) async {
+    static func refreshForCurrentUser(
+        userId: UUID, testMode: AppTestMode = .current,
+        perform: (UUID) async -> Void = refreshCurrentUserActivities
+    ) async {
+        guard !testMode.isUISmoke else { return }
+        await perform(userId)
+    }
+
+    private static func refreshCurrentUserActivities(userId: UUID) async {
         let repository = SessionRepository()
         do {
             let sessions = try await repository.fetchMySessions(userId: userId)
@@ -202,43 +210,66 @@ enum GameLiveActivityCoordinator {
         }
     }
 
-    static func start(for session: PickupSession, now: Date = Date()) {
+    static func start(
+        for session: PickupSession, now: Date = Date(), testMode: AppTestMode = .current,
+        perform: @escaping @MainActor (PickupSession, Date) -> Void = { GameLiveActivityManager.start(for: $0, now: $1) }
+    ) {
+        guard !testMode.isUISmoke else { return }
         if #available(iOS 16.2, *) {
-            Task { @MainActor in GameLiveActivityManager.start(for: session, now: now) }
+            Task { @MainActor in perform(session, now) }
         }
     }
 
-    static func refresh(upcomingSessions: [PickupSession], now: Date = Date()) {
-        guard !AppTestMode.current.isUISmoke else { return }
+    static func refresh(
+        upcomingSessions: [PickupSession], now: Date = Date(), testMode: AppTestMode = .current,
+        perform: @escaping @MainActor ([PickupSession], Date) -> Void = { GameLiveActivityManager.refresh(upcomingSessions: $0, now: $1) }
+    ) {
+        guard !testMode.isUISmoke else { return }
         if #available(iOS 16.2, *) {
-            Task { @MainActor in GameLiveActivityManager.refresh(upcomingSessions: upcomingSessions, now: now) }
+            Task { @MainActor in perform(upcomingSessions, now) }
         }
     }
 
-    static func end(forSessionId sessionId: UUID) {
+    static func end(
+        forSessionId sessionId: UUID, testMode: AppTestMode = .current,
+        perform: @escaping (UUID) async -> Void = { await GameLiveActivityManager.end(forSessionId: $0) }
+    ) {
+        guard !testMode.isUISmoke else { return }
         if #available(iOS 16.2, *) {
             Task {
-                await GameLiveActivityManager.end(forSessionId: sessionId)
+                await perform(sessionId)
             }
         }
     }
 
-    static func nextCleanupDelay(now: Date = Date()) async -> TimeInterval {
-        if #available(iOS 16.2, *), let end = await GameLiveActivityManager.nextExpirationDate() {
+    static func nextCleanupDelay(
+        now: Date = Date(), testMode: AppTestMode = .current,
+        nextExpirationDate: @MainActor () -> Date? = { GameLiveActivityManager.nextExpirationDate() }
+    ) async -> TimeInterval {
+        guard !testMode.isUISmoke else { return 30 }
+        if #available(iOS 16.2, *), let end = await nextExpirationDate() {
             return max(0.1, min(30, end.timeIntervalSince(now)))
         }
         return 30
     }
 
-    static func endExpired(now: Date = Date()) async {
+    static func endExpired(
+        now: Date = Date(), testMode: AppTestMode = .current,
+        perform: (Date) async -> Void = { await GameLiveActivityManager.endExpired(now: $0) }
+    ) async {
+        guard !testMode.isUISmoke else { return }
         if #available(iOS 16.2, *) {
-            await GameLiveActivityManager.endExpired(now: now)
+            await perform(now)
         }
     }
 
-    static func endAllForAccountTransition() async {
+    static func endAllForAccountTransition(
+        testMode: AppTestMode = .current,
+        perform: () async -> Void = { await GameLiveActivityManager.endAll() }
+    ) async {
+        guard !testMode.isUISmoke else { return }
         if #available(iOS 16.2, *) {
-            await GameLiveActivityManager.endAll()
+            await perform()
         }
     }
 }

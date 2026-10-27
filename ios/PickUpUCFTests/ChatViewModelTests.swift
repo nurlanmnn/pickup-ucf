@@ -772,6 +772,70 @@ final class ChatRealtimeDiagnosticsTests: XCTestCase {
     }
 }
 
+@MainActor
+final class SessionDetailRealtimeIsolationTests: XCTestCase {
+    func testUISmokeLoadedDetailNeverConnectsOrCreatesAChannel() async throws {
+        for mode in [AppTestMode.uiSmoke, .uiSmokeAuthenticated] {
+            try await harness(mode: mode) { server, client, vm in
+                await vm.startSessionRealtime()
+                try await Task.sleep(for: .milliseconds(250))
+                XCTAssertEqual(server.acceptedConnectionCount, 0)
+                XCTAssertTrue(server.frames.isEmpty)
+                XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+                await vm.stopSessionRealtime()
+                XCTAssertEqual(server.acceptedConnectionCount, 0)
+            }
+        }
+    }
+
+    func testNormalAndUnitLoadedDetailConnectAndStopTheRealSDKChannel() async throws {
+        for mode in [AppTestMode.normal, .unit] {
+            try await harness(mode: mode) { server, client, vm in
+                await vm.startSessionRealtime()
+                XCTAssertEqual(server.acceptedConnectionCount, 1)
+                XCTAssertTrue(server.frames.contains { $0[3] as? String == "phx_join" })
+                XCTAssertEqual(client.realtimeV2.channels.count, 1)
+                await vm.stopSessionRealtime()
+                XCTAssertTrue(client.realtimeV2.channels.isEmpty)
+            }
+        }
+    }
+
+    private func harness(
+        mode: AppTestMode,
+        action: (LoopbackRealtimeServer, SupabaseClient, SessionDetailViewModel) async throws -> Void
+    ) async throws {
+        let server = try LoopbackRealtimeServer(mode: .accept)
+        defer { server.stop() }
+        let deadline = ProcessInfo.processInfo.systemUptime + 4
+        while server.port == nil {
+            guard ProcessInfo.processInfo.systemUptime < deadline else { throw RealtimeFixtureError.timeout }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        let port = try XCTUnwrap(server.port)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [RealtimeDenyHTTP.self]
+        let client = SupabaseClient(supabaseURL: URL(string: "http://127.0.0.1:\(port)")!, supabaseKey: "synthetic-detail-key",
+            options: .init(auth: .init(storage: RealtimeDiscardStorage(), autoRefreshToken: false),
+                           global: .init(session: URLSession(configuration: configuration), logger: nil),
+                           realtime: .init(timeoutInterval: 0.4, maxRetryAttempts: 1,
+                                           disconnectOnEmptyChannelsAfter: 0, handleAppLifecycle: false)))
+        let session = PickupSession(id: UUID(), hostId: UUID(), sport: .basketball,
+            startsAt: Date().addingTimeInterval(3600), endsAt: Date().addingTimeInterval(7200),
+            capacity: 8, playerCount: 2, skillLevel: .any, status: .open)
+        let vm = SessionDetailViewModel(sessionId: session.id, userId: nil, client: client, testMode: mode)
+        vm.session = .loaded(session)
+        do { try await action(server, client, vm) }
+        catch {
+            await vm.stopSessionRealtime()
+            await client.realtimeV2.disconnect()
+            throw error
+        }
+        await vm.stopSessionRealtime()
+        await client.realtimeV2.disconnect()
+    }
+}
+
 private enum RealtimeFixtureError: Error { case timeout }
 
 private struct RealtimeDiscardStorage: AuthLocalStorage {
@@ -797,6 +861,7 @@ private final class LoopbackRealtimeServer {
     var mode: Mode
     private(set) var port: UInt16?
     private(set) var frames: [[Any]] = []
+    private(set) var acceptedConnectionCount = 0
     private let listener: NWListener
     private var connections: [NWConnection] = []
     private var stopped = false
@@ -819,6 +884,7 @@ private final class LoopbackRealtimeServer {
         listener.newConnectionHandler = { [weak self] connection in
             Task { @MainActor in
                 guard let self, !self.stopped else { connection.cancel(); return }
+                self.acceptedConnectionCount += 1
                 self.connections.append(connection)
                 connection.start(queue: self.queue)
                 self.receive(connection)

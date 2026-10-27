@@ -775,3 +775,21 @@ Block/unblock, B edited-notes rendering, exact
 phone candidate parity and iOS17/two-physical-device acceptance remain open.
 No source/deploy/upload/provider change. See
 [manual evidence](../testflight/2026-10-26-hybrid-device-check.md).
+
+## October26 isolated detail UI completed
+
+Read-only authenticated UI fixture now supports exact future/past game singleton
+reads and bounded roster RPCs. Both UI modes return before coordinator effects
+or realtime channel cleanup/subscription; immutable seams preserve normal/unit
+behavior and allow actual effect/loopback proofs. Map subview construction and
+Calendar-receipt singleton access are skipped in UI mode. Missing coordinates
+alone did not isolate geocoding/MapKit; new absence assertion reproduced it.
+Foreign/conflicting selectors and duplicate JSON keys also had red regressions.
+Final UI11/11, signed isolated374/374, Release/analyzer and fresh reviews pass.
+Four screenshots inspected, UI bundle URL/key empty; AX restored/restarted1/1
+for units. Initial slow UI run interrupted; restart recovered unchanged account
+test40s, then full gate passed. Existing compiler warnings recorded, not hidden.
+No real account/provider/phone mutation or deployment/upload in this increment.
+BETA-11 broader mutations/permissions/CI/physical acceptance remain open. See
+[detail evidence](../superpowers/plans/2026-10-26-session-detail-ui-smoke.md) and
+[current release checkpoint](2026-10-26-release-checkpoint.md).

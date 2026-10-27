@@ -6,7 +6,7 @@ verification/push and bounded approved device checks remain authorized.
 
 | Area | Current evidence | Still needed |
 | --- | --- | --- |
-| Source | Feature branch codex/calendar-write-only; prior checkpoint09af4ab | Finish verification/review of the isolated detail UI increment; then a compatible candidate binary |
+| Source | Feature branch codex/calendar-write-only; isolated detail increment verified UI11/11, signed units374/374, Release/analyzer | Compatible candidate binary and exact-candidate acceptance; broader BETA-11 remains partial |
 | Production schema | Read-only history recheck: head20261022170532; zero October23 migrations applied | Approved rollout of the ten ordered migrations listed in launch-handoff; deployment preflights and role/API matrix |
 | Push worker | Deployed send-push version18 retrieved read-only; pending local worker fix remains separate | Approved compatible worker rollout and provider/candidate acceptance |
 | Hybrid core | Real two-account create/discover/join/leave/rejoin/chat; notes persisted; physical Live Activity appearance/end owner-confirmed | Dispatch-aware alert/navigation retest, block/unblock, notes rendering on recipient, remaining offline/account-transition/accessibility/device matrix |

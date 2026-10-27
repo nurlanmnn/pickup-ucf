@@ -16,6 +16,7 @@ final class SessionDetailViewModel {
     private let blockRepository: BlockRepositoryProtocol
     private let client: SupabaseClient
     private let userId: UUID?
+    private let testMode: AppTestMode
 
     var attendanceParticipants = Loadable<[SessionParticipant]>.idle
 
@@ -28,7 +29,8 @@ final class SessionDetailViewModel {
         repository: SessionRepositoryProtocol = SessionRepository(),
         attendanceRepository: AttendanceRepository = AttendanceRepository(),
         blockRepository: BlockRepositoryProtocol = BlockRepository(),
-        client: SupabaseClient = SupabaseManager.shared
+        client: SupabaseClient = SupabaseManager.shared,
+        testMode: AppTestMode = .current
     ) {
         self.sessionId = sessionId
         self.userId = userId
@@ -36,6 +38,7 @@ final class SessionDetailViewModel {
         self.attendanceRepository = attendanceRepository
         self.blockRepository = blockRepository
         self.client = client
+        self.testMode = testMode
     }
 
     var isHost: Bool {
@@ -196,6 +199,7 @@ final class SessionDetailViewModel {
     /// Subscribes to `sessions` row updates for live `player_count` / `status` (Realtime publication).
     @MainActor
     func startSessionRealtime() async {
+        guard !testMode.isUISmoke else { return }
         await stopSessionRealtime()
         guard case .loaded = session else { return }
 
@@ -225,6 +229,7 @@ final class SessionDetailViewModel {
 
     @MainActor
     func stopSessionRealtime() async {
+        guard !testMode.isUISmoke else { return }
         realtimeTask?.cancel()
         realtimeTask = nil
 

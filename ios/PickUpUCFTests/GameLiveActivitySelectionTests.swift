@@ -3,6 +3,55 @@ import XCTest
 @testable import PickUpUCF
 
 final class GameLiveActivitySelectionTests: XCTestCase {
+    @MainActor
+    func testUISmokeCoordinatorSkipsEverySystemEffect() async {
+        for mode in [AppTestMode.uiSmoke, .uiSmokeAuthenticated] {
+            let forbidden = expectation(description: "No system effect in \(mode)")
+            forbidden.isInverted = true
+            forbidden.assertForOverFulfill = false
+            let session = makeSession(startsAt: Date().addingTimeInterval(60))
+            await GameLiveActivityCoordinator.refreshForCurrentUser(userId: session.hostId!, testMode: mode) { _ in forbidden.fulfill() }
+            GameLiveActivityCoordinator.start(for: session, testMode: mode) { _, _ in forbidden.fulfill() }
+            GameLiveActivityCoordinator.refresh(upcomingSessions: [session], testMode: mode) { _, _ in forbidden.fulfill() }
+            GameLiveActivityCoordinator.end(forSessionId: session.id, testMode: mode) { _ in forbidden.fulfill() }
+            let delay = await GameLiveActivityCoordinator.nextCleanupDelay(testMode: mode) { forbidden.fulfill(); return Date() }
+            XCTAssertEqual(delay, 30)
+            await GameLiveActivityCoordinator.endExpired(testMode: mode) { _ in forbidden.fulfill() }
+            await GameLiveActivityCoordinator.endAllForAccountTransition(testMode: mode) { forbidden.fulfill() }
+            await fulfillment(of: [forbidden], timeout: 0.2)
+        }
+    }
+
+    @MainActor
+    func testNormalAndUnitCoordinatorPreserveEffectArgumentsAndCleanupDelay() async {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let session = makeSession(startsAt: now.addingTimeInterval(60))
+        for mode in [AppTestMode.normal, .unit] {
+            let effects = (0..<7).map { expectation(description: "System effect \($0) in \(mode)") }
+            await GameLiveActivityCoordinator.refreshForCurrentUser(userId: session.hostId!, testMode: mode) {
+                XCTAssertEqual($0, session.hostId); effects[0].fulfill()
+            }
+            GameLiveActivityCoordinator.start(for: session, now: now, testMode: mode) {
+                XCTAssertEqual($0, session); XCTAssertEqual($1, now); effects[1].fulfill()
+            }
+            GameLiveActivityCoordinator.refresh(upcomingSessions: [session], now: now, testMode: mode) {
+                XCTAssertEqual($0, [session]); XCTAssertEqual($1, now); effects[2].fulfill()
+            }
+            GameLiveActivityCoordinator.end(forSessionId: session.id, testMode: mode) {
+                XCTAssertEqual($0, session.id); effects[3].fulfill()
+            }
+            let delay = await GameLiveActivityCoordinator.nextCleanupDelay(now: now, testMode: mode) {
+                effects[4].fulfill(); return now.addingTimeInterval(17)
+            }
+            XCTAssertEqual(delay, 17)
+            await GameLiveActivityCoordinator.endExpired(now: now, testMode: mode) {
+                XCTAssertEqual($0, now); effects[5].fulfill()
+            }
+            await GameLiveActivityCoordinator.endAllForAccountTransition(testMode: mode) { effects[6].fulfill() }
+            await fulfillment(of: effects, timeout: 2)
+        }
+    }
+
     func testEligibleSessionExactlyOneHourBeforeStart() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let session = makeSession(startsAt: now.addingTimeInterval(3600))

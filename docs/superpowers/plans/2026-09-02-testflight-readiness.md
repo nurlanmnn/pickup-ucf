@@ -786,6 +786,16 @@ and provider/physical acceptance remain open. See
 
 **Done when:** A repeatable automated smoke suite catches broken critical navigation and workflows before a build is uploaded.
 
+October26: isolated authenticated future/past game detail navigation now verifies
+visible time, roster, notes and host action availability. Both UI modes suppress
+realtime/ActivityKit before effects; MapKit/geocoding and Calendar singleton are
+omitted. Exact fixture selectors and roster body/stream contracts fail closed.
+Red/green isolation evidence, UI11/11, signed isolated374/374, Release/analyzer,
+retained screenshot inspection and independent review recorded in
+[detail UI evidence](2026-10-26-session-detail-ui-smoke.md). Built UI backend
+settings empty; no real backend/account/provider mutation in this increment.
+BETA-11 remains partial for broader workflows, permission/CI and physical gates.
+
 ## BETA-12 — Match the launch screen to the app experience (**P2**)
 
 **Problem:** `UILaunchScreen` is empty, which can produce a white flash before the forced-dark Welcome screen.

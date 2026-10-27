@@ -62,6 +62,65 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         XCTAssertFalse(original.tabBars.buttons["Profile"].exists)
     }
 
+    func testAuthenticatedFutureAndPastDetailsReadSyntheticRoster() throws {
+        let app = try launch(authenticated: true)
+        let future = app.buttons["session-open-00000000-0000-0000-0000-000000000021"]
+        tap(future, in: app)
+        XCTAssertTrue(app.navigationBars["Session"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Edit session"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Cancel session"].exists)
+        XCTAssertFalse(app.buttons["Run it back"].exists)
+        XCTAssertTrue(app.staticTexts["UI Smoke Court"].exists)
+        let futureTime = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Starts in")).firstMatch
+        XCTAssertTrue(futureTime.isHittable)
+        XCTAssertTrue(futureTime.label.contains(" · "))
+        attach(app, name: "Synthetic future game detail time")
+        assertSyntheticDetailRoster(app)
+        attach(app, name: "Synthetic future game detail roster")
+        app.navigationBars["Session"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(future.waitForExistence(timeout: 5))
+
+        tap(app.tabBars.buttons["My Games"], in: app)
+        tap(app.buttons.containing(.staticText, identifier: "Past games").firstMatch, in: app)
+        tap(app.buttons["session-open-00000000-0000-0000-0000-000000000022"], in: app)
+        XCTAssertTrue(app.navigationBars["Session"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Run it back"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Edit session"].exists)
+        XCTAssertFalse(app.buttons["Cancel session"].exists)
+        XCTAssertTrue(app.staticTexts["UI Smoke Past Court"].exists)
+        let weekday = DateFormatter()
+        // The UI lane asserts the app's English copy; the runner's system
+        // locale can differ from the app's supported localization.
+        weekday.locale = Locale(identifier: "en_US")
+        weekday.timeZone = TimeZone(identifier: "America/New_York")
+        weekday.dateFormat = "EEEE"
+        let pastDay = weekday.string(from: Date().addingTimeInterval(-86_400))
+        let pastTime = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", pastDay + " · ")).firstMatch
+        XCTAssertTrue(pastTime.waitForExistence(timeout: 5))
+        XCTAssertTrue(pastTime.isHittable)
+        attach(app, name: "Synthetic past game detail time")
+        assertSyntheticDetailRoster(app)
+        attach(app, name: "Synthetic past game detail roster")
+        app.navigationBars["Session"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["My Games"].waitForExistence(timeout: 5))
+    }
+
+    private func assertSyntheticDetailRoster(_ app: XCUIApplication) {
+        let teammate = app.staticTexts["UI Smoke Teammate Two"]
+        for _ in 0..<8 {
+            if teammate.isHittable { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(teammate.waitForExistence(timeout: 5))
+        XCTAssertTrue(teammate.isHittable)
+        XCTAssertTrue(app.staticTexts["UI Smoke Teammate One"].exists)
+        XCTAssertTrue(app.staticTexts["UI Smoke Student"].exists)
+        XCTAssertTrue(app.staticTexts["UI Smoke game notes"].exists)
+        XCTAssertFalse(app.buttons["Try again"].exists)
+        XCTAssertFalse(app.buttons["Expand map"].exists)
+        XCTAssertFalse(app.maps.firstMatch.exists)
+    }
+
     func testAuthenticatedCreateDraftValidationBackAndDiscard() throws {
         let app = try launch(authenticated: true)
         tap(app.tabBars.buttons["Create"], in: app)

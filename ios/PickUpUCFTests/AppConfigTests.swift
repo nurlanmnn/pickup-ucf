@@ -22,6 +22,77 @@ final class AppConfigTests: XCTestCase {
     }
 
     #if DEBUG && targetEnvironment(simulator)
+    func testAuthenticatedUIDetailFixtureDecodesThroughRealRepositories() async throws {
+        let client = SupabaseManager.makeClient(testMode: .uiSmokeAuthenticated)
+        let repository = SessionRepository(client: client)
+        for id in [AuthenticatedUISmokeFixture.gameID, AuthenticatedUISmokeFixture.pastGameID] {
+            let game = try await repository.fetchSession(id: id)
+            XCTAssertEqual(game.id, id)
+            XCTAssertEqual(game.hostId, AuthenticatedUISmokeFixture.userID)
+            XCTAssertNil(game.customLat)
+            XCTAssertNil(game.customLng)
+            let status = try await repository.fetchParticipantStatus(sessionId: id, userId: AuthenticatedUISmokeFixture.userID)
+            XCTAssertEqual(status, .joined)
+            let roster = try await repository.fetchRoster(sessionId: id)
+            XCTAssertEqual(roster.joined.count, game.playerCount)
+            XCTAssertEqual(roster.joined.first?.displayName, "UI Smoke Student")
+            XCTAssertEqual(roster.joined.first?.role, .host)
+            XCTAssertEqual(roster.waitlistCount, 0)
+            XCTAssertNil(roster.viewerWaitlistPosition)
+        }
+    }
+
+    func testUIDetailFixtureRejectsForeignAndConflictingSelectorsAndRPCBodies() throws {
+        let origin = AuthenticatedUISmokeFixture.origin.absoluteString
+        let own = AuthenticatedUISmokeFixture.userID.uuidString
+        let game = AuthenticatedUISmokeFixture.gameID.uuidString
+        let foreign = "00000000-0000-0000-0000-000000000099"
+        for path in [
+            "/sessions?id=eq.\(foreign)&starts_at=gte.2026-01-01",
+            "/sessions?id=eq.\(game)&id=eq.\(foreign)",
+            "/sessions?id=eq.\(game)&starts_at=gte.2026-01-01",
+            "/sessions?id=in.(\(foreign))",
+            "/session_participants?user_id=eq.\(own)&session_id=eq.\(foreign)"
+        ] {
+            var request = URLRequest(url: try XCTUnwrap(URL(string: origin + "/rest/v1" + path)))
+            request.httpMethod = "GET"
+            request.setValue("Bearer \(AuthenticatedUISmokeFixture.accessToken)", forHTTPHeaderField: "Authorization")
+            XCTAssertThrowsError(try AuthenticatedUISmokeFixture.response(for: request), path)
+        }
+        for body in [nil, "{}", "[]", "bad", "{\"p_session_id\":\"\(foreign)\"}",
+                     "{\"p_session_id\":\"\(game)\",\"extra\":true}",
+                     "{\"p_session_id\":\"\(game)\",\"p_session_id\":\"\(foreign)\"}",
+                     "{\"p_session_id\":\"\(foreign)\",\"p_session_id\":\"\(game)\"}",
+                     "{\"p_session_id\":\"\(game)\",\"p_session_\\u0069d\":\"\(foreign)\"}"] as [String?] {
+            var request = URLRequest(url: try XCTUnwrap(URL(string: origin + "/rest/v1/rpc/get_session_roster")))
+            request.httpMethod = "POST"
+            request.httpBody = body.map { Data($0.utf8) }
+            request.setValue("Bearer \(AuthenticatedUISmokeFixture.accessToken)", forHTTPHeaderField: "Authorization")
+            XCTAssertThrowsError(try AuthenticatedUISmokeFixture.response(for: request))
+        }
+    }
+
+    func testUIRosterFixtureBoundsAndValidatesDataAndStreamBodies() throws {
+        let game = AuthenticatedUISmokeFixture.gameID.uuidString
+        let valid = " {\n \"p_session_id\" : \"\(game)\" }\n"
+        for useStream in [false, true] {
+            for body in [valid, valid + "{}", String(repeating: " ", count: 513), "bad",
+                         "{\"p_session_\\u0069d\":\"\(game)\"}"] {
+                var request = URLRequest(url: AuthenticatedUISmokeFixture.origin.appendingPathComponent("rest/v1/rpc/get_session_roster"))
+                request.httpMethod = "POST"
+                request.setValue("Bearer \(AuthenticatedUISmokeFixture.accessToken)", forHTTPHeaderField: "Authorization")
+                if useStream { request.httpBodyStream = InputStream(data: Data(body.utf8)) }
+                else { request.httpBody = Data(body.utf8) }
+                if body == valid {
+                    let data = try AuthenticatedUISmokeFixture.response(for: request)
+                    XCTAssertEqual(try JSONDecoder().decode(SessionRoster.self, from: data).joined.count, 3)
+                } else {
+                    XCTAssertThrowsError(try AuthenticatedUISmokeFixture.response(for: request))
+                }
+            }
+        }
+    }
+
     func testAuthenticatedUIFixtureUsesRealSDKAndRepositories() async throws {
         let client = SupabaseManager.makeClient(testMode: .uiSmokeAuthenticated)
         let session = try await client.auth.session

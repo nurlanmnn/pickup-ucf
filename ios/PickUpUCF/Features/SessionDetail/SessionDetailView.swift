@@ -195,7 +195,10 @@ struct SessionDetailView: View {
                     .padding(.top, Spacing.xs)
 
                 VStack(alignment: .leading, spacing: Spacing.l) {
-                    SessionLocationMap(session: session)
+                    // MapKit/geocoding has its own transport outside URLProtocol.
+                    if !AppTestMode.current.isUISmoke {
+                        SessionLocationMap(session: session)
+                    }
                     infoCard(session)
                     rosterCard(session)
 
@@ -832,6 +835,10 @@ struct SessionDetailView: View {
 
     @MainActor
     private func refreshCalendarExportReceipt() {
+        guard !AppTestMode.current.isUISmoke else {
+            hasCalendarExport = false
+            return
+        }
         hasCalendarExport = CalendarExportService.shared.hasExportReceipt(sessionId: sessionId)
     }
 

@@ -52,7 +52,7 @@ enum SupabaseManager {
 }
 
 #if DEBUG && targetEnvironment(simulator)
-/// A read-only synthetic backend for the bounded tab-navigation UI lane.
+/// A read-only synthetic backend for the bounded tab/detail-navigation UI lane.
 /// Never used by Release/device builds or the ordinary unit-test shared client.
 enum AuthenticatedUISmokeFixture {
     static let userID = UUID(uuidString: "00000000-0000-0000-0000-000000000011")!
@@ -87,6 +87,22 @@ enum AuthenticatedUISmokeFixture {
         else { throw URLError(.unsupportedURL) }
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         func value(_ key: String) -> String? { query.first { $0.name == key }?.value }
+        func gameIDs(_ key: String) throws -> [UUID]? {
+            let items = query.filter { $0.name == key }
+            guard !items.isEmpty else { return nil }
+            guard items.count == 1, let raw = items[0].value else { throw URLError(.unsupportedURL) }
+            let values: [String]
+            if raw.hasPrefix("eq.") {
+                values = [String(raw.dropFirst(3))]
+            } else if raw.hasPrefix("in.("), raw.hasSuffix(")") {
+                values = String(raw.dropFirst(4).dropLast()).components(separatedBy: ",")
+            } else { throw URLError(.unsupportedURL) }
+            let ids = values.compactMap(UUID.init(uuidString:))
+            guard ids.count == values.count, !ids.isEmpty, Set(ids).count == ids.count,
+                  ids.allSatisfy({ $0 == gameID || $0 == pastGameID })
+            else { throw URLError(.unsupportedURL) }
+            return ids
+        }
         let ownUser = "eq.\(userID.uuidString)"
         let json: Any
         switch (request.httpMethod, url.path) {
@@ -98,17 +114,64 @@ enum AuthenticatedUISmokeFixture {
             json = []
         case ("POST", "/rest/v1/rpc/list_blocked_users"):
             json = []
+        case ("POST", "/rest/v1/rpc/get_session_roster"):
+            let data = try requestBody(request)
+            // Only the SDK's one literal key/UUID member is supported. Validate
+            // before JSON decoding, which would collapse duplicate keys.
+            let singleMember = #"\A[ \t\r\n]*\{[ \t\r\n]*"p_session_id"[ \t\r\n]*:[ \t\r\n]*"[0-9A-Fa-f-]{36}"[ \t\r\n]*\}[ \t\r\n]*\z"#
+            guard query.isEmpty,
+                  let rawBody = String(data: data, encoding: .utf8),
+                  rawBody.range(of: singleMember, options: .regularExpression) != nil,
+                  let body = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  Set(body.keys) == ["p_session_id"], let rawID = body["p_session_id"] as? String,
+                  let id = UUID(uuidString: rawID), id == gameID || id == pastGameID
+            else { throw URLError(.unsupportedURL) }
+            json = ["joined": [
+                ["user_id": userID.uuidString, "display_name": "UI Smoke Student", "role": "host"],
+                ["user_id": "00000000-0000-0000-0000-000000000012", "display_name": "UI Smoke Teammate One", "role": "player"],
+                ["user_id": "00000000-0000-0000-0000-000000000013", "display_name": "UI Smoke Teammate Two", "role": "player"]
+            ], "waitlist_count": 0, "viewer_waitlist_position": NSNull()]
         case ("GET", "/rest/v1/session_participants") where value("user_id")?.lowercased() == ownUser.lowercased():
-            json = [["session_id": gameID.uuidString, "status": "joined"]]
+            guard query.filter({ $0.name == "user_id" }).count == 1 else { throw URLError(.unsupportedURL) }
+            let ids = try gameIDs("session_id") ?? [gameID]
+            json = ids.map { ["session_id": $0.uuidString, "status": "joined"] }
         case ("GET", "/rest/v1/sessions"):
-            if value("ends_at")?.hasPrefix("lte.") == true {
+            if let ids = try gameIDs("id") {
+                if value("id")?.hasPrefix("eq.") == true {
+                    guard query.allSatisfy({ $0.name == "select" || $0.name == "id" }),
+                          query.filter({ $0.name == "select" }).count <= 1
+                    else { throw URLError(.unsupportedURL) }
+                    json = game(past: ids[0] == pastGameID)
+                } else {
+                    json = ids.map { game(past: $0 == pastGameID) }
+                }
+            } else if value("ends_at")?.hasPrefix("lte.") == true {
                 json = [game(past: true)]
-            } else if value("starts_at") != nil || value("id")?.hasPrefix("in.(") == true {
+            } else if value("starts_at") != nil {
                 json = [game(past: false)]
             } else { throw URLError(.unsupportedURL) }
         default: throw URLError(.unsupportedURL)
         }
         return try JSONSerialization.data(withJSONObject: json)
+    }
+
+    private static func requestBody(_ request: URLRequest) throws -> Data {
+        if let body = request.httpBody {
+            guard body.count <= 512 else { throw URLError(.unsupportedURL) }
+            return body
+        }
+        guard let stream = request.httpBodyStream else { throw URLError(.unsupportedURL) }
+        stream.open()
+        defer { stream.close() }
+        var body = Data()
+        var buffer = [UInt8](repeating: 0, count: 128)
+        while true {
+            let count = stream.read(&buffer, maxLength: buffer.count)
+            guard count >= 0 else { throw URLError(.unsupportedURL) }
+            if count == 0 { return body }
+            body.append(contentsOf: buffer.prefix(count))
+            guard body.count <= 512 else { throw URLError(.unsupportedURL) }
+        }
     }
 
     private static func game(past: Bool) -> [String: Any] {
@@ -117,7 +180,8 @@ enum AuthenticatedUISmokeFixture {
                 "sport": "basketball", "custom_location": past ? "UI Smoke Past Court" : "UI Smoke Court",
                 "starts_at": start.ISO8601Format(), "ends_at": start.addingTimeInterval(3_600).ISO8601Format(),
                 "capacity": 8, "player_count": 3, "skill_level": "any",
-                "status": past ? "completed" : "open"]
+                "status": past ? "completed" : "open", "notes": "UI Smoke game notes",
+                "host": ["id": userID.uuidString, "display_name": "UI Smoke Student"]]
     }
 }
 

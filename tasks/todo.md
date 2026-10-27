@@ -1,3 +1,14 @@
+October26: authenticated isolated UI now opens future/past details and checks
+visible time, synthetic roster/notes and host actions. RealSDK loopback red proved
+both UI modes could connect before guards; coordinator effect spies and negative
+HTTP selector/body tests also red. Guard all coordinator entries and detail
+realtime before effects; omit MapKit/geocoding and Calendar singleton in UI mode.
+Read-only fixture IDs/RPC bodies tightened, including duplicate-key/stream bounds.
+Final UI11/11, signed isolated374/374, Release/analyzer and fresh reviews pass;
+four screenshots inspected, built UI backend settings empty, AX restored/restarted
+and verified1/1 for units. No normal behavior/deploy/upload change. BETA-11 partial.
+See [scope/evidence](../docs/superpowers/plans/2026-10-26-session-detail-ui-smoke.md).
+
 October26 manual hybrid check: current local Release simulator A plus physical
 phone B passed create/discover after refresh, join/full roster, leave/rejoin,
 two-way chat, host notes persistence, owner-attested Lock Screen Live Activity
