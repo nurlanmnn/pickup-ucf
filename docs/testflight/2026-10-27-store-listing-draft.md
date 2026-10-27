@@ -64,6 +64,11 @@ Support URL: select a public page with usable support information after checking
 its rendered content; do not use a mailto URL in the URL field. Marketing URL is
 optional and remains unproposed here.
 
+Browser recheck during build-6 processing: the existing privacy-policy page
+renders successfully and includes a Contact section with the support mailbox,
+worded for privacy questions/requests. This verifies the current contact path;
+it does not establish a dedicated general app-support page or mailbox delivery.
+
 ## Candidate-specific internal testing note
 
 Build 6 includes more reliable session edits, visible sport-name validation, and

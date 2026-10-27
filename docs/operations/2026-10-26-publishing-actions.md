@@ -125,6 +125,12 @@ remains migration head20261022170532/send-push v18; all ten migrations are pendi
 Current candidate preparation supersedes the historical build-5 source version
 and login blocker above without changing the release authorization boundaries.
 
+Later October 27: owner specifically approved uploading build 6 for processing.
+Xcode upload succeeded at18:59:09 Eastern; store independently showed1.0(6)
+Processing, created6:59PM. Internal assignment, compliance declarations,
+installation, backend rollout and review submission remain separate. See the
+candidate record for the processing result and exact authorization scope.
+
 References: [checkpoint](2026-10-26-release-checkpoint.md),
 [launch handoff](2026-10-23-launch-handoff.md),
 [hybrid evidence](../testflight/2026-10-26-hybrid-device-check.md),
