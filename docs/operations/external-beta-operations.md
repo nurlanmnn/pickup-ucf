@@ -10,10 +10,14 @@ Complete every field before external testing.
 | --- | --- | --- | --- |
 | Support mailbox monitoring | Nurlan Mammadli | `TBD` | September 30, 2026 |
 | Routine moderation queue | Nurlan Mammadli | `TBD` | September 30, 2026 |
-| Urgent safety escalation | `TBD` | `TBD` | `TBD` |
-| Supabase operations | `TBD` | `TBD` | `TBD` |
-| APNs and notification delivery | `TBD` | `TBD` | `TBD` |
-| TestFlight release decision | `TBD` | `TBD` | `TBD` |
+| Urgent safety escalation | Nurlan Mammadli | Not assigned | October 26, 2026 |
+| Supabase operations | Nurlan Mammadli | Not assigned | October 26, 2026 |
+| APNs and notification delivery | Nurlan Mammadli | Not assigned | October 26, 2026 |
+| TestFlight release decision | Nurlan Mammadli | Not assigned | October 26, 2026 |
+
+On October 26, 2026, Nurlan confirmed primary ownership of all four roles above
+and that no backup is assigned yet. Backup coverage remains open before external
+testing; this confirmation does not establish operational or device acceptance.
 
 Nurlan Mammadli confirmed on September 30, 2026 that `support.roomateapp@gmail.com` is actively monitored. External-delivery verification remains part of the release check. The moderation owner follows [moderation-response.md](moderation-response.md).
 
@@ -135,7 +139,7 @@ Stop external expansion for any crash loop, authentication outage, cross-account
 | Gate | Evidence location | Result | Verified by/date |
 | --- | --- | --- | --- |
 | Support mailbox ownership | This runbook | `CONFIRMED` | Nurlan Mammadli, September 30, 2026 |
-| Remaining named ownership | Private operations record | `OPEN` | `TBD` |
+| Remaining named ownership | This runbook; private escalation record still needed | `PRIMARY CONFIRMED; BACKUPS OPEN` | Nurlan Mammadli, October 26, 2026 |
 | Moderator provisioning | Production `moderator_accounts` grant; identifiers excluded from Git | `CONFIRMED` | September 30, 2026 |
 | Reviewer account and synthetic content | This runbook and review packet; no identifiers in Git | `RLS VERIFIED; APP SIGN-IN OWNER-CONFIRMED; CANDIDATE RECHECK OPEN` | October 4, 2026 |
 | RLS/role matrix | Redacted release evidence | `OPEN` | `TBD` |

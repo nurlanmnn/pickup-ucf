@@ -13,7 +13,7 @@ verification/push and bounded approved device checks remain authorized.
 | Notification observation | No-alert reply14:15:48.852Z preceded14:16:01.504Z worker dispatch | New bounded controlled fixture and observation after dispatch; no notification app defect established |
 | Fixture cleanup | October26 test cancelled; zero active Activity tokens; refreshed phone feed empty | October25 independently exported Calendar copy may remain; no new Calendar export occurred |
 | Public pages | Privacy, Terms and Community Guidelines returned HTTPS200 in current check | Candidate browser rendering and final disclosure/metadata consistency at submission |
-| Operations | Support/moderation primary previously named; owner question pending for remaining roles | Named primary and backup responders, private escalation path and recovery RPO/RTO/retention decisions |
+| Operations | Nurlan confirmed primary ownership of urgent safety, Supabase, push delivery and release decisions on October26; no backup assigned | Backup responders, private escalation path and recovery RPO/RTO/retention decisions |
 | Store/reviewer | Last verified TestFlight1.0(5) source53ac5c7; phone current exact binary metadata unrefreshed | Current App Store Connect audit, unique new build selection, reviewer fixture refresh, age/privacy/export declarations and explicit submission authorization |
 
 Existing local/disposable test and restore evidence stays valid for unchanged
