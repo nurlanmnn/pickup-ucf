@@ -131,6 +131,11 @@ Processing, created6:59PM. Internal assignment, compliance declarations,
 installation, backend rollout and review submission remain separate. See the
 candidate record for the processing result and exact authorization scope.
 
+Processing then finished with Missing Compliance, build ID
+1ab7ca50-f3d3-4918-a1b1-306b0da23ca8. No group is assigned. The encryption question
+was opened read-only with no choice selected; owner declaration confirmation
+and internal-distribution approval are the next gates.
+
 References: [checkpoint](2026-10-26-release-checkpoint.md),
 [launch handoff](2026-10-23-launch-handoff.md),
 [hybrid evidence](../testflight/2026-10-26-hybrid-device-check.md),
