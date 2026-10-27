@@ -32,3 +32,9 @@ revoking intended RPCs simply to silence the scanner. Remediation references:
 
 Detailed device evidence: [hybrid check](../testflight/2026-10-26-hybrid-device-check.md).
 Detailed source scope: [isolated detail UI plan](../superpowers/plans/2026-10-26-session-detail-ui-smoke.md).
+
+The [ordered publishing actions](2026-10-26-publishing-actions.md) consolidate
+candidate provenance, backend scope, remaining device gates and approval
+boundaries. The continuation's App Store Connect audit reached an unauthenticated
+login page; current store/build selection is still unverified. Native UI access
+reported the Mac locked. No new fixture, deployment, upload or store change.
