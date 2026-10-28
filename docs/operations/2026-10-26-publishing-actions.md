@@ -147,6 +147,12 @@ contains the exact proposed production set, private logical-capture scope,
 migration dry-run parity, API exposure checks and execution/recovery steps.
 It is preparation only; backend deployment approval remains outstanding.
 
+Subsequent owner approval authorized exactly that backend set. All ten migrations
+are now applied at head20261023232500; send-push v19 is active with source and
+bounded server health verified. See the [production rollout record](2026-10-27-production-rollout.md).
+This supersedes historical pending-backend statements above. Build6 device
+installation/acceptance and external-review/recovery gates remain open.
+
 References: [checkpoint](2026-10-26-release-checkpoint.md),
 [launch handoff](2026-10-23-launch-handoff.md),
 [hybrid evidence](../testflight/2026-10-26-hybrid-device-check.md),

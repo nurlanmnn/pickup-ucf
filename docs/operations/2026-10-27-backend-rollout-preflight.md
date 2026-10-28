@@ -1,6 +1,6 @@
 # Backend rollout preflight — October 27, 2026
 
-Status: prepared for owner review. No migration applied or function deployed.
+Status: owner-approved and executed; see the [rollout result](2026-10-27-production-rollout.md).
 Approval of build6 upload, encryption declaration and internal assignment does
 not authorize this separate production change.
 

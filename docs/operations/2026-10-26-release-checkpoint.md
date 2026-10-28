@@ -7,8 +7,8 @@ verification/push and bounded approved device checks remain authorized.
 | Area | Current evidence | Still needed |
 | --- | --- | --- |
 | Source | Feature branch codex/calendar-write-only; isolated detail increment verified UI11/11, signed units374/374, Release/analyzer | Compatible candidate binary and exact-candidate acceptance; broader BETA-11 remains partial |
-| Production schema | Read-only history recheck: head20261022170532; zero October23 migrations applied | Approved rollout of the ten ordered migrations listed in launch-handoff; deployment preflights and role/API matrix |
-| Push worker | Deployed send-push version18 retrieved read-only; pending local worker fix remains separate | Approved compatible worker rollout and provider/candidate acceptance |
+| Production schema | October27 approved rollout: all ten applied, head20261023232500; function/policy/grant parity checked | Full production role/API matrix and exact-candidate acceptance |
+| Push worker | October27 send-push v19 active/source verified; bounded HTTP/cron/outbox checks pass | Provider/device/candidate acceptance and longer observation |
 | Hybrid core | Real two-account create/discover/join/leave/rejoin/chat; notes persisted; physical Live Activity appearance/end owner-confirmed | Dispatch-aware alert/navigation retest, block/unblock, notes rendering on recipient, remaining offline/account-transition/accessibility/device matrix |
 | Notification observation | No-alert reply14:15:48.852Z preceded14:16:01.504Z worker dispatch | New bounded controlled fixture and observation after dispatch; no notification app defect established |
 | Fixture cleanup | October26 test cancelled; zero active Activity tokens; refreshed phone feed empty | October25 independently exported Calendar copy may remain; no new Calendar export occurred |
@@ -52,3 +52,8 @@ Testing in the existing internal group with1 tester, following specific owner
 approval. This does not establish installation or device acceptance. The
 [backend rollout preflight](2026-10-27-backend-rollout-preflight.md) is prepared;
 no migrations/functions were deployed. Source-only documentation pushes continue.
+
+Subsequent explicit owner approval authorized the ten migrations and worker fix.
+The [October27 production rollout](2026-10-27-production-rollout.md) is complete;
+it supersedes the earlier pending-deployment state. Build6 installation and the
+remaining device/provider/role/recovery/external-review gates stay open.

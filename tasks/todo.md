@@ -1,3 +1,11 @@
+October27: build1.0(6) is Validated/Testing internally after specific owner approval.
+The separately approved backend rollout applied all ten migrations at
+head20261023232500 and send-push v19. Function/ACL/policy parity, unauthorized401
+probes and bounded scheduled200/cron/outbox checks pass. Exact TestFlight6 device
+installation/acceptance, full production role/API matrix and external review stay
+open. No new fixture; October26 cancellation preserved. See
+[rollout](../docs/operations/2026-10-27-production-rollout.md).
+
 October26: authenticated isolated UI now opens future/past details and checks
 visible time, synthetic roster/notes and host actions. RealSDK loopback red proved
 both UI modes could connect before guards; coordinator effect spies and negative

@@ -793,3 +793,19 @@ No real account/provider/phone mutation or deployment/upload in this increment.
 BETA-11 broader mutations/permissions/CI/physical acceptance remain open. See
 [detail evidence](../superpowers/plans/2026-10-26-session-detail-ui-smoke.md) and
 [current release checkpoint](2026-10-26-release-checkpoint.md).
+
+## October27 candidate and authorized backend rollout
+
+Exact source2d4310d was archived/uploaded as1.0(6), validated and assigned only to
+the existing internal group with owner approval; group status Testing/1 tester.
+On the compliance-confirmation turn the store already showed non-exempt encryption
+No; the agent did not re-save it. Separate explicit deployment approval then
+authorized all ten October23 migrations and send-push fix. Production now has
+52 migrations/head20261023232500 and send-push v19. Six function bodies/security
+modes, policy/grant/RLS boundaries, private-schema exposure,401 negative probes
+and bounded three scheduled200 invocations/cron/outbox checks pass. No new live
+fixture, account/provider action, merge, external invitation or review submission.
+Build6 installation/physical acceptance and full production role/API matrix stay
+open. See [rollout and limits](2026-10-27-production-rollout.md). Protected recovery
+files remain outside Git; no restore occurred. Do not rerun unchanged passing
+local suites or treat bounded server health as APNs/device acceptance.
