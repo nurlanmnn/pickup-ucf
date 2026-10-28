@@ -136,6 +136,17 @@ Processing then finished with Missing Compliance, build ID
 was opened read-only with no choice selected; owner declaration confirmation
 and internal-distribution approval are the next gates.
 
+Owner subsequently approved that exact declaration/internal-assignment request.
+The next read already showed compliance cleared and non-exempt encryption No;
+the agent did not re-save it. The agent assigned only the existing internal group.
+Build6 is now Testing with1 tester. Installation and exact-candidate acceptance,
+backend rollout, external distribution and review remain open; see candidate record.
+
+The [October27 backend preflight](2026-10-27-backend-rollout-preflight.md) now
+contains the exact proposed production set, private logical-capture scope,
+migration dry-run parity, API exposure checks and execution/recovery steps.
+It is preparation only; backend deployment approval remains outstanding.
+
 References: [checkpoint](2026-10-26-release-checkpoint.md),
 [launch handoff](2026-10-23-launch-handoff.md),
 [hybrid evidence](../testflight/2026-10-26-hybrid-device-check.md),

@@ -46,3 +46,9 @@ See [candidate record](../testflight/2026-10-27-build-6.md) and
 [listing audit/draft](../testflight/2026-10-27-store-listing-draft.md).
 Production migration head and function versions are unchanged on fresh read;
 the pending backend/device/review gates remain open.
+
+Later October27: build6 is Validated with non-exempt encryption No and is now
+Testing in the existing internal group with1 tester, following specific owner
+approval. This does not establish installation or device acceptance. The
+[backend rollout preflight](2026-10-27-backend-rollout-preflight.md) is prepared;
+no migrations/functions were deployed. Source-only documentation pushes continue.
