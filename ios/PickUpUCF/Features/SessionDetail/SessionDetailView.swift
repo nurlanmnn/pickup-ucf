@@ -3,6 +3,7 @@ import UIKit
 
 struct SessionDetailView: View {
     let sessionId: UUID
+    let handlesChatDeepLinks: Bool
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -17,13 +18,15 @@ struct SessionDetailView: View {
     @State private var showBlockConfirm = false
     @State private var showRunItBackSheet = false
     @State private var showChat = false
+    @State private var loadedUserId: UUID?
     @State private var isAddingToCalendar = false
     @State private var hasCalendarExport = false
     @State private var showCalendarCopyConfirm = false
     @State private var showCalendarSettings = false
 
-    init(sessionId: UUID) {
+    init(sessionId: UUID, handlesChatDeepLinks: Bool = false) {
         self.sessionId = sessionId
+        self.handlesChatDeepLinks = handlesChatDeepLinks
         _viewModel = State(initialValue: SessionDetailViewModel(sessionId: sessionId, userId: nil))
     }
 
@@ -87,20 +90,28 @@ struct SessionDetailView: View {
             }
         }
         .task(id: "\(sessionId.uuidString)-\(appState.session?.userId.uuidString ?? "anon")") {
-            viewModel = SessionDetailViewModel(
-                sessionId: sessionId,
-                userId: appState.session?.userId
-            )
-            await viewModel.load()
+            loadedUserId = nil
+            showChat = false
+            let userId = appState.session?.userId
+            let model = SessionDetailViewModel(sessionId: sessionId, userId: userId)
+            viewModel = model
+            await model.load()
+            guard !Task.isCancelled, appState.session?.userId == userId else { return }
+            loadedUserId = userId
             refreshCalendarExportReceipt()
-            if appState.consumeSessionDetailOpenChat(for: sessionId), viewModel.canAccessChat {
-                showChat = true
-            }
+            openRequestedChatIfReady()
             await withTaskCancellationHandler {
                 await viewModel.startSessionRealtime()
             } onCancel: {
                 Task { await viewModel.stopSessionRealtime() }
             }
+        }
+        .onChange(of: appState.sessionDetailOpenChatId) { _, _ in
+            openRequestedChatIfReady()
+        }
+        .onChange(of: appState.session?.userId) { _, _ in
+            loadedUserId = nil
+            showChat = false
         }
         .onDisappear {
             Task { await viewModel.stopSessionRealtime() }
@@ -183,6 +194,16 @@ struct SessionDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Their sessions will be hidden from Discover and you won't be able to join their games.")
+        }
+    }
+
+    private func openRequestedChatIfReady() {
+        // A retained detail does not rerun its session/user task for a new alert.
+        // Wait for that account's load, then consume once even if access is denied.
+        guard handlesChatDeepLinks, appState.isAuthenticated, let loadedUserId,
+              loadedUserId == appState.session?.userId else { return }
+        if appState.consumeSessionDetailOpenChat(for: sessionId), viewModel.canAccessChat {
+            showChat = true
         }
     }
 

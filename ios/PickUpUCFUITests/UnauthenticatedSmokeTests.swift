@@ -40,6 +40,47 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         add(attachment)
     }
 
+    func testOrdinarySessionLinkOpensOnlyDetail() throws {
+        let app = try launch(authenticated: true)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))
+        tap(app.buttons["Test session link"], in: app)
+        XCTAssertTrue(app.staticTexts["UI Smoke Court"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Session"].exists)
+        XCTAssertFalse(app.navigationBars["Chat"].exists)
+    }
+
+    func testChatAlertRoutesFromMyGamesDetailToDiscoverChat() throws {
+        let app = try launch(authenticated: true)
+        tap(app.tabBars.buttons["My Games"], in: app)
+        tap(app.buttons["session-open-00000000-0000-0000-0000-000000000021"], in: app)
+        XCTAssertTrue(app.staticTexts["UI Smoke Court"].waitForExistence(timeout: 10))
+        tap(app.buttons["Test chat alert"], in: app)
+        XCTAssertTrue(app.tabBars.buttons["Discover"].isSelected)
+        XCTAssertTrue(app.navigationBars["Chat"].waitForExistence(timeout: 10))
+    }
+
+    func testChatAlertOpensChatFromDiscover() throws {
+        let app = try launch(authenticated: true)
+        XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))
+        tap(app.buttons["Test chat alert"], in: app)
+        XCTAssertTrue(app.navigationBars["Chat"].waitForExistence(timeout: 10))
+        attach(app, name: "Chat alert initial navigation")
+    }
+
+    func testChatAlertOpensChatFromAlreadyLoadedDetailOnce() throws {
+        let app = try launch(authenticated: true)
+        tap(app.buttons["session-open-00000000-0000-0000-0000-000000000021"], in: app)
+        XCTAssertTrue(app.staticTexts["UI Smoke Court"].waitForExistence(timeout: 10))
+        tap(app.buttons["Test chat alert"], in: app)
+        XCTAssertTrue(app.navigationBars["Chat"].waitForExistence(timeout: 10))
+        attach(app, name: "Chat alert reused detail")
+        app.navigationBars["Chat"].buttons.firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Session"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.navigationBars["Chat"].exists, "Back must not replay a consumed alert")
+        tap(app.buttons["Test chat alert"], in: app)
+        XCTAssertTrue(app.navigationBars["Chat"].waitForExistence(timeout: 10), "A subsequent alert must still open Chat")
+    }
+
     func testAuthenticatedTabsReadSyntheticDataAndRelaunch() throws {
         let app = try launch(authenticated: true)
         XCTAssertTrue(app.buttons["session-open-00000000-0000-0000-0000-000000000021"].waitForExistence(timeout: 10))

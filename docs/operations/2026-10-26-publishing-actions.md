@@ -179,3 +179,11 @@ opened session detail rather than Chat: routing remains a release blocker, with
 no verified fix. Fixture is cancelled; zero active Live Activity tokens and zero
 pending outbox rows verified. No new fixture is approved. Store access was restored;
 the listing draft records the screenshot/pricing/availability/accessibility gaps.
+
+
+October 28 continuation: a local retained-detail regression reproduced and fixed
+chat alert routing, including a separately reproduced cross-tab consumer race.
+See [routing fix and verification limits](../testflight/2026-10-28-chat-routing-fix.md).
+TestFlight build 6 is unchanged. New route/link UI tests pass; broader test failures
+remain open. Owner replaced prior cutoffs with 92% used / 8% remaining; never use
+reset credits. Build 7 packaging/upload and physical notification retest remain open.

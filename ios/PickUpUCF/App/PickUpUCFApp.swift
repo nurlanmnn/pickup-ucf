@@ -31,6 +31,20 @@ struct PickUpUCFApp: App {
                     )
                 }
             }
+            #if DEBUG && targetEnvironment(simulator)
+            .safeAreaInset(edge: .top) {
+                if AppTestMode.current == .uiSmokeAuthenticated {
+                    HStack {
+                        Button("Test session link") {
+                            appState.queueSessionDeepLink(id: AuthenticatedUISmokeFixture.gameID)
+                        }
+                        Button("Test chat alert") {
+                            appState.queueSessionDeepLink(id: AuthenticatedUISmokeFixture.gameID, openChat: true)
+                        }
+                    }
+                }
+            }
+            #endif
             .environment(appState)
             .preferredColorScheme(appState.preferredColorScheme)
             .onOpenURL { url in
@@ -145,7 +159,7 @@ final class AppState {
     var pendingSessionDeepLink: UUID?
     var pendingSessionDeepLinkOpenChat = false
     /// The session whose chat should open after its detail finishes loading.
-    private var sessionDetailOpenChatId: UUID?
+    private(set) var sessionDetailOpenChatId: UUID?
     /// True when the signed-in user has not finished first-run onboarding.
     var needsOnboarding = false
     var passwordRecoveryUserId: UUID?

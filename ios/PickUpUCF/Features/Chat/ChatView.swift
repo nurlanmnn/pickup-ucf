@@ -50,6 +50,7 @@ struct ChatView: View {
         )
         .dismissKeyboardOnBackgroundTap()
         .task {
+            guard !AppTestMode.current.isUISmoke else { return }
             await viewModel.load()
             await withTaskCancellationHandler {
                 await viewModel.startRealtime()
@@ -61,6 +62,7 @@ struct ChatView: View {
             Task { await viewModel.stopRealtime() }
         }
         .onChange(of: scenePhase) { _, phase in
+            guard !AppTestMode.current.isUISmoke else { return }
             Task {
                 if phase == .active {
                     if viewModel.messages.value == nil { await viewModel.load() }

@@ -40,7 +40,7 @@ struct DiscoverView: View {
                 viewModel.load(currentUserId: appState.session?.userId)
             }
             .navigationDestination(for: UUID.self) { sessionId in
-                SessionDetailView(sessionId: sessionId)
+                SessionDetailView(sessionId: sessionId, handlesChatDeepLinks: true)
             }
             .task(id: appState.sessionDetailDeepLink) {
                 guard appState.sessionDetailDeepLinkTarget == .discover,
