@@ -170,3 +170,12 @@ pending; no fixture was created. A dedicated support page is prepared locally,
 with browser/layout/link/contrast checks; deployment remains a separate action.
 The owner's current five-hour stop threshold is 35% remaining (65% used), replacing
 the older 85%-used threshold for this continuation.
+
+Subsequent owner approval and requested simulator second client enabled the
+[October 28 hybrid check](../testflight/2026-10-28-hybrid-build-6-check.md).
+Create/discover/join/leave/rejoin and two-way foreground chat passed bounded checks.
+Owner confirmed background alert arrival but tapping the actual chat notification
+opened session detail rather than Chat: routing remains a release blocker, with
+no verified fix. Fixture is cancelled; zero active Live Activity tokens and zero
+pending outbox rows verified. No new fixture is approved. Store access was restored;
+the listing draft records the screenshot/pricing/availability/accessibility gaps.

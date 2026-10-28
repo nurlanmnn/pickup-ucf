@@ -85,3 +85,26 @@ acceptance remain separate gates; do not present them as complete.
 
 Reviewer credentials/contact details must be entered privately. Existing October 4
 reviewer game descriptions require a specifically approved refresh before review.
+
+## October 28 read-only follow-up
+
+Owner sign-in restored access. Public version remains Prepare for Submission,
+with empty copy/support/reviewer fields and no selected build. Automatically
+release this version remains selected; no preference was changed.
+
+The selected iPhone with Dynamic Island (medium display) screenshot panel shows
+0 of 3 App Previews and 0 of 10 App Screenshots. This does not inventory every
+device-size/localization slot. Header shows 0 of 1 asset; it is not treated as a
+required screenshot. No assets were uploaded.
+
+Pricing and Availability shows Add Pricing and Set Up Availability. No price or
+territory selection is established by this audit. Apple silicon Mac availability
+is checked; Vision Pro availability is disabled and the page says version 1.0 is
+not compatible. Public distribution and the Apple School Manager reduced-price
+option are selected. These are existing settings, not owner-confirmed release
+choices. Resolve pricing, territories, Mac availability and release timing before
+public submission; no settings were saved.
+
+App Accessibility shows Get Started; no supported-feature declarations were
+entered. Do not declare VoiceOver, larger text or other support without completing
+the corresponding candidate acceptance checks.

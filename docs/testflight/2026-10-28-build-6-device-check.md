@@ -32,6 +32,11 @@ The phone remained in the existing cancelled game's detail view after inspection
 
 ## Next gate
 
+The request below was subsequently approved and completed using a simulator second
+client. The new fixture is cancelled with zero active tokens/pending outbox rows.
+See [hybrid results and the notification-routing blocker](2026-10-28-hybrid-build-6-check.md).
+The original pending checkpoint below is retained as dated context.
+
 Owner approval was requested for one new October 28 10:30 AM Eastern Basketball /
 RWC Park / capacity 2 / Any / nonrecurring synthetic game, cancellation by 11:00 AM,
 and second-account participation. No approval has been received at this checkpoint
