@@ -61,4 +61,10 @@ static page. Production deployment and App Store Connect URL entry remain pendin
 
 Current continuation stop rule: stop at **65% used / 35% remaining** in the
 five-hour window, or when required user input blocks the next action. Never consume
-reset credits. Latest checked usage during this work was 10% used.
+reset credits. Latest checked usage during this work was 16% used / 84% remaining.
+
+After the physical checks and support-page preparation, a fresh Chrome tab opened
+App Store Connect and redirected to `/login`. The metadata audit cannot continue
+without owner sign-in; no credentials were entered or store fields changed. The
+tab was retained for handoff. Source/support and evidence commits `e890ba6` and
+`3cf0e85` were pushed to `origin/codex/calendar-write-only`; no merge occurred.
