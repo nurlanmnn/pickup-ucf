@@ -159,3 +159,14 @@ References: [checkpoint](2026-10-26-release-checkpoint.md),
 [build 5 provenance](../testflight/2026-10-22-build-5.md),
 [review packet](../testflight/external-beta-review-packet.md),
 [operations](external-beta-operations.md).
+
+## October 28 physical continuation
+
+TestFlight on the mirrored phone showed 1.0 (6) installed. Saved-session restore,
+history, Settings, custom-sport validation and retained cancelled-game reads passed
+bounded checks; see [device evidence](../testflight/2026-10-28-build-6-device-check.md).
+Broader acceptance remains open. A new timed fixture/second-account request is
+pending; no fixture was created. A dedicated support page is prepared locally,
+with browser/layout/link/contrast checks; deployment remains a separate action.
+The owner's current five-hour stop threshold is 35% remaining (65% used), replacing
+the older 85%-used threshold for this continuation.

@@ -64,6 +64,11 @@ Support URL: select a public page with usable support information after checking
 its rendered content; do not use a mailto URL in the URL field. Marketing URL is
 optional and remains unproposed here.
 
+October 28: dedicated `privacy-site/support.html` is prepared and verified locally.
+Proposed URL after approved deployment and an HTTPS recheck:
+`https://pickup-ucf-privacy.vercel.app/support.html`. It has not been deployed or
+entered in App Store Connect; local verification is in the build-6 device record.
+
 Browser recheck during build-6 processing: the existing privacy-policy page
 renders successfully and includes a Contact section with the support mailbox,
 worded for privacy questions/requests. This verifies the current contact path;
