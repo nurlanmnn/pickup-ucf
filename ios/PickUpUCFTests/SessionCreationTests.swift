@@ -210,7 +210,7 @@ final class SessionCreationTests: XCTestCase {
                                              "duration_ms", "version", "build", "configuration", "environment"])
             XCTAssertEqual(fields["environment"] as? String, "unit_test")
             XCTAssertEqual(fields["version"] as? String, "1.0")
-            XCTAssertEqual(fields["build"] as? String, "5")
+            XCTAssertEqual(fields["build"] as? String, Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
             XCTAssertNotNil(UUID(uuidString: record.attemptID))
             XCTAssertGreaterThanOrEqual(record.durationMS, 0)
             XCTAssertFalse(record.json.contains(secret))
