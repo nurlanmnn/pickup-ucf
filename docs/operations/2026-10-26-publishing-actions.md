@@ -187,3 +187,14 @@ See [routing fix and verification limits](../testflight/2026-10-28-chat-routing-
 TestFlight build 6 is unchanged. New route/link UI tests pass; broader test failures
 remain open. Owner replaced prior cutoffs with 92% used / 8% remaining; never use
 reset credits. Build 7 packaging/upload and physical notification retest remain open.
+
+
+October 29 continuation: [verification](../testflight/2026-10-29-verification.md)
+resolved the local failures with a visible-Simulator run (374/374 units) and a
+bounded system-password-prompt UI helper. [Build 7](../testflight/2026-10-29-build-7.md),
+source `5b591c3`, is archived/exported/verified locally and not uploaded.
+The store now requires Account Holder review/acceptance of an updated Developer
+Program License Agreement. Upload/internal assignment require the concrete
+approval in the candidate record; no external/public distribution is authorized.
+Current continuation cutoff is **80% used / 20% remaining**, replacing prior limits.
+No reset credits may be consumed. Support-site deployment remains pending.
