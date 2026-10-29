@@ -85,3 +85,10 @@ remaining** in the five-hour window. No reset credits may be consumed.
 - No build 7 version bump/archive/export was prepared. Next: resolve broader test
   failures, freeze/package a reviewed build 7 locally, then request specific upload
   and internal-distribution approval. Physical alert routing remains unverified.
+
+
+October 29 follow-up resolved the local verification blockers without changing
+product behavior: visible-Simulator units passed 374/374, and the corrected bounded
+system-password-prompt UI helper passed its previously failing scenario. See
+[verification evidence and limits](2026-10-29-verification.md). Historical failed
+runs above remain retained evidence; the current cutoff is 80% used / 20% remaining.

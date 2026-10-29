@@ -330,10 +330,19 @@ final class UnauthenticatedSmokeTests: XCTestCase {
             let prompt = app.sheets.matching(NSPredicate(
                 format: "label IN %@", ["Save Password?", "Update Password?"])).firstMatch
             guard prompt.waitForExistence(timeout: 2) else { return }
-            prompt.buttons["Not Now"].tap()
-            let promptGone = XCTNSPredicateExpectation(
-                predicate: NSPredicate(format: "exists == false"), object: prompt)
-            wait(for: [promptGone], timeout: 5)
+            // The system credential sheet can remain during a form transition
+            // after the first tap. Retry its decline action, never Save.
+            for _ in 0..<3 {
+                guard prompt.exists else { return }
+                let decline = prompt.buttons["Not Now"]
+                XCTAssertTrue(decline.waitForExistence(timeout: 2))
+                decline.tap()
+                let promptGone = XCTNSPredicateExpectation(
+                    predicate: NSPredicate(format: "exists == false"), object: prompt)
+                if XCTWaiter.wait(for: [promptGone], timeout: 2) == .completed { return }
+            }
+            attach(app, name: "System password prompt did not dismiss")
+            XCTAssertFalse(prompt.exists, "The system password prompt must dismiss before continuing")
         }
         tap(app.buttons["welcome-sign-in"], in: app)
         let email = app.textFields["UCF email"]
