@@ -82,3 +82,26 @@ Sources:
 - [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications)
 - [Apple age-rating definitions](https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions)
 - [Open-Meteo attribution requirement](https://open-meteo.com/en/pricing)
+
+## Afternoon continuation
+
+Owner-entered demo credentials and reviewer contact information persisted on a
+fresh load, with Save disabled. Presence was verified without recording values.
+Notes was empty on that fresh read; preserved the owner's current saved state.
+Changed only the draft selected build from8 to9 and saved/reloaded successfully;
+manual release and populated private fields persisted. Review remains unsubmitted.
+
+The internal group's Builds table independently confirms1.0(9) Testing. The
+physical phone already had9 installed; saved-session launch and a retained
+synthetic Chat read passed bounded checks in the
+[device record](2026-10-30-build-9-device-check.md).
+
+Read-only App Privacy inspection confirms the same nine linked data types and
+displayed purposes as `ios/PickUpUCF/PrivacyInfo.xcprivacy`: functionality for all,
+plus personalization for Fitness/User ID. No privacy answer was changed. This is
+label/manifest parity, not a new provider-retention or end-to-end privacy audit.
+
+The owner confirmed expected rare profanity/substance references/mild suggestive
+themes. The [completed age declaration](2026-10-30-age-rating-proposal.md) saved
+and reload-verified13+ on current OS/12+ before26. No Kids category or override
+was selected. App Review submission and final candidate acceptance remain open.
