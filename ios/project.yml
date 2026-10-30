@@ -40,7 +40,7 @@ targets:
       properties:
         CFBundleDisplayName: PickUp UCF
         CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "7"
+        CFBundleVersion: "8"
         SUPABASE_URL: $(SUPABASE_URL)
         SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
         CFBundleURLTypes:
@@ -91,7 +91,7 @@ targets:
       properties:
         CFBundleDisplayName: PickUp UCF Widget
         CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "7"
+        CFBundleVersion: "8"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
