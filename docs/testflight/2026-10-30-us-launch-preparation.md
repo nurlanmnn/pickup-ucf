@@ -31,14 +31,45 @@ Evidence screenshots: `/tmp/pickup-store-copy-saved.png`,
 
 ## Remaining preparation
 
-Screenshots must show the real app without private content or test controls.
-Use the actual App Store media slots to validate required dimensions; Apple's
-current documentation distinguishes Dynamic Island medium/large display slots.
-No screenshot, public build selection, age/content-rights declaration, privacy
-revision, reviewer credential entry, App Review submission or release is claimed
-by the metadata work above. Reviewer credentials remain private and the old
-October4 reviewer fixture instructions must not be reused as current game data.
+Three [creation-flow screenshots](assets/2026-10-30/README.md) were rendered,
+visually checked and uploaded to the required iPhone Dynamic Island medium slot.
+Reload confirmed all three filenames and **3 of 10 App Screenshots**. RGB JPEGs
+are1206×2622 without alpha. Raw normal-Release build8 captures remain unchanged;
+the static layout adds headings and a proportional frame. No fake game feed,
+account details, participants or messages appear. The draft form was discarded
+without publishing a game. Browser viewport override was reset afterward.
+
+Build **8** was selected and saved as the draft public candidate; reload confirmed
+the row. Manual release remains selected. This did not submit review or release.
+Reviewer first/last name and public support email plus generic navigation/permission
+notes were saved. Reviewer username/password and phone remain unfilled in the
+public version form. The existing TestFlight username was configured; no password
+was obtained/entered and no credential was transferred into the simulator. Its
+previously saved session restored after the initial welcome frame.
+
+Age-rating wizard capabilities were prepared through Step1 (no parental controls,
+age assurance, unrestricted in-app web access, advertising or under13 restriction;
+yes UGC, chat and conservative social/discovery capability), then **Cancel** at
+Step2 without choosing content frequencies or saving the declaration. These are
+draft interpretations for owner review, not an assigned rating. No content-rights
+declaration, privacy revision, review submission or release was saved.
+
+Content-rights audit found a missing Open-Meteo weather attribution in build8's
+forecast row. The provider's current pricing/licence guidance requires attribution
+and identifying data modifications. A small local UI fix is being validated;
+build8 must be replaced by its successor before public submission. No backend,
+API calls, weather parsing, purchases or provider settings are changed by that fix.
+
+Physical phone resumed its retained synthetic Chat successfully, then profile
+loaded its saved details. The sports editor was opened incidentally while the
+profile's loading layout shifted; returned with Back without edits or Save.
+Settings opened, but later Mirroring paused and the phone moved to another app;
+no new physical acceptance row is claimed. Do not treat this as offline, VoiceOver,
+Calendar or account-transition proof. The old October4 reviewer fixture instructions
+must not be reused as current game data.
 
 Sources:
 - [Apple availability](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/manage-availability-for-your-app-on-the-app-store/)
 - [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications)
+- [Apple age-rating definitions](https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions)
+- [Open-Meteo attribution requirement](https://open-meteo.com/en/pricing)
