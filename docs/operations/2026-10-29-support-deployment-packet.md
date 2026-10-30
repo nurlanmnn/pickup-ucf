@@ -1,6 +1,28 @@
 # Support-page deployment packet — October 29, 2026
 
-**Prepared only. Production deployment is pending owner approval.**
+**Completed October 30, 2026 after explicit owner approval for deployment and Support URL.**
+
+## Deployment result
+
+- Production deployment `dpl_FKjVMUJN7mYtsUtEBTZv1svQ1ytK` is READY and aliased to
+  `https://pickup-ucf-privacy.vercel.app`. Deployment URL:
+  `https://pickup-ucf-privacy-2kidl5n2t-nurlanmnns-projects.vercel.app`.
+- Unauthenticated system curl verified HTTPS 200 and exact source bytes for
+  `/support.html`, all six existing files, and the two auth rewrites plus a
+  retained synthetic session route. Referrer/nosniff headers, auth no-store,
+  noindex/CSP and AASA JSON content type passed. No TLS bypass was used.
+- Browser verification rendered the contact mailbox/policy links and expanded
+  the Calendar FAQ successfully. Support source SHA256:
+  `cd25e733e3c188ceba0605bf72367cceeea13458fa82f57c39d8f3beaccd6cec`.
+- Saved only `https://pickup-ucf-privacy.vercel.app/support.html` in the public
+  iOS 1.0 Support URL field. Reload confirmed persistence and disabled Save.
+  Other fields were untouched; the version remains Prepare for Submission.
+- Evidence: `/tmp/pickup-support-deploy-result.json`,
+  `/tmp/pickup-support-live-verification.json`, `/tmp/pickup-support-live.png`,
+  `/tmp/pickup-support-url-saved.png`. Previous production remains recorded in
+  `/tmp/pickup-support-before-deploy.json`; rollback was not needed.
+
+The preflight and execution scope below are retained as historical preparation.
 
 ## Concrete scope
 

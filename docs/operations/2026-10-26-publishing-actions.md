@@ -241,3 +241,10 @@ outbox rows. No new message or live fixture was used. Public Support URL was rea
 as empty. A concrete request now awaits approval for only support-page deployment
 and saving its independently verified HTTPS URL in that field; no other listing
 fields, review submission or public release are included.
+
+October30 owner approval explicitly covered the support deployment and Support
+URL. The [deployment packet](2026-10-29-support-deployment-packet.md) now records
+READY production `dpl_FKjVMUJN7mYtsUtEBTZv1svQ1ytK`, live HTTPS/source/header/route
+checks and browser FAQ verification. Only the public iOS1.0 Support URL was saved;
+reload confirmed persistence. Other listing fields, build selection, screenshots,
+review submission and release were not changed.

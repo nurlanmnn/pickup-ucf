@@ -108,3 +108,13 @@ public submission; no settings were saved.
 App Accessibility shows Get Started; no supported-feature declarations were
 entered. Do not declare VoiceOver, larger text or other support without completing
 the corresponding candidate acceptance checks.
+
+## October 30 support completion
+
+After explicit owner approval, the dedicated support page was deployed and
+verified live. Only Support URL was saved as
+`https://pickup-ucf-privacy.vercel.app/support.html`; reload confirmed it persisted.
+This supersedes the historical undeployed/empty support statements above.
+The public version remains Prepare for Submission, with no selected build and
+the other version copy/reviewer fields still empty in this read. See the
+[deployment packet](../operations/2026-10-29-support-deployment-packet.md).
