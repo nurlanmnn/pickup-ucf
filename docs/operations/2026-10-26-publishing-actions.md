@@ -219,3 +219,15 @@ local initial-load cancellation defect now has failing-before/passing-after test
 376/376 signed isolated units and review, requiring a new internal candidate.
 The owner's later instruction to continue until finishing supersedes the former
 80%-used stop for this continuation. The agent did not consume reset credits.
+
+
+Late October29 continuation: [build8](../testflight/2026-10-29-build-8.md), source
+`7c5b955`, contains the cancelled-load retry fix. It is archived/exported/verified,
+uploaded/processed and Testing in the existing one-tester internal group, with
+376/376 signed isolated units. Physical build8 install/read-only Chat loading
+verification awaits Mac unlock and a nearby recently unlocked/then-locked phone;
+CUA reported Mac locked and Mirroring iPhone Not Found. Do not label it installed.
+The [support deployment packet](2026-10-29-support-deployment-packet.md) is concrete,
+with exact target/current production identity and unchanged-route hashes checked;
+public support URL is still404. Website deployment remains a separate approval.
+No new live fixture or message was created during build8 preparation/distribution.
