@@ -1,0 +1,41 @@
+{
+  "candidate_source": "7c5b955",
+  "version": "1.0",
+  "build": "8",
+  "capture": "normal Release iPhone 16e iOS26.3 simulator, saved controlled account, unpublished draft",
+  "raw_size": [
+    1170,
+    2532
+  ],
+  "store_size": [
+    1206,
+    2622
+  ],
+  "store_format": "opaque RGB JPEG",
+  "files": [
+    {
+      "file": "01-sport-raw.png",
+      "sha256": "03831e1069a77842ed181130235cdbed8a60ddeed6bff6c2b5ae9d2be7d90ef7"
+    },
+    {
+      "file": "01-sport.jpg",
+      "sha256": "910653285a8d68641b563587f9ad01ac7630397d6078ffaf3d148c8458a84ed7"
+    },
+    {
+      "file": "02-venue-raw.png",
+      "sha256": "8dc20a0f769cb9b39ce10dd4fcf06d8152f6e1f6cbe47ead2f3490ad6b680f85"
+    },
+    {
+      "file": "02-venue.jpg",
+      "sha256": "a6d5e4c8198390ed16f560ae15ef5210acab975b16e1661ba4739e0842881547"
+    },
+    {
+      "file": "03-details-raw.png",
+      "sha256": "6fc20e90bb7ec5bdaa3430c901afc069dbaece487dd512593a6ea99e8a84b501"
+    },
+    {
+      "file": "03-details.jpg",
+      "sha256": "f0a202d4daba1b9ceac315bc2cb6c7fab17b192b13d17ee9b8328061e9686395"
+    }
+  ]
+}
