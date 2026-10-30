@@ -316,6 +316,36 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertNil(vm.historyError)
     }
 
+    func testInvalidatedInitialLoadCanRetryWithoutRemainingLoading() async {
+        let repository = ChatHistoryStub()
+        let stale = message(1), fresh = message(2)
+        repository.pages = [page([stale]), page([fresh])]
+        let vm = model(repository)
+        repository.duringFetch = { await vm.stopRealtime() }
+        await vm.load()
+        XCTAssertFalse(vm.messages.isLoading)
+        XCTAssertNil(vm.messages.value, "Invalidated load must not publish late rows")
+        repository.duringFetch = nil
+        await vm.load()
+        XCTAssertEqual(vm.messages.value, [fresh])
+    }
+
+    func testCancelledInitialLoadCanRetryWithoutRemainingLoading() async {
+        let repository = ChatHistoryStub()
+        let stale = message(1), fresh = message(2)
+        repository.pages = [page([stale]), page([fresh])]
+        let vm = model(repository)
+        var task: Task<Void, Never>?
+        repository.duringFetch = { task?.cancel() }
+        task = Task { await vm.load() }
+        await task?.value
+        XCTAssertFalse(vm.messages.isLoading)
+        XCTAssertNil(vm.messages.value, "Cancelled load must not publish late rows")
+        repository.duringFetch = nil
+        await vm.load()
+        XCTAssertEqual(vm.messages.value, [fresh])
+    }
+
     func testEmptyHistoryStopsPaginationAndInitialFailureCanRetry() async {
         let repository = ChatHistoryStub()
         repository.pages = [page([])]

@@ -80,3 +80,15 @@ local unpublished draft. Treat the future game time as a synthetic placeholder
 and run/cancel the notification test during the approved15-minute publication
 window. Recheck usage and current phone/Focus readiness before creating it. Do not
 start if the run and independent cleanup cannot fit before the80%-used cutoff.
+
+
+## Revised test completed
+
+The owner instructed continuation after the revised draft. The fixture was
+published, joined by the second controlled account and tested with one synthetic
+chat notification. Owner confirmed delivery and Chat navigation; an initial
+loading report resolved on its own, and Mirroring confirmed the message visible.
+Fixture is cancelled with zero active tokens/pending rows, independently verified
+before the15-minute deadline. See [notification evidence and loading investigation](2026-10-29-build-7-notification-check.md).
+A separately reproduced cancellation/retry fix is locally verified376/376 and is
+not in TestFlight7. Its relationship to the temporary physical delay is unproven.

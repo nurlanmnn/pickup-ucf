@@ -208,3 +208,14 @@ and saved-session launch. [Device record and unpublished fixture draft](../testf
 retain the limits. No live game was published; exact fixture approval and current
 Focus/phone readiness are the next gate. No external/public review or site/backend
 deployment occurred. Current stop remains80% used/20% remaining.
+
+
+The revised build7 hybrid notification test is now complete and cleaned up.
+[Evidence](../testflight/2026-10-29-build-7-notification-check.md) records owner-confirmed
+alert delivery/Chat routing and eventual message visibility; initial loading delay
+resolved on its own, with no measured duration/root cause. Fixture cancellation,
+zero active tokens and zero pending rows were independently verified. A separate
+local initial-load cancellation defect now has failing-before/passing-after tests,
+376/376 signed isolated units and review, requiring a new internal candidate.
+The owner's later instruction to continue until finishing supersedes the former
+80%-used stop for this continuation. The agent did not consume reset credits.

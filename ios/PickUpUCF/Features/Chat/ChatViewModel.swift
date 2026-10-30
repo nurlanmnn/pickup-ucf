@@ -76,6 +76,11 @@ final class ChatViewModel {
         syncError = nil
         authorError = nil
         let version = lifecycleVersion
+        defer {
+            // Cancellation must leave the initial load retryable. A newer
+            // lifecycle owns its own loading state and must not be reset here.
+            if version == lifecycleVersion, messages.isLoading { messages = .idle }
+        }
         do {
             async let fetchedMessages = repository.fetchMessages(sessionId: sessionId, before: nil, limit: AppPagination.chatMessageLimit)
             async let fetchedBlockedIds = blockRepository.fetchBlockedUserIds()
