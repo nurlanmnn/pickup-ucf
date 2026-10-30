@@ -68,6 +68,15 @@ no new physical acceptance row is claimed. Do not treat this as offline, VoiceOv
 Calendar or account-transition proof. The old October4 reviewer fixture instructions
 must not be reused as current game data.
 
+Owner subsequently confirmed the necessary content rights. In a separate App
+Information tab, selected **Yes, it contains, shows, or accesses third-party
+content, and I have the necessary rights**, Done and Save. Reload confirmed
+**Yes, this app has the necessary rights to its third-party content.** Evidence:
+`/tmp/pickup-content-rights-saved.jpg`. This records the owner's declaration,
+not an independent legal opinion. Reviewer-field entry remains owner-controlled;
+the previously saved TestFlight username was identified privately at the owner's
+request and was not copied into this repository.
+
 Sources:
 - [Apple availability](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/manage-availability-for-your-app-on-the-app-store/)
 - [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications)
