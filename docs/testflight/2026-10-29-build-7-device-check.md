@@ -57,3 +57,26 @@ and no pending fixture outbox rows before stopping. Do not publish near the
 If the draft timing or readiness no longer holds, obtain a fresh exact draft
 approval rather than extending the scope silently. Broader offline/Calendar,
 provider/account-transition, accessibility and review gates remain open.
+
+
+## Expired-window approval and revised draft — 20:30 Eastern
+
+Owner approved the earlier draft and confirmed Focus Off. The immediate clock
+check was00:30:27UTC October30, or **20:30:27 Eastern October29**. The approved
+19:30 cleanup deadline had already passed. No fixture was published, no chat
+message sent and no push created; the deadline was not silently extended.
+
+The unpublished simulator draft was revised for a fresh approval:
+Basketball/RWC Park, **October30,2026 at09:00 Eastern**, duration90minutes
+(ends10:30), capacity2, Any, nonrecurring. Cleanup is now **within15minutes of
+publication**, rather than an absolute clock deadline that could expire while
+waiting for a reply. Notes explicitly label the controlled test, ask others not
+to join and state that relative cleanup deadline. Final UI accessibility confirmed
+Any selected, capacity2, full revised notes, Tomorrow09:00 summary and Repeat weekly0.
+Preview: `/tmp/pickup-build7-fixture-draft-revised.png`.
+
+This revised date/cleanup window needs fresh owner approval; it is still only a
+local unpublished draft. Treat the future game time as a synthetic placeholder
+and run/cancel the notification test during the approved15-minute publication
+window. Recheck usage and current phone/Focus readiness before creating it. Do not
+start if the run and independent cleanup cannot fit before the80%-used cutoff.
