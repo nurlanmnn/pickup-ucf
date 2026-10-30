@@ -26,7 +26,7 @@ recorded here. Reviewer Notes remains empty in App Store Connect; the
 - Installed and launched normally, observed Welcome then opened **Sign In**.
   Empty-form screenshot: `/tmp/pickup-reviewer9-signin-ready.png`.
 - Owner was asked to enter the dedicated credentials directly in that window.
-  **Fresh login is pending.** No credential was read from App Store Connect or
+  The owner subsequently confirmed signing in. No credential was read from App Store Connect or
   transferred to the simulator by the agent.
 
 This is source-matched local reviewer preparation, not the uploaded TestFlight
@@ -37,10 +37,61 @@ approved by this record.
 
 ## Read-only checks after owner sign-in
 
-Verify Discover, My Games and past history, available synthetic game/chat detail,
-Profile and Settings. Confirm the ordinary reviewer has no Review reports entry;
-do not grant a role. Record only pass/fail and counts of approved synthetic data.
-Do not inspect or capture private profile fields, account identifiers or real
-user conversations. Do not create missing fixtures or send a message without the
-separate concrete fixture authorization. A saved authentication session alone
-does not prove reviewer-ready data or notification/Calendar/provider acceptance.
+- **PASS, local normal Release9:** authenticated Discover is reachable without a
+  sign-in/onboarding form. The owner entered the dedicated account directly.
+  Selecting All sports and waiting for loading shows an empty feed, with no
+  visible retry/error state. Nonprivate screenshot:
+  `/tmp/pickup-reviewer9-empty-discover.png`.
+- **PASS, local:** My Games shows no upcoming games; expanding history loads
+  **five existing games**. This is a UI count, not a new backend inventory.
+- **PASS, local historical read:** opened an old Basketball game whose notes
+  contain a review marker and whose detail shows CANCELLED. Session Chat opens
+  and shows **No messages**. No conversation content was copied or message sent.
+- **PASS, local:** Profile and Settings load. A fresh full Settings tree contains
+  community rules, blocked users, privacy, terms, support and account controls,
+  with **no Review reports entry**. This verifies UI presentation only, not a new
+  privileged backend-role/RLS test.
+- **OPEN:** future/open reviewer game, joined game with synthetic chat history,
+  separate report/block targets, and exact TestFlight reviewer sign-in. Existing
+  historical records are not refreshed reviewer acceptance.
+
+## Unpublished form/input check
+
+Prepared a local Basketball/RWC Park/October31 09:00/90minute/capacity2/Any draft.
+No Create session control was activated. Native AX setValue changed displayed
+text before the draft's stepper/count reflected it. Ordinary capacity keyboard
+entry committed2 to both steppers. Simulator paste then inserted prior clipboard
+text rather than the supplied synthetic notes; that unpublished draft was
+discarded through Close → Discard. No clipboard/account text belongs in evidence.
+
+Using the debugging workflow, a second empty disposable draft isolated notes
+entry. Five direct single-character key presses produced the expected synthetic
+marker (case-insensitive) and a matching5/1000 counter. That diagnostic draft was
+also discarded. Avoid paste/bulk typing for Simulator notes; use direct keys and
+verify actual text plus character count before any publication. The exact
+clipboard synchronization mechanism is not proven, and no product defect or
+source fix is claimed. No unchanged test suite was rerun.
+
+## Next bounded fixture proposal (not approved)
+
+If run before October31 08:45 Eastern: one Basketball game at **RWC Park,
+October31 09:00–10:30 Eastern, capacity2, Any, nonrecurring**, with a controlled-
+test/do-not-join notice. Host: this reviewer simulator/source9. Recipient: the
+existing controlled physical TestFlight9 account. Reconfirm phone readiness and
+current Focus state, without changing it. Obtain explicit approval before
+publication; the discarded form is not a published or approved fixture.
+
+After approval, join only the controlled recipient, send one labeled synthetic
+chat message, observe dispatch and actual notification arrival/tap separately,
+and inspect weather attribution if an outdoor weather snapshot is present.
+Cancel within15minutes of publication and verify cancellation, zero active
+activity tokens and no pending fixture outbox before stopping. Do not start near
+the80%-used allowance cutoff. If the schedule expires, prepare a new future
+proposal rather than reusing it. Calendar copies, reporting/blocking and account
+deletion are outside this proposal. Reviewer data for public review will need a
+separately approved fixture lifetime; this short test is not that data set.
+
+At the last allowance check71% of the five-hour window was used. No timed live
+fixture was started with the80%-used stop approaching. Reset credits remain
+untouched. Continue from the authenticated reviewer simulator; do not request
+the password or repeat fresh sign-in unless that session expires.
