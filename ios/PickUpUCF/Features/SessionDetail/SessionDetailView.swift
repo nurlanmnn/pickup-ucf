@@ -399,9 +399,7 @@ struct SessionDetailView: View {
             if session.isOutdoorForWeather, let weather = session.weatherSnapshot {
                 Divider().padding(.leading, 52)
                 infoRow(icon: "cloud.sun.fill", color: .orange) {
-                    Text(weather.displayLine)
-                        .font(AppFont.body(.semibold))
-                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                    SessionWeatherView(weather: weather)
                 }
             }
 

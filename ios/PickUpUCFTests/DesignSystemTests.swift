@@ -38,6 +38,9 @@ final class DesignSystemTests: XCTestCase {
             let host = UIHostingController(rootView:
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.l) {
+                        SessionWeatherView(weather: WeatherSnapshot(
+                            summary: "Clear", tempF: 82, precipPct: 30, fetchedAt: .now
+                        ))
                         AuthHeaderView(title: "Find your next game", subtitle: "A little time outside. A few new faces.")
                         SessionCard(session: session, onJoin: {})
                         FormCard(label: "Your details") {
