@@ -231,3 +231,13 @@ The [support deployment packet](2026-10-29-support-deployment-packet.md) is conc
 with exact target/current production identity and unchanged-route hashes checked;
 public support URL is still404. Website deployment remains a separate approval.
 No new live fixture or message was created during build8 preparation/distribution.
+
+
+October30: [physical build8 read evidence](../testflight/2026-10-30-build-8-device-check.md)
+now confirms installation/open, saved-session restore and retained Chat content
+on initial opening and history-based re-entry. Both old controlled fixtures are
+still cancelled, with message counts3/1 and zero active activity tokens/pending
+outbox rows. No new message or live fixture was used. Public Support URL was read
+as empty. A concrete request now awaits approval for only support-page deployment
+and saving its independently verified HTTPS URL in that field; no other listing
+fields, review submission or public release are included.
