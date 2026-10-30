@@ -118,3 +118,19 @@ This supersedes the historical undeployed/empty support statements above.
 The public version remains Prepare for Submission, with no selected build and
 the other version copy/reviewer fields still empty in this read. See the
 [deployment packet](../operations/2026-10-29-support-deployment-packet.md).
+
+Read-only App Information follow-up still showed empty subtitle, Primary category
+placeholder, Set Up Age Ratings and Set Up Content Rights Information. Opened
+both setup dialogs for inspection and cancelled without answering or saving.
+The current age-rating wizard has seven steps; its features include separate
+Social Media and Social Media Disabled for Users Under 13 questions alongside
+UGC, chat, web access, advertising, parental controls and age assurance. Do not
+reuse an older questionnaire's answer mapping. Content Rights asks whether
+third-party content is shown/accessed and, if yes, whether necessary rights exist;
+the dialog was left unanswered.
+
+Owner input is pending on proposed free/Sports/manual-release/iPhone/Mac-off
+configuration, US-only versus all available territories, and copyright holder.
+No distribution selection or rights declaration is inferred from approval of
+the support deployment. Screenshots, reviewer access and final exact-candidate
+privacy/age/content declarations remain required preparation before review.
