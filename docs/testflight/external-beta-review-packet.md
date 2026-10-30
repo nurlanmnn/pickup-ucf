@@ -1,5 +1,20 @@
 # External TestFlight Review Packet
 
+**October30 checkpoint:** The current successor candidate is
+[1.0(9)](2026-10-30-build-9.md), source `d2ef6f6`, adding the required weather
+credit. Packaging and local validation passed; consult that record for upload,
+processing and physical acceptance status. The public listing is being prepared
+for a free US-only manual release; it has not been submitted. No external cohort
+or Beta App Review submission is authorized by this packet.
+
+The build5 and October4 fixture/account checks below are historical evidence.
+Their game schedules and reviewer credentials are **not current acceptance**.
+Do not paste their seeded-game navigation into a new review submission. The
+current public draft uses generic navigation notes; a new specifically approved
+reviewer fixture and fresh account login check are still needed before review.
+Production's last recorded verified head is20261023232500/send-pushv19 (October29
+evidence); this note is not a new live backend check.
+
 This file contains TestFlight metadata for the first external beta. Verify candidate-specific fields against the selected build before entering them in App Store Connect. Never put reviewer credentials, verification links, tokens, or account identifiers in this file.
 
 ## Candidate identity

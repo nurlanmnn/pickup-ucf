@@ -248,3 +248,20 @@ READY production `dpl_FKjVMUJN7mYtsUtEBTZv1svQ1ytK`, live HTTPS/source/header/ro
 checks and browser FAQ verification. Only the public iOS1.0 Support URL was saved;
 reload confirmed persistence. Other listing fields, build selection, screenshots,
 review submission and release were not changed.
+
+October30 US launch preparation subsequently saved free US-base pricing, only
+United States availability (1 Available/174 Not Available), Sports category,
+subtitle and listing copy/copyright, manual release and Mac/Vision Pro opt-out.
+Three authentic creation-flow screenshots persisted in the required iPhone slot.
+Build8 was selected as a draft candidate and generic review notes/public contact
+name/email saved. No review was submitted. See the
+[US preparation record](../testflight/2026-10-30-us-launch-preparation.md).
+
+The content-rights audit then found missing Open-Meteo attribution. A minimal
+weather-credit UI fix passed independent review, rendered compact/light/dark/
+largest-text checks,376/376 isolated units and Release analyzer. Successor
+[build9](../testflight/2026-10-30-build-9.md), source d2ef6f6, is archived/exported
+and verified; upload/Apple processing status is in its record. Replace draft
+build8 before submission. Reviewer username/password/phone and owner rights
+confirmation were requested. Age content-frequency answers, fresh reviewer
+fixtures/login and exact-successor physical acceptance remain open.
