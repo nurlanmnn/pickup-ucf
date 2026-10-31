@@ -265,3 +265,13 @@ and verified; upload/Apple processing status is in its record. Replace draft
 build8 before submission. Reviewer username/password/phone and owner rights
 confirmation were requested. Age content-frequency answers, fresh reviewer
 fixtures/login and exact-successor physical acceptance remain open.
+
+October31 continuation: [current checkpoint](../testflight/2026-10-31-build-9-continuation.md)
+records restored reviewer source9 authentication, a new unpublished November1
+controlled fixture proposal, the unchanged52-migration/v19 baseline and healthy
+bounded scheduler observation. Both previous fixtures remain cancelled with no
+active activity tokens/pending rows. New fixture approval/phone readiness and
+renewed App Store Connect sign-in are pending; no live game or message has been
+created in this continuation. Build9's October30 physical retained-chat read,
+public draft selection, saved13+ age declaration and local reviewer login are
+recorded separately; broader exact-candidate/reviewer/release gates stay open.
