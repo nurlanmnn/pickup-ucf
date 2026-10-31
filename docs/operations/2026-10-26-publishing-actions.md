@@ -275,3 +275,11 @@ renewed App Store Connect sign-in are pending; no live game or message has been
 created in this continuation. Build9's October30 physical retained-chat read,
 public draft selection, saved13+ age declaration and local reviewer login are
 recorded separately; broader exact-candidate/reviewer/release gates stay open.
+
+The owner then approved that exact November1 fixture, confirmed Focus Off and
+restored Bluetooth readiness. [The completed run](../testflight/2026-10-31-build-9-continuation.md)
+records physical build9, controlled join, actual alert arrival/tap into Chat and
+eventual message visibility after an initially reported Loading state. The
+fixture is cancelled with one message, zero active tokens and zero pending rows
+verified before deadline. No immediate-load/performance or physical weather-credit
+claim is made; no further fixture, external invitation or review is authorized.
