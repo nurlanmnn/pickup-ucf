@@ -4,6 +4,9 @@
 or restore is authorized by this document. Owner confirmed today that there is
 no off-site copy and requested a plan.
 
+**Owner decision:** stay on Free until real-user adoption justifies spending.
+No user-count threshold has been chosen. Paid backups/PITR are deferred.
+
 ## Verified starting point
 
 Read-only production Dashboard checks on October31 show the organization on
@@ -16,13 +19,12 @@ checks and explicit managed-auth/platform limits. That historical snapshot is
 not a current backup of the October31 production state. Its files were not read
 or copied during today's check.
 
-## Recommended launch minimum
+## Recommended no-subscription plan
 
-1. Owner upgrades the existing organization to **Pro**, after checking the actual
-   checkout total and its other projects. Published pricing starts at $25/month;
-   Pro includes daily backups retained seven days. Keep PITR off initially unless
-   the owner requires recovery finer than a day. Verify the first successful
-   backup timestamp and subsequent daily coverage before closing that gate.
+1. Keep the existing Supabase Free project. Use the Mac as the initial backup
+   runner, with a daily scheduled attempt and a catch-up check when it next runs.
+   Keep database credentials in an approved local credential store, outside Git
+   and logs. Do not add a paid runner or new subscription.
 2. Make a fresh logical recovery set, encrypt it locally, and copy only encrypted
    artifacts to an owner-selected private off-site location independent of this
    Mac and the Supabase account. Include supported database roles/schema/data,
@@ -30,12 +32,16 @@ or copied during today's check.
    integrity manifest. Exports contain sensitive data, including auth material;
    exact scope, destination and encryption/key custody need approval before
    export or upload. Do not reset a database password merely to follow an example.
-3. Target one successful encrypted off-site copy daily. Retain seven daily and
+3. Use existing cloud-storage capacity, such as a private Google Drive folder,
+   after the owner selects the destination and available space is checked. No
+   public sharing. Target one successful encrypted off-site copy daily. Retain seven daily and
    four weekly recovery points; approve expiry separately before removing any
-   existing artifacts. Use an agreed reliable runner; a sleeping/offline Mac is
+   existing artifacts. A sleeping/offline Mac is
    not evidence of a completed nightly backup. Record last successful upload and
    verified checksum privately. Notify the owner on failure or a recovery point
    older than 26 hours, without records, credentials or dump contents in alerts.
+   A Mac-only check cannot alert while that Mac is off; show the stale-backup
+   warning on its next run. Independent monitoring remains a later improvement.
 4. Keep the decryption key in the owner's password manager with an independent
    recovery method. Do not keep the only key beside the backup. Document access
    and a named backup responder without publishing credentials in Git.
@@ -50,9 +56,11 @@ or copied during today's check.
 
 **Proposed targets for owner decision:** at most **24 hours of lost database
 changes** (RPO), and **one business day to restore service** (RTO). These are
-targets, not measured guarantees. They apply only once both daily paths and the
-restore procedure are verified. Revise them if losing a day of games/chat/accounts
-is unacceptable; then assess PITR and more frequent exports.
+targets, not measured guarantees. A Mac-based schedule cannot guarantee a daily
+recovery point while the Mac is unavailable. Record the actual latest successful
+off-site copy and revise these targets after testing. Revisit managed backups
+when real-user adoption, operational burden or recovery needs justify spending;
+do not invent a user-count threshold or upgrade automatically.
 
 ## Recover more than the database
 
@@ -65,17 +73,17 @@ Git source does not establish deployed configuration or secret recovery. Preserv
 deletion/retention obligations when restoring older data; keep restored services
 isolated until post-backup deletions and revocations have been reconciled.
 
-## Lower-cost alternative
+## First implementation increment
 
-Stay on Free and perform the same encrypted daily off-site exports and drills.
-This avoids a plan subscription but leaves scheduling, failure detection,
-retention, key recovery and restore entirely with the owner. Do not claim a
-24-hour recovery point until a reliable runner and alert recipient are configured
-and observed. A single manual copy improves safety but is not a recurring system.
+After destination/key custody and export scope are approved, complete one fresh
+encrypted backup, upload it privately, verify the downloaded ciphertext checksum,
+and test decryption/restoration in isolation. Then add scheduling and missed-run
+handling. A single successful copy improves safety but does not establish a
+recurring system. Existing local backup files stay untouched.
 
 ## Decisions and acceptance still open
 
-- Choose Pro plus independent copies, or the self-managed Free alternative.
+- Free/self-managed is the owner's chosen direction; no paid plan is pending.
 - Accept/revise RPO/RTO; choose encrypted-copy destination, key custody, runner
   and backup responder. No target or storage destination is owner-approved.
 - Approve the exact new production export and encrypted upload scope separately.
