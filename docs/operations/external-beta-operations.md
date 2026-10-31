@@ -120,6 +120,13 @@ Before external testing, record in the private operations system:
 
 Never test a restore over the production project. Restore to an isolated project, verify schema and representative synthetic records, then destroy or restrict the temporary environment according to the operations policy.
 
+October31 read-only Dashboard check: current Free plan includes no scheduled
+project backups and PITR is not enabled. Owner confirmed no off-site copy and
+requested a plan. See the [current backup proposal](2026-10-31-backup-plan.md)
+and [historical isolated restore](2026-10-23-isolated-restore.md). Recovery targets,
+destination/key custody, recurring execution and current restore acceptance
+remain open; no plan purchase, export, upload or restore occurred in this check.
+
 ## Deployment, rotation, rollback, and incident response
 
 For every external candidate, record:

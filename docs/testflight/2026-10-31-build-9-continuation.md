@@ -144,3 +144,39 @@ must never be reopened.
 Weather snapshot was still absent at cleanup, so the physical attribution row
 was not exercised by this run. No Calendar export, report/block, provider or
 account setting change, external invitation or App Review submission occurred.
+
+## Further bounded acceptance and recovery preparation
+
+Continued from clean pushed checkpoint `a8d35e4`; product source is unchanged.
+Allowance checks reported52%, then58% used; the80% stop remains in force and no
+reset credit was used.
+
+On the dedicated reviewer simulator only, Features → Increase Preferred Text
+Size was applied three times. My Games empty-state text and controls remained
+readable; Past games loaded five items. An existing cancelled Basketball detail
+opened and its visible header/time/player/venue rows remained readable at the
+larger size. Three matching decreases restored the prior preference; visible
+detail text shrank accordingly. The exact content-size category was not measured.
+History scrolling via CUA did not visibly move the content; full list/long-page
+scroll acceptance is therefore unverified. This is a bounded layout observation,
+not a maximum-accessibility-size or VoiceOver pass.
+
+Closed PickUp UCF through the reviewer's normal app switcher Close action,
+returned Home, searched for the installed app by direct keys and launched it.
+The first AX observation was transient; the settled tree and screen restored
+authenticated Discover with All selected and No games yet, without credential
+entry. This is normal Release/source9 simulator relaunch evidence, not physical
+TestFlight reviewer sign-in, offline recovery or account-transition isolation.
+The ordinary manual and unit simulators were not changed or used for tests.
+
+Phone Mirroring reconnected to the retained controlled Chat, still showing the
+single synthetic message and empty composer. No new message, live fixture or
+phone setting change was made. No physical force-quit/offline check was performed.
+
+Read-only Supabase Dashboard inspection confirms Free has no included scheduled
+project backups and no enabled PITR recovery window. The owner confirmed no
+off-site copy and requested a plan. The
+[backup proposal](../operations/2026-10-31-backup-plan.md) preserves the historical
+October22 snapshot/October23 isolated-restore evidence, proposes daily managed
+and encrypted independent copies, and keeps costs, export/upload scope, recovery
+targets and restore acceptance open. No purchase, export, upload or restore ran.
