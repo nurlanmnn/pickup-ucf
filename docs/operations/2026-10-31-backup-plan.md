@@ -83,6 +83,15 @@ recurring system. Existing local backup files stay untouched.
 
 ## Decisions and acceptance still open
 
+Local preparation: the [encryption helper](../../tools/recovery/README.md) uses
+Homebrew age1.3.2 and passed11 synthetic local checks, including real decryption,
+tamper/wrong-key rejection and file/error safety. Fresh review found and fixed
+argument-error echo and restrictive-umask output permissions. This is tool
+preparation only; no persistent owner key, production export, upload or schedule
+has been created. A metadata-only Drive search found no PickUp folder; propose
+a new owner-private **PickUp UCF Backups** folder, with sharing verified before
+any upload. Drive quota is not yet checked.
+
 - Free/self-managed is the owner's chosen direction; no paid plan is pending.
 - Accept/revise RPO/RTO; choose encrypted-copy destination, key custody, runner
   and backup responder. No target or storage destination is owner-approved.
