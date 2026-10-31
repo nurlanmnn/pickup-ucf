@@ -1,8 +1,10 @@
 # Backup and recovery proposal — October 31, 2026
 
-**Proposal only.** No purchase, export, upload, scheduled job, credential change
-or restore is authorized by this document. Owner confirmed today that there is
-no off-site copy and requested a plan.
+**Free plan with one approved off-site copy now verified.** Owner initially
+confirmed no off-site copy and requested this plan, then explicitly approved one
+fresh production database backup, local owner-key encryption and ciphertext-only
+upload to a new private Google Drive folder. Recurring scheduling, purchases and
+restore exercises remain separate. Execution evidence is below.
 
 **Owner decision:** stay on Free until real-user adoption justifies spending.
 No user-count threshold has been chosen. Paid backups/PITR are deferred.
@@ -87,16 +89,17 @@ Local preparation: the [encryption helper](../../tools/recovery/README.md) uses
 Homebrew age1.3.2 and passed11 synthetic local checks, including real decryption,
 tamper/wrong-key rejection and file/error safety. Fresh review found and fixed
 argument-error echo and restrictive-umask output permissions. This is tool
-preparation only; no persistent owner key, production export, upload or schedule
-has been created. A metadata-only Drive search found no PickUp folder; propose
-a new owner-private **PickUp UCF Backups** folder, with sharing verified before
-any upload. Drive quota is not yet checked.
+preparation followed by the separately approved execution below. A metadata-only
+Drive search found no PickUp folder; the new owner-private **PickUp UCF Backups**
+folder was created and sharing verified before upload. Overall Drive quota is
+not yet checked; this individual upload succeeded.
 
 - Free/self-managed is the owner's chosen direction; no paid plan is pending.
 - Accept/revise RPO/RTO; choose encrypted-copy destination, key custody, runner
   and backup responder. No target or storage destination is owner-approved.
-- Approve the exact new production export and encrypted upload scope separately.
-- Verify fresh backup/upload, failure notification and isolated restoration;
+- The one-time production export/encrypted upload is approved and verified below;
+  later recurring exports/uploads need their own configured scope.
+- Verify independent key custody, failure notification and isolated restoration;
   complete the managed-service recovery inventory. No recovery gate is closed.
 
 References checked October31: [pricing](https://supabase.com/pricing),
@@ -104,3 +107,50 @@ References checked October31: [pricing](https://supabase.com/pricing),
 [logical backup/restore](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore).
 The current changelog index was scanned; no database upgrade or restore is being
 implemented in this proposal.
+
+## Approved one-time execution — October31, approximately19:05 Eastern
+
+- Confirmed CLI linkage to the intended production project before any export.
+  Saved four successful CLI exports privately: schema for auth/public/
+  pickup_private, COPY data for those schemas, supported roles, and migration
+  history. Data contains44 COPY table blocks, including auth users, profiles,
+  games, chat and moderation. Migration history has52 entries/head20261023232500.
+- Schema, roles, data and history are separate export snapshots, not one shared
+  transaction. No schema/function/provider setting, live fixture or account
+  credential changed. The age recovery identity is a new local encryption key,
+  not a Supabase login credential.
+- Generated the owner identity privately (0600); it was not read into chat or
+  uploaded. Built an archive containing only four exports plus the integrity/
+  version manifest. Logs and key directories are excluded. Encrypted using
+  age1.3.2; ciphertext size85,240bytes. Full local decryption matched the original
+  archive hash.
+- Created the approved Drive folder. Folder and uploaded file readbacks both
+  show shared=false and only a user/owner permission; no public/link sharing.
+  Uploaded only ciphertext, then downloaded through the authenticated connector.
+  At23:05:43UTC the downloaded ciphertext hash/size matched, full decryption
+  succeeded, the exact five archive members matched, and all four export hashes
+  matched the enclosed manifest. No restore or SQL execution used decrypted data.
+- Python's local CA-store verification initially prevented materialization;
+  system curl completed with normal TLS verification. No certificate validation
+  was disabled. Signed materialization URLs are not retained in this record.
+
+Restricted source/keys/logs, ciphertext receipt and `offsite-verification.json`
+are outside Git at
+`/Users/nurlanmammadli/.local/share/pickup-ucf/recovery/2026-10-31-build9`.
+The Drive resource identifiers are in that private verification record. Local
+plaintext source/staging files remain private; only ciphertext went to Drive.
+Older recovery files were not overwritten or removed.
+
+**Still open:** owner confirmation that the secret identity is stored independently
+of this Mac, a fresh restore drill/managed-service recovery, recurring scheduling,
+missed-run monitoring, retention execution and accepted RPO/RTO. This one verified
+copy does not close the overall backup/recovery release gate. No paid plan or
+recurring automation was created.
+
+Owner subsequently requested agent-managed key storage and chose Apple Passwords/
+iCloud Keychain. Programmatic sync-enabled save returned missing-entitlement
+status−34018, without creating an item. Passwords is locked; owner unlock is
+pending for the normal import flow. A private0600 temporary import CSV is staged
+under the recovery set's keys directory; it was not uploaded or displayed.
+Independent key custody is still unverified. After successful normal import,
+remove that task-created CSV and verify the saved entry without revealing its key.

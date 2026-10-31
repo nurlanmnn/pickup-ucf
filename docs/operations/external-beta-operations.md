@@ -127,6 +127,13 @@ and [historical isolated restore](2026-10-23-isolated-restore.md). Recovery targ
 destination/key custody, recurring execution and current restore acceptance
 remain open; no plan purchase, export, upload or restore occurred in this check.
 
+Later October31 the owner approved one fresh logical recovery set and encrypted
+upload to a new private Drive folder. The [execution record](2026-10-31-backup-plan.md)
+confirms successful exports, ciphertext-only upload, owner-only permissions,
+download hash/full-decryption/export-hash verification. Key custody confirmation,
+fresh restore, recurring execution and recovery targets remain open. No paid plan,
+production mutation or recurring backup job was introduced.
+
 ## Deployment, rotation, rollback, and incident response
 
 For every external candidate, record:

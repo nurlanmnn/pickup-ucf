@@ -180,3 +180,38 @@ off-site copy and requested a plan. The
 October22 snapshot/October23 isolated-restore evidence, proposes daily managed
 and encrypted independent copies, and keeps costs, export/upload scope, recovery
 targets and restore acceptance open. No purchase, export, upload or restore ran.
+
+## Free-backup execution and new allowance boundary
+
+The owner rejected paid backups until real-user adoption justifies spending,
+then requested continued autonomous work until **15% remaining /85% used** in
+the five-hour allowance. This supersedes80% for this continuation. No reset
+credit may be used. Latest pre-checkpoint meter:84% used, weekly92% used.
+
+Local recovery encryption tooling is pushed in `396772e`;11 synthetic checks
+pass, with real age1.3.2 round-trip/tamper/wrong-key verification and fresh review.
+The owner explicitly approved **one** fresh production logical backup, local
+owner-key encryption and ciphertext-only upload to a new private Google Drive
+folder. The [backup execution](../operations/2026-10-31-backup-plan.md) records
+four successful exports,44 data COPY blocks,52 migrations/head20261023232500,
+85,240byte encrypted archive, owner-only Drive permissions, downloaded ciphertext
+hash match, full decryption and all export hashes. This one approval is consumed;
+no paid plan, recurring schedule or database restore was performed. Product iOS
+source still has no diff from candidate d2ef6f6; no new app build/upload is needed.
+
+The owner asked the agent to save the recovery key and chose **Apple Passwords /
+iCloud Keychain**. A sync-enabled Security.framework add failed with missing
+entitlement−34018; no item was saved by it and no security setting was weakened.
+Normal Apple Passwords opened locked. Owner was asked to unlock locally; no Mac
+password/key was requested in chat. A0600 import CSV containing the one recovery
+key is staged privately under the existing recovery set's `keys` directory,
+outside Git/cloud. No CSV/key content was displayed, and no import has occurred.
+Resume the authorized normal Passwords import only after owner unlock; do not
+read unrelated entries or capture passwords. Verify import without revealing
+the key; remote iCloud sync/independent-device recovery remains separate evidence.
+Remove only this task-created temporary CSV after successful import verification.
+
+Mirroring again reached the controlled Chat. An attempted scroll-dismiss in the
+phone app switcher did not prove termination; the agent selected PickUp again.
+Do not count this as a physical force-quit/relaunch pass. No message, game,
+Calendar copy or phone setting was changed. No new live fixture is approved.
