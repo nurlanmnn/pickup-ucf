@@ -215,3 +215,11 @@ Mirroring again reached the controlled Chat. An attempted scroll-dismiss in the
 phone app switcher did not prove termination; the agent selected PickUp again.
 Do not count this as a physical force-quit/relaunch pass. No message, game,
 Calendar copy or phone setting was changed. No new live fixture is approved.
+
+November1 key-storage follow-up: owner unlocked Apple Passwords and requested
+agent completion. The recovery-key entry is now verified in Passwords, with its
+recovery-only label/note, without revealing the secret. Both temporary plaintext
+CSV copies were removed and the original private local identity preserved.
+Remote iCloud sync/another-device recovery remains unverified. See the updated
+[backup record](../operations/2026-10-31-backup-plan.md). No new production export,
+cloud backup, recurring schedule, app build or release action occurred.

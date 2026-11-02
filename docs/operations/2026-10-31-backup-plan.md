@@ -154,3 +154,14 @@ pending for the normal import flow. A private0600 temporary import CSV is staged
 under the recovery set's keys directory; it was not uploaded or displayed.
 Independent key custody is still unverified. After successful normal import,
 remove that task-created CSV and verify the saved entry without revealing its key.
+
+November1 follow-up: owner unlocked Apple Passwords and explicitly requested the
+agent finish saving the key. The normal CSV import ultimately created one entry
+under `pickup-ucf-privacy.vercel.app`, with username **PickUp UCF backup recovery
+key** and the recovery-only note. This is a backup key entry, not a website login.
+The named entry, website, note and password control were verified without
+revealing/copying the saved secret. Both task-created plaintext import CSV copies
+were removed; the original private local identity remains. The private evidence
+record now marks Apple Passwords import verified. Remote iCloud sync and recovery
+from another device have not been independently verified. This supersedes the
+earlier locked/import-pending status, but not the remaining restore/scheduling gates.
