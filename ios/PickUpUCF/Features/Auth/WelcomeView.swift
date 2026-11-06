@@ -5,7 +5,7 @@ struct WelcomeView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("welcomeIntroCompleted") private var introCompleted = false
-    @AccessibilityFocusState private var headingFocused: Bool
+    @AccessibilityFocusState private var focusedHeading: Int?
     @State private var step = 0
     @State private var authPath: [AuthScreen] = []
     @State private var authEmail = ""
@@ -24,37 +24,14 @@ struct WelcomeView: View {
             GeometryReader { proxy in
                 VStack(spacing: 0) {
                     topBar
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: Spacing.l) {
-                            if !dynamicTypeSize.isAccessibilitySize {
-                                illustration
-                                    .frame(height: min(280, max(180, proxy.size.height * 0.34)))
-                            }
-                            VStack(alignment: .leading, spacing: Spacing.m) {
-                                Text(steps[step].eyebrow)
-                                    .font(AppFont.caption2(.bold))
-                                    .tracking(1.5)
-                                    .foregroundStyle(AppColor.textSecondary(colorScheme))
-                                Text(steps[step].title)
-                                    .font(AppFont.display())
-                                    .tracking(-1.2)
-                                    .foregroundStyle(AppColor.textPrimary(colorScheme))
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .accessibilityAddTraits(.isHeader)
-                                    .accessibilityFocused($headingFocused)
-                                Text(steps[step].detail)
-                                    .font(AppFont.body())
-                                    .foregroundStyle(AppColor.textSecondary(colorScheme))
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            .id(step)
-                            .transition(.opacity)
+                    TabView(selection: $step) {
+                        ForEach(steps.indices, id: \.self) { index in
+                            introPage(at: index, availableHeight: proxy.size.height)
+                                .tag(index)
                         }
-                        .padding(.horizontal, Spacing.l)
-                        .padding(.top, Spacing.m)
-                        .padding(.bottom, Spacing.l)
                     }
-                    .scrollBounceBehavior(.basedOnSize)
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .onChange(of: step) { _, selected in focusedHeading = selected }
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) { actions }
             }
@@ -78,6 +55,39 @@ struct WelcomeView: View {
         }
     }
 
+    private func introPage(at index: Int, availableHeight: CGFloat) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                if !dynamicTypeSize.isAccessibilitySize {
+                    illustration(for: index)
+                        .frame(height: min(280, max(180, availableHeight * 0.34)))
+                }
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(steps[index].eyebrow)
+                        .font(AppFont.caption2(.bold))
+                        .tracking(1.5)
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                    Text(steps[index].title)
+                        .font(AppFont.display())
+                        .tracking(-1.2)
+                        .foregroundStyle(AppColor.textPrimary(colorScheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityFocused($focusedHeading, equals: index)
+                    Text(steps[index].detail)
+                        .font(AppFont.body())
+                        .foregroundStyle(AppColor.textSecondary(colorScheme))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, Spacing.l)
+            .padding(.top, Spacing.m)
+            .padding(.bottom, Spacing.l)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .accessibilityIdentifier("welcome-page-\(index)")
+    }
+
     private var topBar: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.s))
@@ -96,19 +106,17 @@ struct WelcomeView: View {
         .padding(.vertical, Spacing.s)
     }
 
-    private var illustration: some View {
+    private func illustration(for index: Int) -> some View {
         ZStack(alignment: .bottomLeading) {
-            CourtArtwork(sport: steps[step].sport)
-                .id(step)
-                .transition(.opacity)
+            CourtArtwork(sport: steps[index].sport)
             VStack(alignment: .leading, spacing: Spacing.s) {
                 Spacer()
                 Text("SEE YOU OUT THERE")
                     .font(AppFont.caption2(.bold))
                     .tracking(1.5)
                 HStack(spacing: Spacing.s) {
-                    Image(systemName: steps[step].sport.systemImage)
-                    Text(steps[step].sport.displayName)
+                    Image(systemName: steps[index].sport.systemImage)
+                    Text(steps[index].sport.displayName)
                     Image(systemName: "arrow.up.right")
                 }
                 .font(AppFont.headline())
@@ -182,7 +190,6 @@ struct WelcomeView: View {
 
     private func move(to index: Int) {
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.22)) { step = index }
-        headingFocused = true
     }
 }
 

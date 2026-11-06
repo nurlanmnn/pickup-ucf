@@ -311,6 +311,32 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         attach(app, name: "Account username unchanged after invalid draft")
     }
 
+    func testIntroSwipesAndButtonsKeepTheSamePageSelection() throws {
+        let app = try launch()
+        func assertPage(_ number: Int) {
+            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"),
+                object: app.buttons["Introduction, page \(number) of 3"])
+            wait(for: [selected], timeout: 5)
+        }
+        assertPage(1)
+        app.swipeLeft()
+        assertPage(2)
+        tap(app.buttons["welcome-continue"], in: app)
+        assertPage(3)
+        XCTAssertTrue(app.buttons["welcome-sign-up"].isHittable)
+        app.swipeRight()
+        assertPage(2)
+        tap(app.buttons["Back"], in: app)
+        assertPage(1)
+        tap(app.buttons["Introduction, page 3 of 3"], in: app)
+        assertPage(3)
+        tap(app.buttons["welcome-sign-in"], in: app)
+        XCTAssertTrue(app.secureTextFields["Password"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        assertPage(3)
+        attach(app, name: "Swipe and button intro navigation")
+    }
+
     func testIntroAndRelaunchStartDeterministically() throws {
         let app = try launch()
         XCTAssertTrue(app.buttons["welcome-continue"].exists)
@@ -322,6 +348,30 @@ final class UnauthenticatedSmokeTests: XCTestCase {
         app.terminate()
         let relaunched = try launch()
         XCTAssertTrue(relaunched.buttons["welcome-continue"].exists)
+    }
+
+    func testLargestIntroCanScrollItsCopyAndSwipeBetweenPages() throws {
+        let app = try launch(largestType: true)
+        let page = app.scrollViews["welcome-page-0"]
+        XCTAssertTrue(page.waitForExistence(timeout: 5))
+        page.swipeUp()
+        let detail = app.staticTexts["Find pickup games around UCF. Pick your sport, find your people, and get out there."]
+        let pageButton = app.buttons["Introduction, page 1 of 3"]
+        let copyVisible = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            detail.exists && detail.frame.maxY <= pageButton.frame.minY
+        }, object: nil)
+        wait(for: [copyVisible], timeout: 5)
+        XCTAssertTrue(app.buttons["welcome-continue"].isHittable)
+        XCTAssertTrue(app.buttons["welcome-sign-in"].isHittable)
+        attach(app, name: "Largest intro copy after vertical scroll")
+        page.swipeLeft()
+        let secondPageSelected = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "selected == true"),
+            object: app.buttons["Introduction, page 2 of 3"])
+        wait(for: [secondPageSelected], timeout: 5)
+        tap(app.buttons["Skip intro"], in: app)
+        XCTAssertTrue(app.buttons["welcome-sign-up"].isHittable)
+        attach(app, name: "Largest final intro actions")
     }
 
     func testAccountSwitchCarriesEmailAndReplacesRoute() throws {
