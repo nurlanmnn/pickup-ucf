@@ -292,5 +292,9 @@ source158fca2, contains native intro paging with compact/largest-text scrolling.
 It is archived/exported/verified locally. Fresh authenticated inventory still
 shows latest upload9/Complete and existing internal9/Testing;10 is unused.
 Read-only migration/function metadata and a15minute scheduler/outbox baseline
-were refreshed. Upload and existing-group assignment approval remain pending;
-no public draft, reviewer fields, external distribution or release was changed.
+were refreshed. The owner subsequently approved upload and existing internal-group
+assignment. Xcode upload succeeded10:27 Eastern; Apple processing completed. The
+unchanged owner-confirmed OS-only compliance answer was saved, and the existing
+group independently confirms **1.0(10),Testing,90days**, one tester/nine builds
+at10:31 Eastern. No public draft, reviewer fields, external distribution or
+release was changed. Exact installed-candidate device acceptance follows.
