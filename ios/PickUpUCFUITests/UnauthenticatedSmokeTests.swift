@@ -370,8 +370,18 @@ final class UnauthenticatedSmokeTests: XCTestCase {
             object: app.buttons["Introduction, page 2 of 3"])
         wait(for: [secondPageSelected], timeout: 5)
         tap(app.buttons["Skip intro"], in: app)
+        let finalPage = app.scrollViews["welcome-page-2"]
+        XCTAssertTrue(finalPage.waitForExistence(timeout: 5))
+        finalPage.swipeUp()
+        let finalDetail = app.staticTexts["Choose a spot, set a time, and bring a game together. Your campus is ready to play."]
+        let finalPageButton = app.buttons["Introduction, page 3 of 3"]
+        let finalCopyVisible = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            finalDetail.exists && finalDetail.frame.maxY <= finalPageButton.frame.minY
+        }, object: nil)
+        wait(for: [finalCopyVisible], timeout: 5)
         XCTAssertTrue(app.buttons["welcome-sign-up"].isHittable)
-        attach(app, name: "Largest final intro actions")
+        XCTAssertTrue(app.buttons["welcome-sign-in"].isHittable)
+        attach(app, name: "Largest final intro copy and actions after scroll")
     }
 
     func testAccountSwitchCarriesEmailAndReplacesRoute() throws {

@@ -283,3 +283,14 @@ eventual message visibility after an initially reported Loading state. The
 fixture is cancelled with one message, zero active tokens and zero pending rows
 verified before deadline. No immediate-load/performance or physical weather-credit
 claim is made; no further fixture, external invitation or review is authorized.
+
+
+## November6 successor preparation
+
+[Build10](../testflight/2026-11-06-build-10.md), product change6986e73 and packaging
+source158fca2, contains native intro paging with compact/largest-text scrolling.
+It is archived/exported/verified locally. Fresh authenticated inventory still
+shows latest upload9/Complete and existing internal9/Testing;10 is unused.
+Read-only migration/function metadata and a15minute scheduler/outbox baseline
+were refreshed. Upload and existing-group assignment approval remain pending;
+no public draft, reviewer fields, external distribution or release was changed.

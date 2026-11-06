@@ -90,3 +90,12 @@ settled final-page visual check. No launch appearance override is used.
 Local successor packaging is prepared separately as app/widget1.0(10); build9
 cannot acquire this source change. Fresh App Store Connect inventory verification
 is pending owner sign-in, so build-number availability is not yet reconfirmed.
+
+The final-page largest-text scenario was subsequently strengthened to scroll its
+complete description above the page controls and check both account actions.
+It passed1/1 in `/tmp/pickup-intro-dark-settled.xcresult`; the new settled dark
+final-page screenshot was inspected. This closes the earlier mid-animation
+attachment limitation. The isolated simulator was restored to light appearance.
+Fresh authenticated store inventory confirms latest upload9/Complete and build10
+unused. [Local build10 package and approval scope](../../testflight/2026-11-06-build-10.md)
+records archive/export verification, retained provenance and operations baseline.
