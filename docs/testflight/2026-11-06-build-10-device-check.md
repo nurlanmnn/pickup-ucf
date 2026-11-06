@@ -70,4 +70,13 @@ This does not establish a product gesture failure; simulator touch-swipe tests
 passed, while physical touch swiping is still unverified. The owner was asked to
 Back from Sign in, touch-swipe3→2→3, report the result and sign back in directly.
 No phone observations will be taken during credential entry. Owner-reported
-swipe/sign-in results and subsequent authenticated state verification are pending.
+swipe/sign-in results were subsequently supplied as recorded below.
+
+
+The owner subsequently reported **Both swipes worked; signed back in**. This
+supplies owner-reported physical touch-swipe3→2→3 and successful sign-in evidence
+for TestFlight10, separate from simulator and Mirroring button checks. The next
+Mirroring observation showed **iPhone in Use / Lock your iPhone to connect**;
+no post-sign-in authenticated screenshot was available. The agent did not inspect
+credential entry, request credentials or claim independent post-sign-in landing
+verification. No additional sign-out is authorized or needed for this run.
