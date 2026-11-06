@@ -46,4 +46,28 @@ or exact TestFlight reviewer authentication/fresh reviewer-data acceptance.
 
 At73% of the five-hour allowance used, the owner was asked to approve one
 separate bounded sign-out/intro-navigation check followed by owner-entered sign-in.
-That approval is pending; no sign-out has been performed under this record.
+The owner approved that exact scope. The results below supersede the earlier
+read-only scope for this one sign-out only.
+
+
+## Approved signed-out intro check (10:40–10:41 Eastern)
+
+The owner approved one sign-out, intro navigation and return to owner-entered
+Sign in. Through Settings → Sign out → Sign out confirmation, the agent signed
+out once. The settled app returned directly to **page3**, with Sign in reachable
+and no visible server-cleanup warning. Screenshot:
+`/tmp/pickup-build10-phone-signed-out-page3.png`. This is UI evidence; no independent
+per-token server deletion or account-switch isolation claim is made.
+
+Back moved3→2→1, Continue moved1→2, and the third page button moved2→3. Each
+selected indicator, page heading and sport artwork matched the destination.
+Normal-text dark layout showed the full page copy and reachable bottom actions.
+Sign in then opened the empty credentials form. No credential was read or entered
+by the agent, and no second sign-out or account switch was performed.
+
+Mirroring horizontal scroll inputs in both directions did not move the page.
+This does not establish a product gesture failure; simulator touch-swipe tests
+passed, while physical touch swiping is still unverified. The owner was asked to
+Back from Sign in, touch-swipe3→2→3, report the result and sign back in directly.
+No phone observations will be taken during credential entry. Owner-reported
+swipe/sign-in results and subsequent authenticated state verification are pending.
