@@ -75,3 +75,18 @@ The compact isolated simulator is87E634A6-A6AF-4062-B1A3-67E6F5780CE1.
 Test artifacts stay outside Git. Product source changes require a successor to
 uploaded build9; no binary upload, public draft replacement or review is approved
 by this source-only UI slice.
+
+## Dark appearance follow-up
+
+On November6, the dedicated compact simulator's Features → Toggle Appearance
+was used to set actual dark appearance. Two focused scenarios passed with the
+unchanged tested app: swipe/button navigation and largest-text scroll/swipe/action
+access, `/tmp/pickup-intro-dark.xcresult` (2/2). Exported attachments in
+`/tmp/pickup-intro-dark-renders/` visibly show the dark palette. Normal final-page
+and largest-text scrolled-copy images were inspected. The largest final-page
+attachment catches the Skip transition mid-animation and is not accepted as a
+settled final-page visual check. No launch appearance override is used.
+
+Local successor packaging is prepared separately as app/widget1.0(10); build9
+cannot acquire this source change. Fresh App Store Connect inventory verification
+is pending owner sign-in, so build-number availability is not yet reconfirmed.

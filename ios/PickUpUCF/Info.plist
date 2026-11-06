@@ -28,7 +28,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>9</string>
+	<string>10</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
 	<string>Add a game to your calendar when you choose. PickUp UCF does not read your calendar events.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
